@@ -1,6 +1,3273 @@
-_, Protected_by_MoonSecV2, Discord = 'discord.gg/gQEH2uZxUk'
+local library = {
+    flags = { },
+    items = { }
+}
+if _G.Color == nil then _G.Color = Color3.fromRGB(186, 191, 36) end
+if _G.Color2 == nil then _G.Color2 = Color3.fromRGB(135, 168, 34) end
+-- Services
+local players = game:GetService("Players")
+local uis = game:GetService("UserInputService")
+local runservice = game:GetService("RunService")
+local tweenservice = game:GetService("TweenService")
+local marketplaceservice = game:GetService("MarketplaceService")
+local textservice = game:GetService("TextService")
+local coregui = game:GetService("CoreGui")
+local httpservice = game:GetService("HttpService")
+local player = players.LocalPlayer
+local mouse = player:GetMouse()
+local camera = game.Workspace.CurrentCamera
+library.theme = {
+    fontsize = 15,
+    titlesize = 18,
+    font = Enum.Font.Ubuntu,
+    background = "rbxassetid://5553946656",
+    tilesize = 50,
+    cursor = false,
+    cursorimg = "https://t0.rbxcdn.com/42f66da98c40252ee151326a82aab51f",
+    backgroundcolor = Color3.fromRGB(20, 20, 20),
+    tabstextcolor = Color3.fromRGB(240, 240, 240),
+    bordercolor = Color3.fromRGB(60, 60, 60),
+    accentcolor = _G.Color,
+    accentcolor2 = _G.Color2,
+    outlinecolor = Color3.fromRGB(60, 60, 60),
+    outlinecolor2 = Color3.fromRGB(0, 0, 0),
+    sectorcolor = Color3.fromRGB(30, 30, 30),
+    toptextcolor = _G.Color,
+    topheight = 48,
+    topcolor = Color3.fromRGB(30, 30, 30),
+    topcolor2 = Color3.fromRGB(15, 15, 15),
+    buttoncolor = Color3.fromRGB(49, 49, 49),
+    buttoncolor2 = Color3.fromRGB(39, 39, 39),
+    itemscolor = Color3.fromRGB(200, 200, 200),
+    itemscolor2 = Color3.fromRGB(210, 210, 210)}
+if library.theme.cursor and Drawing then
+    local success = pcall(function()
+        library.cursor = Drawing.new("Image")
+        library.cursor.Data = game:HttpGet(library.theme.cursorimg)
+        library.cursor.Size = Vector2.new(64, 64)
+        library.cursor.Visible = uis.MouseEnabled
+        library.cursor.Rounding = 0
+        library.cursor.Position = Vector2.new(mouse.X - 32, mouse.Y + 6)
+    end)
+    if success and library.cursor then
+        uis.InputChanged:Connect(function(input)
+            if uis.MouseEnabled then
+                if input.UserInputType == Enum.UserInputType.MouseMovement then
+                    library.cursor.Position = Vector2.new(input.Position.X - 32, input.Position.Y + 7)
+                end
+            end
+        end)
+        game:GetService("RunService").RenderStepped:Connect(function()
+            uis.OverrideMouseIconBehavior = Enum.OverrideMouseIconBehavior.ForceHide
+            library.cursor.Visible = uis.MouseEnabled and (uis.MouseIconEnabled or game:GetService("GuiService").MenuIsOpen)
+        end)
+    elseif not success and library.cursor then
+        library.cursor:Remove()
+    end
+end
+function library:CreateWatermark(name)
+    local gamename = marketplaceservice:GetProductInfo(game.PlaceId).Name
+    local watermark = { }
+    watermark.Visible = true
+    watermark.text = " " .. name:gsub("{game}", gamename):gsub("{fps}", "0 FPS") .. " "
+    watermark.main = Instance.new("ScreenGui", coregui)
+    watermark.main.Name = "Watermark"
+    if syn then
+        syn.protect_gui(watermark.main)
+    end
+    if getgenv().watermark then
+        getgenv().watermark:Remove()
+    end
+    getgenv().watermark = watermark.main
+    watermark.mainbar = Instance.new("Frame", watermark.main)
+    watermark.mainbar.Name = "Main"
+    watermark.mainbar.BorderColor3 = Color3.fromRGB(80, 80, 80)
+    watermark.mainbar.Visible = watermark.Visible
+    watermark.mainbar.BorderSizePixel = 0
+    watermark.mainbar.ZIndex = 5
+    watermark.mainbar.Position = UDim2.new(0, 1,0,1)
+    watermark.mainbar.Size = UDim2.new(0, 0, 0, 25)
+    watermark.Gradient = Instance.new("UIGradient", watermark.mainbar)
+    watermark.Gradient.Rotation = 90
+    watermark.Gradient.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0.00, Color3.fromRGB(40, 40, 40)),
+        ColorSequenceKeypoint.new(1.00, Color3.fromRGB(10, 10, 10))
+    })
+    watermark.Outline = Instance.new("Frame", watermark.mainbar)
+    watermark.Outline.Name = "outline"
+    watermark.Outline.ZIndex = 4
+    watermark.Outline.BorderSizePixel = 0
+    watermark.Outline.Visible = watermark.Visible
+    watermark.Outline.BackgroundColor3 = library.theme.outlinecolor
+    watermark.Outline.Position = UDim2.fromOffset(-1, -1)
+    watermark.BlackOutline = Instance.new("Frame", watermark.mainbar)
+    watermark.BlackOutline.Name = "blackline"
+    watermark.BlackOutline.ZIndex = 3
+    watermark.BlackOutline.BorderSizePixel = 0
+    watermark.BlackOutline.BackgroundColor3 = library.theme.outlinecolor2
+    watermark.BlackOutline.Visible = watermark.Visible
+    watermark.BlackOutline.Position = UDim2.fromOffset(-2, -2)
+    watermark.label = Instance.new("TextLabel", watermark.mainbar)
+    watermark.label.Name = "FPSLabel"
+    watermark.label.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    watermark.label.BackgroundTransparency = 1.000
+    watermark.label.Position = UDim2.new(0, 0, 0, 0)
+    watermark.label.Size = UDim2.new(0, 238, 0, 25)
+    watermark.label.Font = library.theme.font
+    watermark.label.ZIndex = 6
+    watermark.label.Visible = watermark.Visible
+    watermark.label.Text = watermark.text
+    watermark.label.TextColor3 = Color3.fromRGB(255, 255, 255)
+    watermark.label.TextSize = 15
+    watermark.label.TextStrokeTransparency = 0.000
+    watermark.label.TextXAlignment = Enum.TextXAlignment.Left
+    watermark.label.Size = UDim2.new(0, watermark.label.TextBounds.X + 10, 0, 25)
+    watermark.topbar = Instance.new("Frame", watermark.mainbar)
+    watermark.topbar.Name = "TopBar"
+    watermark.topbar.ZIndex = 6
+    watermark.topbar.BackgroundColor3 = library.theme.accentcolor
+    watermark.topbar.BorderSizePixel = 0
+    watermark.topbar.Visible = watermark.Visible
+    watermark.topbar.Size = UDim2.new(0, 0, 0, 1)
+    watermark.mainbar.Size = UDim2.new(0, watermark.label.TextBounds.X, 0, 25)
+    watermark.topbar.Size = UDim2.new(0, watermark.label.TextBounds.X + 6, 0, 1)
+    watermark.Outline.Size = watermark.mainbar.Size + UDim2.fromOffset(2, 2)
+    watermark.BlackOutline.Size = watermark.mainbar.Size + UDim2.fromOffset(4, 4)
+    watermark.mainbar.Size = UDim2.new(0, watermark.label.TextBounds.X + 4, 0, 25)
+    watermark.label.Size = UDim2.new(0, watermark.label.TextBounds.X + 4, 0, 25)
+    watermark.topbar.Size = UDim2.new(0, watermark.label.TextBounds.X + 6, 0, 1)
+    watermark.Outline.Size = watermark.mainbar.Size + UDim2.fromOffset(2, 2)
+    watermark.BlackOutline.Size = watermark.mainbar.Size + UDim2.fromOffset(4, 4)
+    local startTime, counter, oldfps = os.clock(), 0, nil
+    runservice.Heartbeat:Connect(function()
+        watermark.label.Visible = watermark.Visible
+        watermark.mainbar.Visible = watermark.Visible
+        watermark.topbar.Visible = watermark.Visible
+        watermark.Outline.Visible = watermark.Visible
+        watermark.BlackOutline.Visible = watermark.Visible
+        if not name:find("{fps}") then
+            watermark.label.Text = " " .. name:gsub("{game}", gamename):gsub("{fps}", "0 FPS") .. " "
+        end
+        if name:find("{fps}") then
+            local currentTime = os.clock()
+            counter = counter + 1
+            if currentTime - startTime >= 1 then
+                local fps = math.floor(counter / (currentTime - startTime))
+                counter = 0
+                startTime = currentTime
+                if fps ~= oldfps then
+                    watermark.label.Text = " " .. name:gsub("{game}", gamename):gsub("{fps}", fps .. " FPS") .. " "
+                    watermark.label.Size = UDim2.new(0, watermark.label.TextBounds.X + 10, 0, 25)
+                    watermark.mainbar.Size = UDim2.new(0, watermark.label.TextBounds.X, 0, 25)
+                    watermark.topbar.Size = UDim2.new(0, watermark.label.TextBounds.X, 0, 1)
+                    watermark.Outline.Size = watermark.mainbar.Size + UDim2.fromOffset(2, 2)
+                    watermark.BlackOutline.Size = watermark.mainbar.Size + UDim2.fromOffset(4, 4)
+                end
+                oldfps = fps
+            end
+        end
+    end)
+    watermark.mainbar.MouseEnter:Connect(function()
+        tweenservice:Create(watermark.mainbar, TweenInfo.new(0.1, Enum.EasingStyle.Linear, Enum.EasingDirection.In), {
+            BackgroundTransparency = 1,
+            Active = false
+        }):Play()
+        tweenservice:Create(watermark.topbar, TweenInfo.new(0.1, Enum.EasingStyle.Linear, Enum.EasingDirection.In), {
+            BackgroundTransparency = 1,
+            Active = false
+        }):Play()
+        tweenservice:Create(watermark.label, TweenInfo.new(0.1, Enum.EasingStyle.Linear, Enum.EasingDirection.In), {
+            TextTransparency = 1,
+            Active = false
+        }):Play()
+        tweenservice:Create(watermark.Outline, TweenInfo.new(0.1, Enum.EasingStyle.Linear, Enum.EasingDirection.In), {
+            BackgroundTransparency = 1,
+            Active = false
+        }):Play()
+        tweenservice:Create(watermark.BlackOutline, TweenInfo.new(0.1, Enum.EasingStyle.Linear, Enum.EasingDirection.In), {
+            BackgroundTransparency = 1,
+            Active = false
+        }):Play()
+    end)
+    watermark.mainbar.MouseLeave:Connect(function()
+        tweenservice:Create(watermark.mainbar, TweenInfo.new(0.1, Enum.EasingStyle.Linear, Enum.EasingDirection.In), {
+            BackgroundTransparency = 0,
+            Active = true
+        }):Play()
+        tweenservice:Create(watermark.topbar, TweenInfo.new(0.1, Enum.EasingStyle.Linear, Enum.EasingDirection.In), {
+            BackgroundTransparency = 0,
+            Active = true
+        }):Play()
+        tweenservice:Create(watermark.label, TweenInfo.new(0.1, Enum.EasingStyle.Linear, Enum.EasingDirection.In), {
+            TextTransparency = 0,
+            Active = true
+        }):Play()
+        tweenservice:Create(watermark.Outline, TweenInfo.new(0.1, Enum.EasingStyle.Linear, Enum.EasingDirection.In), {
+            BackgroundTransparency = 0,
+            Active = true
+        }):Play()
+        tweenservice:Create(watermark.BlackOutline, TweenInfo.new(0.1, Enum.EasingStyle.Linear, Enum.EasingDirection.In), {
+            BackgroundTransparency = 0,
+            Active = true
+        }):Play()
+    end)
+    function watermark:UpdateTheme(theme)
+        theme = theme or library.theme
+        watermark.Outline.BackgroundColor3 = theme.outlinecolor
+        watermark.BlackOutline.BackgroundColor3 = theme.outlinecolor2
+        watermark.label.Font = theme.font
+        watermark.topbar.BackgroundColor3 = theme.accentcolor
+    end
+    return watermark
+end
+function library:CreateWindow(name, hidebutton)
+    local window = { }
+    window.name = name or ""
+    window.size = UDim2.fromOffset(492, 598)
+    window.hidebutton = hidebutton or Enum.KeyCode.RightControl
+    window.theme = library.theme
+    local updateevent = Instance.new("BindableEvent")
+    function window:UpdateTheme(theme)
+        updateevent:Fire(theme or library.theme)
+        window.theme = (theme or library.theme)
+    end
+    window.Main = Instance.new("ScreenGui", coregui)
+    window.Main.Name = name
+    window.Main.DisplayOrder = 15
+    if syn then
+        syn.protect_gui(window.Main)
+    end
+    if getgenv().uilib then
+        getgenv().uilib:Remove()
+    end
+    getgenv().uilib = window.Main
+    local dragging, dragInput, dragStart, startPos
+    uis.InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            local delta = input.Position - dragStart
+            window.Frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        end
+    end)
+    local dragstart = function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = window.Frame.Position
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
+        end
+    end
+    local dragend = function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
+        end
+    end
+    window.Frame = Instance.new("TextButton", window.Main)
+    window.Frame.Name = "main"
+    window.Frame.Position = UDim2.fromScale(0.5, 0.5)
+    window.Frame.BorderSizePixel = 0
+    window.Frame.Size = window.size
+    window.Frame.AutoButtonColor = false
+    window.Frame.Text = ""
+    window.Frame.BackgroundColor3 = window.theme.backgroundcolor
+    window.Frame.AnchorPoint = Vector2.new(0.5, 0.5)
+    updateevent.Event:Connect(function(theme)
+        window.Frame.BackgroundColor3 = theme.backgroundcolor
+    end)
+    uis.InputBegan:Connect(function(key)
+        if key.KeyCode == window.hidebutton then
+            window.Frame.Visible = not window.Frame.Visible
+        end
+    end)
+    local function checkIfGuiInFront(Pos)
+        local objects = coregui:GetGuiObjectsAtPosition(Pos.X, Pos.Y)
+        for i, v in pairs(objects) do
+            if not string.find(v:GetFullName(), window.name) then
+                table.remove(objects, i)
+            end
+        end
+        return (#objects ~= 0 and objects[1].AbsolutePosition ~= Pos)
+    end
+    window.BlackOutline = Instance.new("Frame", window.Frame)
+    window.BlackOutline.Name = "outline"
+    window.BlackOutline.ZIndex = 1
+    window.BlackOutline.Size = window.size + UDim2.fromOffset(2, 2)
+    window.BlackOutline.BorderSizePixel = 0
+    window.BlackOutline.BackgroundColor3 = window.theme.outlinecolor2
+    window.BlackOutline.Position = UDim2.fromOffset(-1, -1)
+    updateevent.Event:Connect(function(theme)
+        window.BlackOutline.BackgroundColor3 = theme.outlinecolor2
+    end)
+    window.Outline = Instance.new("Frame", window.Frame)
+    window.Outline.Name = "outline"
+    window.Outline.ZIndex = 0
+    window.Outline.Size = window.size + UDim2.fromOffset(4, 4)
+    window.Outline.BorderSizePixel = 0
+    window.Outline.BackgroundColor3 = window.theme.outlinecolor
+    window.Outline.Position = UDim2.fromOffset(-2, -2)
+    updateevent.Event:Connect(function(theme)
+        window.Outline.BackgroundColor3 = theme.outlinecolor
+    end)
+    window.BlackOutline2 = Instance.new("Frame", window.Frame)
+    window.BlackOutline2.Name = "outline"
+    window.BlackOutline2.ZIndex = -1
+    window.BlackOutline2.Size = window.size + UDim2.fromOffset(6, 6)
+    window.BlackOutline2.BorderSizePixel = 0
+    window.BlackOutline2.BackgroundColor3 = window.theme.outlinecolor2
+    window.BlackOutline2.Position = UDim2.fromOffset(-3, -3)
+    updateevent.Event:Connect(function(theme)
+        window.BlackOutline2.BackgroundColor3 = theme.outlinecolor2
+    end)
+    window.TopBar = Instance.new("Frame", window.Frame)
+    window.TopBar.Name = "top"
+    window.TopBar.Size = UDim2.fromOffset(window.size.X.Offset, window.theme.topheight)
+    window.TopBar.BorderSizePixel = 0
+    window.TopBar.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    window.TopBar.InputBegan:Connect(dragstart)
+    window.TopBar.InputChanged:Connect(dragend)
+    updateevent.Event:Connect(function(theme)
+        window.TopBar.Size = UDim2.fromOffset(window.size.X.Offset, theme.topheight)
+    end)
+    window.TopGradient = Instance.new("UIGradient", window.TopBar)
+    window.TopGradient.Rotation = 90
+    window.TopGradient.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0.00, window.theme.topcolor),
+        ColorSequenceKeypoint.new(1.00, window.theme.topcolor2)
+    })
+    updateevent.Event:Connect(function(theme)
+        window.TopGradient.Color = ColorSequence.new({
+            ColorSequenceKeypoint.new(0.00, theme.topcolor),
+            ColorSequenceKeypoint.new(1.00, theme.topcolor2)
+        })
+    end)
+    window.NameLabel = Instance.new("TextLabel", window.TopBar)
+    window.NameLabel.TextColor3 = window.theme.toptextcolor
+    window.NameLabel.Text = window.name
+    window.NameLabel.TextXAlignment = Enum.TextXAlignment.Left
+    window.NameLabel.Font = window.theme.font
+    window.NameLabel.Name = "title"
+    window.NameLabel.Position = UDim2.fromOffset(4, -2)
+    window.NameLabel.BackgroundTransparency = 1
+    window.NameLabel.Size = UDim2.fromOffset(190, window.TopBar.AbsoluteSize.Y / 2 - 2)
+    window.NameLabel.TextSize = window.theme.titlesize
+    updateevent.Event:Connect(function(theme)
+        window.NameLabel.TextColor3 = theme.toptextcolor
+        window.NameLabel.Font = theme.font
+        window.NameLabel.TextSize = theme.titlesize
+    end)
+    window.Line2 = Instance.new("Frame", window.TopBar)
+    window.Line2.Name = "line"
+    window.Line2.Position = UDim2.fromOffset(0, window.TopBar.AbsoluteSize.Y / 2.1)
+    window.Line2.Size = UDim2.fromOffset(window.size.X.Offset, 1)
+    window.Line2.BorderSizePixel = 0
+    window.Line2.BackgroundColor3 = window.theme.accentcolor
+    updateevent.Event:Connect(function(theme)
+        window.Line2.BackgroundColor3 = theme.accentcolor
+    end)
+    window.TabList = Instance.new("Frame", window.TopBar)
+    window.TabList.Name = "tablist"
+    window.TabList.BackgroundTransparency = 1
+    window.TabList.Position = UDim2.fromOffset(0, window.TopBar.AbsoluteSize.Y / 2 + 1)
+    window.TabList.Size = UDim2.fromOffset(window.size.X.Offset, window.TopBar.AbsoluteSize.Y / 2)
+    window.TabList.BorderSizePixel = 0
+    window.TabList.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    window.TabList.InputBegan:Connect(dragstart)
+    window.TabList.InputChanged:Connect(dragend)
+    window.BlackLine = Instance.new("Frame", window.Frame)
+    window.BlackLine.Name = "blackline"
+    window.BlackLine.Size = UDim2.fromOffset(window.size.X.Offset, 1)
+    window.BlackLine.BorderSizePixel = 0
+    window.BlackLine.ZIndex = 9
+    window.BlackLine.BackgroundColor3 = window.theme.outlinecolor2
+    window.BlackLine.Position = UDim2.fromOffset(0, window.TopBar.AbsoluteSize.Y)
+    updateevent.Event:Connect(function(theme)
+        window.BlackLine.BackgroundColor3 = theme.outlinecolor2
+    end)
+    window.BackgroundImage = Instance.new("ImageLabel", window.Frame)
+    window.BackgroundImage.Name = "background"
+    window.BackgroundImage.BorderSizePixel = 0
+    window.BackgroundImage.ScaleType = Enum.ScaleType.Tile
+    window.BackgroundImage.Position = window.BlackLine.Position + UDim2.fromOffset(0, 1)
+    window.BackgroundImage.Size = UDim2.fromOffset(window.size.X.Offset, window.size.Y.Offset - window.TopBar.AbsoluteSize.Y - 1)
+    window.BackgroundImage.Image = window.theme.background or ""
+    window.BackgroundImage.ImageTransparency = window.BackgroundImage.Image ~= "" and 0 or 1
+    window.BackgroundImage.ImageColor3 = Color3.new()
+    window.BackgroundImage.BackgroundColor3 = window.theme.backgroundcolor
+    window.BackgroundImage.TileSize = UDim2.new(0, window.theme.tilesize, 0, window.theme.tilesize)
+    updateevent.Event:Connect(function(theme)
+        window.BackgroundImage.Image = theme.background or ""
+        window.BackgroundImage.ImageTransparency = window.BackgroundImage.Image ~= "" and 0 or 1
+        window.BackgroundImage.BackgroundColor3 = theme.backgroundcolor
+        window.BackgroundImage.TileSize = UDim2.new(0, theme.tilesize, 0, theme.tilesize)
+    end)
+    window.Line = Instance.new("Frame", window.Frame)
+    window.Line.Name = "line"
+    window.Line.Position = UDim2.fromOffset(0, 0)
+    window.Line.Size = UDim2.fromOffset(60, 1)
+    window.Line.BorderSizePixel = 0
+    window.Line.BackgroundColor3 = window.theme.accentcolor
+    updateevent.Event:Connect(function(theme)
+        window.Line.BackgroundColor3 = theme.accentcolor
+    end)
+    window.ListLayout = Instance.new("UIListLayout", window.TabList)
+    window.ListLayout.FillDirection = Enum.FillDirection.Horizontal
+    window.ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    window.OpenedColorPickers = { }
+    window.Tabs = { }
+    function window:CreateTab(name)
+        local tab = { }
+        tab.name = name or ""
+        local textservice = game:GetService("TextService")
+        local size = textservice:GetTextSize(tab.name, window.theme.fontsize, window.theme.font, Vector2.new(200, 300))
+        tab.TabButton = Instance.new("TextButton", window.TabList)
+        tab.TabButton.TextColor3 = window.theme.tabstextcolor
+        tab.TabButton.Text = tab.name
+        tab.TabButton.AutoButtonColor = false
+        tab.TabButton.Font = window.theme.font
+        tab.TabButton.TextYAlignment = Enum.TextYAlignment.Center
+        tab.TabButton.BackgroundTransparency = 1
+        tab.TabButton.BorderSizePixel = 0
+        tab.TabButton.Size = UDim2.fromOffset(size.X + 15, window.TabList.AbsoluteSize.Y - 1)
+        tab.TabButton.Name = tab.name
+        tab.TabButton.TextSize = window.theme.fontsize
+        updateevent.Event:Connect(function(theme)
+            local size = textservice:GetTextSize(tab.name, theme.fontsize, theme.font, Vector2.new(200, 300))
+            tab.TabButton.TextColor3 = tab.TabButton.Name == "SelectedTab" and theme.accentcolor or theme.tabstextcolor
+            tab.TabButton.Font = theme.font
+            tab.TabButton.Size = UDim2.fromOffset(size.X + 15, window.TabList.AbsoluteSize.Y - 1)
+            tab.TabButton.TextSize = theme.fontsize
+        end)
+        tab.Left = Instance.new("ScrollingFrame", window.Frame)
+        tab.Left.Name = "leftside"
+        tab.Left.BorderSizePixel = 0
+        tab.Left.Size = UDim2.fromOffset(window.size.X.Offset / 2, window.size.Y.Offset - (window.TopBar.AbsoluteSize.Y + 1))
+        tab.Left.BackgroundTransparency = 1
+        tab.Left.Visible = false
+        tab.Left.ScrollBarThickness = 0
+        tab.Left.ScrollingDirection = "Y"
+        tab.Left.Position = window.BlackLine.Position + UDim2.fromOffset(0, 1)
+        tab.LeftListLayout = Instance.new("UIListLayout", tab.Left)
+        tab.LeftListLayout.FillDirection = Enum.FillDirection.Vertical
+        tab.LeftListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+        tab.LeftListLayout.Padding = UDim.new(0, 12)
+        tab.LeftListPadding = Instance.new("UIPadding", tab.Left)
+        tab.LeftListPadding.PaddingTop = UDim.new(0, 12)
+        tab.LeftListPadding.PaddingLeft = UDim.new(0, 12)
+        tab.LeftListPadding.PaddingRight = UDim.new(0, 12)
+        tab.Right = Instance.new("ScrollingFrame", window.Frame)
+        tab.Right.Name = "rightside"
+        tab.Right.ScrollBarThickness = 0
+        tab.Right.ScrollingDirection = "Y"
+        tab.Right.Visible = false
+        tab.Right.BorderSizePixel = 0
+        tab.Right.Size = UDim2.fromOffset(window.size.X.Offset / 2, window.size.Y.Offset - (window.TopBar.AbsoluteSize.Y + 1))
+        tab.Right.BackgroundTransparency = 1
+        tab.Right.Position = tab.Left.Position + UDim2.fromOffset(tab.Left.AbsoluteSize.X, 0)
+        tab.RightListLayout = Instance.new("UIListLayout", tab.Right)
+        tab.RightListLayout.FillDirection = Enum.FillDirection.Vertical
+        tab.RightListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+        tab.RightListLayout.Padding = UDim.new(0, 12)
+        tab.RightListPadding = Instance.new("UIPadding", tab.Right)
+        tab.RightListPadding.PaddingTop = UDim.new(0, 12)
+        tab.RightListPadding.PaddingLeft = UDim.new(0, 6)
+        tab.RightListPadding.PaddingRight = UDim.new(0, 12)
+        local block = false
+        function tab:SelectTab()
+            repeat
+                wait()
+            until block == false
+            block = true
+            for i, v in pairs(window.Tabs) do
+                if v ~= tab then
+                    v.TabButton.TextColor3 = Color3.fromRGB(230, 230, 230)
+                    v.TabButton.Name = "Tab"
+                    v.Left.Visible = false
+                    v.Right.Visible = false
+                end
+            end
+            tab.TabButton.TextColor3 = window.theme.accentcolor
+            tab.TabButton.Name = "SelectedTab"
+            tab.Right.Visible = true
+            tab.Left.Visible = true
+            window.Line:TweenSizeAndPosition(UDim2.fromOffset(size.X + 15, 1), UDim2.new(0, (tab.TabButton.AbsolutePosition.X - window.Frame.AbsolutePosition.X), 0, 0) + (window.BlackLine.Position - UDim2.fromOffset(0, 1)), Enum.EasingDirection.In, Enum.EasingStyle.Sine, 0.15)
+            wait(0.2)
+            block = false
+        end
+        if #window.Tabs == 0 then
+            tab:SelectTab()
+        end
+        tab.TabButton.MouseButton1Down:Connect(function()
+            tab:SelectTab()
+        end)
+        tab.SectorsLeft = { }
+        tab.SectorsRight = { }
+        function tab:CreateSector(name, side)
+            local sector = { }
+            sector.name = name or ""
+            sector.side = side:lower() or "left"
+            sector.Main = Instance.new("Frame", sector.side == "left" and tab.Left or tab.Right)
+            sector.Main.Name = sector.name:gsub(" ", "") .. "Sector"
+            sector.Main.BorderSizePixel = 0
+            sector.Main.ZIndex = 4
+            sector.Main.Size = UDim2.fromOffset(window.size.X.Offset / 2 - 17, 20)
+            sector.Main.BackgroundColor3 = window.theme.sectorcolor
+            --sector.Main.Position = sector.side == "left" and UDim2.new(0, 11, 0, 12) or UDim2.new(0, window.size.X.Offset - sector.Main.AbsoluteSize.X - 11, 0, 12)
+            updateevent.Event:Connect(function(theme)
+                sector.Main.BackgroundColor3 = theme.sectorcolor
+            end)
+            sector.Line = Instance.new("Frame", sector.Main)
+            sector.Line.Name = "line"
+            sector.Line.ZIndex = 4
+            sector.Line.Size = UDim2.fromOffset(sector.Main.Size.X.Offset + 4, 1)
+            sector.Line.BorderSizePixel = 0
+            sector.Line.Position = UDim2.fromOffset(-2, -2)
+            sector.Line.BackgroundColor3 = window.theme.accentcolor
+            updateevent.Event:Connect(function(theme)
+                sector.Line.BackgroundColor3 = theme.accentcolor
+            end)
+            sector.BlackOutline = Instance.new("Frame", sector.Main)
+            sector.BlackOutline.Name = "outline"
+            sector.BlackOutline.ZIndex = 3
+            sector.BlackOutline.Size = sector.Main.Size + UDim2.fromOffset(2, 2)
+            sector.BlackOutline.BorderSizePixel = 0
+            sector.BlackOutline.BackgroundColor3 = window.theme.outlinecolor2
+            sector.BlackOutline.Position = UDim2.fromOffset(-1, -1)
+            sector.Main:GetPropertyChangedSignal("Size"):Connect(function()
+                sector.BlackOutline.Size = sector.Main.Size + UDim2.fromOffset(2, 2)
+            end)
+            updateevent.Event:Connect(function(theme)
+                sector.BlackOutline.BackgroundColor3 = theme.outlinecolor2
+            end)
+            sector.Outline = Instance.new("Frame", sector.Main)
+            sector.Outline.Name = "outline"
+            sector.Outline.ZIndex = 2
+            sector.Outline.Size = sector.Main.Size + UDim2.fromOffset(4, 4)
+            sector.Outline.BorderSizePixel = 0
+            sector.Outline.BackgroundColor3 = window.theme.outlinecolor
+            sector.Outline.Position = UDim2.fromOffset(-2, -2)
+            sector.Main:GetPropertyChangedSignal("Size"):Connect(function()
+                sector.Outline.Size = sector.Main.Size + UDim2.fromOffset(4, 4)
+            end)
+            updateevent.Event:Connect(function(theme)
+                sector.Outline.BackgroundColor3 = theme.outlinecolor
+            end)
+            sector.BlackOutline2 = Instance.new("Frame", sector.Main)
+            sector.BlackOutline2.Name = "outline"
+            sector.BlackOutline2.ZIndex = 1
+            sector.BlackOutline2.Size = sector.Main.Size + UDim2.fromOffset(6, 6)
+            sector.BlackOutline2.BorderSizePixel = 0
+            sector.BlackOutline2.BackgroundColor3 = window.theme.outlinecolor2
+            sector.BlackOutline2.Position = UDim2.fromOffset(-3, -3)
+            sector.Main:GetPropertyChangedSignal("Size"):Connect(function()
+                sector.BlackOutline2.Size = sector.Main.Size + UDim2.fromOffset(6, 6)
+            end)
+            updateevent.Event:Connect(function(theme)
+                sector.BlackOutline2.BackgroundColor3 = theme.outlinecolor2
+            end)
+            local size = textservice:GetTextSize(sector.name, 15, window.theme.font, Vector2.new(2000, 2000))
+            sector.Label = Instance.new("TextLabel", sector.Main)
+            sector.Label.AnchorPoint = Vector2.new(0, 0.5)
+            sector.Label.Position = UDim2.fromOffset(12, -1)
+            sector.Label.Size = UDim2.fromOffset(math.clamp(textservice:GetTextSize(sector.name, 15, window.theme.font, Vector2.new(200, 300)).X + 13, 0, sector.Main.Size.X.Offset), size.Y)
+            sector.Label.BackgroundTransparency = 1
+            sector.Label.BorderSizePixel = 0
+            sector.Label.ZIndex = 6
+            sector.Label.Text = sector.name
+            sector.Label.TextColor3 = Color3.new(1, 1, 2552 / 255)
+            sector.Label.TextStrokeTransparency = 1
+            sector.Label.Font = window.theme.font
+            sector.Label.TextSize = 15
+            updateevent.Event:Connect(function(theme)
+                local size = textservice:GetTextSize(sector.name, 15, theme.font, Vector2.new(2000, 2000))
+                sector.Label.Size = UDim2.fromOffset(math.clamp(textservice:GetTextSize(sector.name, 15, theme.font, Vector2.new(200, 300)).X + 13, 0, sector.Main.Size.X.Offset), size.Y)
+                sector.Label.Font = theme.font
+            end)
+            sector.LabelBackFrame = Instance.new("Frame", sector.Main)
+            sector.LabelBackFrame.Name = "labelframe"
+            sector.LabelBackFrame.ZIndex = 5
+            sector.LabelBackFrame.Size = UDim2.fromOffset(sector.Label.Size.X.Offset, 10)
+            sector.LabelBackFrame.BorderSizePixel = 0
+            sector.LabelBackFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+            sector.LabelBackFrame.Position = UDim2.fromOffset(sector.Label.Position.X.Offset, sector.BlackOutline2.Position.Y.Offset)
+            sector.Items = Instance.new("Frame", sector.Main)
+            sector.Items.Name = "items"
+            sector.Items.ZIndex = 2
+            sector.Items.BackgroundTransparency = 1
+            sector.Items.Size = UDim2.fromOffset(170, 140)
+            sector.Items.AutomaticSize = Enum.AutomaticSize.Y
+            sector.Items.BorderSizePixel = 0
+            sector.ListLayout = Instance.new("UIListLayout", sector.Items)
+            sector.ListLayout.FillDirection = Enum.FillDirection.Vertical
+            sector.ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+            sector.ListLayout.Padding = UDim.new(0, 12)
+            sector.ListPadding = Instance.new("UIPadding", sector.Items)
+            sector.ListPadding.PaddingTop = UDim.new(0, 15)
+            sector.ListPadding.PaddingLeft = UDim.new(0, 6)
+            sector.ListPadding.PaddingRight = UDim.new(0, 6)
+            table.insert(sector.side:lower() == "left" and tab.SectorsLeft or tab.SectorsRight, sector)
+            function sector:FixSize()
+                sector.Main.Size = UDim2.fromOffset(window.size.X.Offset / 2 - 17, sector.ListLayout.AbsoluteContentSize.Y + 22)
+                local sizeleft, sizeright = 0, 0
+                for i, v in pairs(tab.SectorsLeft) do
+                    sizeleft = sizeleft + v.Main.AbsoluteSize.Y
+                end
+                for i, v in pairs(tab.SectorsRight) do
+                    sizeright = sizeright + v.Main.AbsoluteSize.Y
+                end
+                tab.Left.CanvasSize = UDim2.fromOffset(tab.Left.AbsoluteSize.X, sizeleft + ((#tab.SectorsLeft - 1) * tab.LeftListPadding.PaddingTop.Offset) + 20)
+                tab.Right.CanvasSize = UDim2.fromOffset(tab.Right.AbsoluteSize.X, sizeright + ((#tab.SectorsRight - 1) * tab.RightListPadding.PaddingTop.Offset) + 20)
+            end
+            function sector:AddButton(text, callback)
+                local button = { }
+                button.text = text or ""
+                button.callback = callback or function()
+                end
+                button.Main = Instance.new("TextButton", sector.Items)
+                button.Main.BorderSizePixel = 0
+                button.Main.Text = ""
+                button.Main.AutoButtonColor = false
+                button.Main.Name = "button"
+                button.Main.ZIndex = 5
+                button.Main.Size = UDim2.fromOffset(sector.Main.Size.X.Offset - 12, 14)
+                button.Main.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                button.Gradient = Instance.new("UIGradient", button.Main)
+                button.Gradient.Rotation = 90
+                button.Gradient.Color = ColorSequence.new({
+                    ColorSequenceKeypoint.new(0.00, window.theme.buttoncolor),
+                    ColorSequenceKeypoint.new(1.00, window.theme.buttoncolor2)
+                })
+                updateevent.Event:Connect(function(theme)
+                    button.Gradient.Color = ColorSequence.new({
+                        ColorSequenceKeypoint.new(0.00, theme.buttoncolor),
+                        ColorSequenceKeypoint.new(1.00, theme.buttoncolor2)
+                    })
+                end)
+                button.BlackOutline2 = Instance.new("Frame", button.Main)
+                button.BlackOutline2.Name = "blackline"
+                button.BlackOutline2.ZIndex = 4
+                button.BlackOutline2.Size = button.Main.Size + UDim2.fromOffset(6, 6)
+                button.BlackOutline2.BorderSizePixel = 0
+                button.BlackOutline2.BackgroundColor3 = window.theme.outlinecolor2
+                button.BlackOutline2.Position = UDim2.fromOffset(-3, -3)
+                updateevent.Event:Connect(function(theme)
+                    button.BlackOutline2.BackgroundColor3 = theme.outlinecolor2
+                end)
+                button.Outline = Instance.new("Frame", button.Main)
+                button.Outline.Name = "blackline"
+                button.Outline.ZIndex = 4
+                button.Outline.Size = button.Main.Size + UDim2.fromOffset(4, 4)
+                button.Outline.BorderSizePixel = 0
+                button.Outline.BackgroundColor3 = window.theme.outlinecolor
+                button.Outline.Position = UDim2.fromOffset(-2, -2)
+                updateevent.Event:Connect(function(theme)
+                    button.Outline.BackgroundColor3 = theme.outlinecolor
+                end)
+                button.BlackOutline = Instance.new("Frame", button.Main)
+                button.BlackOutline.Name = "blackline"
+                button.BlackOutline.ZIndex = 4
+                button.BlackOutline.Size = button.Main.Size + UDim2.fromOffset(2, 2)
+                button.BlackOutline.BorderSizePixel = 0
+                button.BlackOutline.BackgroundColor3 = window.theme.outlinecolor2
+                button.BlackOutline.Position = UDim2.fromOffset(-1, -1)
+                updateevent.Event:Connect(function(theme)
+                    button.BlackOutline.BackgroundColor3 = theme.outlinecolor2
+                end)
+                button.Label = Instance.new("TextLabel", button.Main)
+                button.Label.Name = "Label"
+                button.Label.BackgroundTransparency = 1
+                button.Label.Position = UDim2.new(0, -1, 0, 0)
+                button.Label.ZIndex = 5
+                button.Label.Size = button.Main.Size
+                button.Label.Font = window.theme.font
+                button.Label.Text = button.text
+                button.Label.TextColor3 = window.theme.itemscolor2
+                button.Label.TextSize = 15
+                button.Label.TextStrokeTransparency = 1
+                button.Label.TextXAlignment = Enum.TextXAlignment.Center
+                button.Main.MouseButton1Down:Connect(button.callback)
+                updateevent.Event:Connect(function(theme)
+                    button.Label.Font = theme.font
+                    button.Label.TextColor3 = theme.itemscolor
+                end)
+                button.BlackOutline2.MouseEnter:Connect(function()
+                    button.BlackOutline2.BackgroundColor3 = window.theme.accentcolor
+                end)
+                button.BlackOutline2.MouseLeave:Connect(function()
+                    button.BlackOutline2.BackgroundColor3 = window.theme.outlinecolor2
+                end)
+                sector:FixSize()
+                return button
+            end
+            function sector:AddLabel(text)
+                local label = { }
+                label.Main = Instance.new("TextLabel", sector.Items)
+                label.Main.Name = "Label"
+                label.Main.BackgroundTransparency = 1
+                label.Main.Position = UDim2.new(0, -1, 0, 0)
+                label.Main.ZIndex = 4
+                label.Main.AutomaticSize = Enum.AutomaticSize.XY
+                label.Main.Font = window.theme.font
+                label.Main.Text = text
+                label.Main.TextColor3 = window.theme.itemscolor
+                label.Main.TextSize = 15
+                label.Main.TextStrokeTransparency = 1
+                label.Main.TextXAlignment = Enum.TextXAlignment.Left
+                updateevent.Event:Connect(function(theme)
+                    label.Main.Font = theme.font
+                    label.Main.TextColor3 = theme.itemscolor
+                end)
+                function label:Set(value)
+                    label.Main.Text = value
+                end
+                sector:FixSize()
+                return label
+            end
+            function sector:AddToggle(text, default, callback, flag)
+                local toggle = { }
+                toggle.text = text or ""
+                toggle.default = default or false
+                toggle.callback = callback or function(value)
+                end
+                toggle.flag = flag or text or ""
+                toggle.value = toggle.default
+                toggle.Main = Instance.new("TextButton", sector.Items)
+                toggle.Main.Name = "toggle"
+                toggle.Main.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                toggle.Main.BorderColor3 = window.theme.outlinecolor
+                toggle.Main.BorderSizePixel = 0
+                toggle.Main.Size = UDim2.fromOffset(8, 8)
+                toggle.Main.AutoButtonColor = false
+                toggle.Main.ZIndex = 5
+                toggle.Main.Font = Enum.Font.SourceSans
+                toggle.Main.Text = ""
+                toggle.Main.TextColor3 = Color3.fromRGB(0, 0, 0)
+                toggle.Main.TextSize = 15
+                updateevent.Event:Connect(function(theme)
+                    toggle.Main.BorderColor3 = theme.outlinecolor
+                end)
+                toggle.BlackOutline2 = Instance.new("Frame", toggle.Main)
+                toggle.BlackOutline2.Name = "blackline"
+                toggle.BlackOutline2.ZIndex = 4
+                toggle.BlackOutline2.Size = toggle.Main.Size + UDim2.fromOffset(6, 6)
+                toggle.BlackOutline2.BorderSizePixel = 0
+                toggle.BlackOutline2.BackgroundColor3 = window.theme.outlinecolor2
+                toggle.BlackOutline2.Position = UDim2.fromOffset(-3, -3)
+                updateevent.Event:Connect(function(theme)
+                    toggle.BlackOutline2.BackgroundColor3 = theme.outlinecolor2
+                end)
+                toggle.Outline = Instance.new("Frame", toggle.Main)
+                toggle.Outline.Name = "blackline"
+                toggle.Outline.ZIndex = 4
+                toggle.Outline.Size = toggle.Main.Size + UDim2.fromOffset(4, 4)
+                toggle.Outline.BorderSizePixel = 0
+                toggle.Outline.BackgroundColor3 = window.theme.outlinecolor
+                toggle.Outline.Position = UDim2.fromOffset(-2, -2)
+                updateevent.Event:Connect(function(theme)
+                    toggle.Outline.BackgroundColor3 = theme.outlinecolor
+                end)
+                toggle.BlackOutline = Instance.new("Frame", toggle.Main)
+                toggle.BlackOutline.Name = "blackline"
+                toggle.BlackOutline.ZIndex = 4
+                toggle.BlackOutline.Size = toggle.Main.Size + UDim2.fromOffset(2, 2)
+                toggle.BlackOutline.BorderSizePixel = 0
+                toggle.BlackOutline.BackgroundColor3 = window.theme.outlinecolor2
+                toggle.BlackOutline.Position = UDim2.fromOffset(-1, -1)
+                updateevent.Event:Connect(function(theme)
+                    toggle.BlackOutline.BackgroundColor3 = theme.outlinecolor2
+                end)
+                toggle.Gradient = Instance.new("UIGradient", toggle.Main)
+                toggle.Gradient.Rotation = (22.5 * 13)
+                toggle.Gradient.Color = ColorSequence.new({
+                    ColorSequenceKeypoint.new(0.00, Color3.fromRGB(30, 30, 30)),
+                    ColorSequenceKeypoint.new(1.00, Color3.fromRGB(45, 45, 45))
+                })
+                toggle.Label = Instance.new("TextButton", toggle.Main)
+                toggle.Label.Name = "Label"
+                toggle.Label.AutoButtonColor = false
+                toggle.Label.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                toggle.Label.BackgroundTransparency = 1
+                toggle.Label.Position = UDim2.fromOffset(toggle.Main.AbsoluteSize.X + 10, -2)
+                toggle.Label.Size = UDim2.fromOffset(sector.Main.Size.X.Offset - 71, toggle.BlackOutline.Size.Y.Offset)
+                toggle.Label.Font = window.theme.font
+                toggle.Label.ZIndex = 5
+                toggle.Label.Text = toggle.text
+                toggle.Label.TextColor3 = window.theme.itemscolor
+                toggle.Label.TextSize = 15
+                toggle.Label.TextStrokeTransparency = 1
+                toggle.Label.TextXAlignment = Enum.TextXAlignment.Left
+                updateevent.Event:Connect(function(theme)
+                    toggle.Label.Font = theme.font
+                    toggle.Label.TextColor3 = toggle.value and window.theme.itemscolor2 or theme.itemscolor
+                end)
+                toggle.CheckedFrame = Instance.new("Frame", toggle.Main)
+                toggle.CheckedFrame.ZIndex = 5
+                toggle.CheckedFrame.BorderSizePixel = 0
+                toggle.CheckedFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255) -- Color3.fromRGB(204, 0, 102)
+                toggle.CheckedFrame.Size = toggle.Main.Size
+                toggle.Gradient2 = Instance.new("UIGradient", toggle.CheckedFrame)
+                toggle.Gradient2.Rotation = (22.5 * 13)
+                toggle.Gradient2.Color = ColorSequence.new({
+                    ColorSequenceKeypoint.new(0.00, window.theme.accentcolor2),
+                    ColorSequenceKeypoint.new(1.00, window.theme.accentcolor)
+                })
+                updateevent.Event:Connect(function(theme)
+                    toggle.Gradient2.Color = ColorSequence.new({
+                        ColorSequenceKeypoint.new(0.00, theme.accentcolor2),
+                        ColorSequenceKeypoint.new(1.00, theme.accentcolor)
+                    })
+                end)
+                toggle.Items = Instance.new("Frame", toggle.Main)
+                toggle.Items.Name = "\n"
+                toggle.Items.ZIndex = 4
+                toggle.Items.Size = UDim2.fromOffset(60, toggle.BlackOutline.AbsoluteSize.Y)
+                toggle.Items.BorderSizePixel = 0
+                toggle.Items.BackgroundTransparency = 1
+                toggle.Items.BackgroundColor3 = Color3.new(0, 0, 0)
+                toggle.Items.Position = UDim2.fromOffset(sector.Main.Size.X.Offset - 71, 0)
+                toggle.ListLayout = Instance.new("UIListLayout", toggle.Items)
+                toggle.ListLayout.FillDirection = Enum.FillDirection.Horizontal
+                toggle.ListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Right
+                toggle.ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+                toggle.ListLayout.Padding = UDim.new(0.04, 6)
+                if toggle.flag and toggle.flag ~= "" then
+                    library.flags[toggle.flag] = toggle.default or false
+                end
+                function toggle:Set(value)
+                    if value then
+                        toggle.Label.TextColor3 = window.theme.itemscolor2
+                    else
+                        toggle.Label.TextColor3 = window.theme.itemscolor
+                    end
+                    toggle.value = value
+                    toggle.CheckedFrame.Visible = value
+                    if toggle.flag and toggle.flag ~= "" then
+                        library.flags[toggle.flag] = toggle.value
+                    end
+                    pcall(toggle.callback, value)
+                end
+                function toggle:Get()
+                    return toggle.value
+                end
+                toggle:Set(toggle.default)
+                function toggle:AddKeybind(default, flag)
+                    local keybind = { }
+                    keybind.default = default or "None"
+                    keybind.value = keybind.default
+                    keybind.flag = flag or ( (toggle.text or "") .. tostring(#toggle.Items:GetChildren()))
+                    local shorter_keycodes = {
+                        ["LeftShift"] = "LSHIFT",
+                        ["RightShift"] = "RSHIFT",
+                        ["LeftControl"] = "LCTRL",
+                        ["RightControl"] = "RCTRL",
+                        ["LeftAlt"] = "LALT",
+                        ["RightAlt"] = "RALT"
+                    }
+                    local text = keybind.default == "None" and "[None]" or "[" .. (shorter_keycodes[keybind.default.Name] or keybind.default.Name) .. "]"
+                    local size = textservice:GetTextSize(text, 15, window.theme.font, Vector2.new(2000, 2000))
+                    keybind.Main = Instance.new("TextButton", toggle.Items)
+                    keybind.Main.Name = "keybind"
+                    keybind.Main.BackgroundTransparency = 1
+                    keybind.Main.BorderSizePixel = 0
+                    keybind.Main.ZIndex = 5
+                    keybind.Main.Size = UDim2.fromOffset(size.X + 2, size.Y - 7)
+                    keybind.Main.Text = text
+                    keybind.Main.Font = window.theme.font
+                    keybind.Main.TextColor3 = Color3.fromRGB(136, 136, 136)
+                    keybind.Main.TextSize = 15
+                    keybind.Main.TextXAlignment = Enum.TextXAlignment.Right
+                    keybind.Main.MouseButton1Down:Connect(function()
+                        keybind.Main.Text = "[...]"
+                        keybind.Main.TextColor3 = window.theme.accentcolor
+                    end)
+                    updateevent.Event:Connect(function(theme)
+                        keybind.Main.Font = theme.font
+                        if keybind.Main.Text == "[...]" then
+                            keybind.Main.TextColor3 = theme.accentcolor
+                        else
+                            keybind.Main.TextColor3 = Color3.fromRGB(136, 136, 136)
+                        end
+                    end)
+                    if keybind.flag and keybind.flag ~= "" then
+                        library.flags[keybind.flag] = keybind.default
+                    end
+                    function keybind:Set(key)
+                        if key == "None" then
+                            keybind.Main.Text = "[" .. key .. "]"
+                            keybind.value = key
+                            if keybind.flag and keybind.flag ~= "" then
+                                library.flags[keybind.flag] = key
+                            end
+                        end
+                        keybind.Main.Text = "[" .. (shorter_keycodes[key.Name] or key.Name) .. "]"
+                        keybind.value = key
+                        if keybind.flag and keybind.flag ~= "" then
+                            library.flags[keybind.flag] = keybind.value
+                        end
+                    end
+                    function keybind:Get()
+                        return keybind.value
+                    end
+                    uis.InputBegan:Connect(function(input, gameProcessed)
+                        if not gameProcessed then
+                            if keybind.Main.Text == "[...]" then
+                                keybind.Main.TextColor3 = Color3.fromRGB(136, 136, 136)
+                                if input.UserInputType == Enum.UserInputType.Keyboard then
+                                    keybind:Set(input.KeyCode)
+                                else
+                                    keybind:Set("None")
+                                end
+                            else
+                                if keybind.value ~= "None" and input.KeyCode == keybind.value then
+                                    toggle:Set(not toggle.CheckedFrame.Visible)
+                                end
+                            end
+                        end
+                    end)
+                    table.insert(library.items, keybind)
+                    return keybind
+                end
+                function toggle:AddDropdown(items, default, multichoice, callback, flag)
+                    local dropdown = { }
+                    dropdown.defaultitems = items or { }
+                    dropdown.default = default
+                    dropdown.callback = callback or function()
+                    end
+                    dropdown.multichoice = multichoice or false
+                    dropdown.values = { }
+                    dropdown.flag = flag or ( (toggle.text or "") .. tostring(#(sector.Items:GetChildren())) .. "a")
+                    dropdown.Main = Instance.new("TextButton", sector.Items)
+                    dropdown.Main.Name = "dropdown"
+                    dropdown.Main.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                    dropdown.Main.BorderSizePixel = 0
+                    dropdown.Main.Size = UDim2.fromOffset(sector.Main.Size.X.Offset - 12, 16)
+                    dropdown.Main.Position = UDim2.fromOffset(0, 0)
+                    dropdown.Main.ZIndex = 5
+                    dropdown.Main.AutoButtonColor = false
+                    dropdown.Main.Font = window.theme.font
+                    dropdown.Main.Text = ""
+                    dropdown.Main.TextColor3 = Color3.fromRGB(255, 255, 255)
+                    dropdown.Main.TextSize = 15
+                    dropdown.Main.TextXAlignment = Enum.TextXAlignment.Left
+                    updateevent.Event:Connect(function(theme)
+                        dropdown.Main.Font = theme.font
+                    end)
+                    dropdown.Gradient = Instance.new("UIGradient", dropdown.Main)
+                    dropdown.Gradient.Rotation = 90
+                    dropdown.Gradient.Color = ColorSequence.new{
+                        ColorSequenceKeypoint.new(0.00, Color3.fromRGB(49, 49, 49)),
+                        ColorSequenceKeypoint.new(1.00, Color3.fromRGB(39, 39, 39))
+                    }
+                    dropdown.SelectedLabel = Instance.new("TextLabel", dropdown.Main)
+                    dropdown.SelectedLabel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                    dropdown.SelectedLabel.BackgroundTransparency = 1
+                    dropdown.SelectedLabel.Position = UDim2.fromOffset(5, 2)
+                    dropdown.SelectedLabel.Size = UDim2.fromOffset(130, 13)
+                    dropdown.SelectedLabel.Font = window.theme.font
+                    dropdown.SelectedLabel.Text = toggle.text
+                    dropdown.SelectedLabel.ZIndex = 5
+                    dropdown.SelectedLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+                    dropdown.SelectedLabel.TextSize = 15
+                    dropdown.SelectedLabel.TextStrokeTransparency = 1
+                    dropdown.SelectedLabel.TextXAlignment = Enum.TextXAlignment.Left
+                    updateevent.Event:Connect(function(theme)
+                        dropdown.SelectedLabel.Font = theme.font
+                    end)
+                    dropdown.Nav = Instance.new("ImageButton", dropdown.Main)
+                    dropdown.Nav.Name = "navigation"
+                    dropdown.Nav.BackgroundTransparency = 1
+                    dropdown.Nav.LayoutOrder = 10
+                    dropdown.Nav.Position = UDim2.fromOffset(sector.Main.Size.X.Offset - 26, 5)
+                    dropdown.Nav.Rotation = 90
+                    dropdown.Nav.ZIndex = 5
+                    dropdown.Nav.Size = UDim2.fromOffset(8, 8)
+                    dropdown.Nav.Image = "rbxassetid://4918373417"
+                    dropdown.Nav.ImageColor3 = Color3.fromRGB(210, 210, 210)
+                    dropdown.BlackOutline2 = Instance.new("Frame", dropdown.Main)
+                    dropdown.BlackOutline2.Name = "blackline"
+                    dropdown.BlackOutline2.ZIndex = 4
+                    dropdown.BlackOutline2.Size = dropdown.Main.Size + UDim2.fromOffset(6, 6)
+                    dropdown.BlackOutline2.BorderSizePixel = 0
+                    dropdown.BlackOutline2.BackgroundColor3 = window.theme.outlinecolor2
+                    dropdown.BlackOutline2.Position = UDim2.fromOffset(-3, -3)
+                    updateevent.Event:Connect(function(theme)
+                        dropdown.BlackOutline2.BackgroundColor3 = theme.outlinecolor2
+                    end)
+                    dropdown.Outline = Instance.new("Frame", dropdown.Main)
+                    dropdown.Outline.Name = "blackline"
+                    dropdown.Outline.ZIndex = 4
+                    dropdown.Outline.Size = dropdown.Main.Size + UDim2.fromOffset(4, 4)
+                    dropdown.Outline.BorderSizePixel = 0
+                    dropdown.Outline.BackgroundColor3 = window.theme.outlinecolor
+                    dropdown.Outline.Position = UDim2.fromOffset(-2, -2)
+                    updateevent.Event:Connect(function(theme)
+                        dropdown.Outline.BackgroundColor3 = theme.outlinecolor
+                    end)
+                    dropdown.BlackOutline = Instance.new("Frame", dropdown.Main)
+                    dropdown.BlackOutline.Name = "blackline444"
+                    dropdown.BlackOutline.ZIndex = 4
+                    dropdown.BlackOutline.Size = dropdown.Main.Size + UDim2.fromOffset(2, 2)
+                    dropdown.BlackOutline.BorderSizePixel = 0
+                    dropdown.BlackOutline.BackgroundColor3 = window.theme.outlinecolor2
+                    dropdown.BlackOutline.Position = UDim2.fromOffset(-1, -1)
+                    updateevent.Event:Connect(function(theme)
+                        dropdown.BlackOutline.BackgroundColor3 = theme.outlinecolor2
+                    end)
+                    dropdown.ItemsFrame = Instance.new("ScrollingFrame", dropdown.Main)
+                    dropdown.ItemsFrame.Name = "itemsframe"
+                    dropdown.ItemsFrame.BorderSizePixel = 0
+                    dropdown.ItemsFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+                    dropdown.ItemsFrame.Position = UDim2.fromOffset(0, dropdown.Main.Size.Y.Offset + 8)
+                    dropdown.ItemsFrame.ScrollBarThickness = 2
+                    dropdown.ItemsFrame.ZIndex = 8
+                    dropdown.ItemsFrame.ScrollingDirection = "Y"
+                    dropdown.ItemsFrame.Visible = false
+                    dropdown.ItemsFrame.Size = UDim2.new(0, 0, 0, 0)
+                    dropdown.ItemsFrame.CanvasSize = UDim2.fromOffset(dropdown.Main.AbsoluteSize.X, 0)
+                    dropdown.ListLayout = Instance.new("UIListLayout", dropdown.ItemsFrame)
+                    dropdown.ListLayout.FillDirection = Enum.FillDirection.Vertical
+                    dropdown.ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+                    dropdown.ListPadding = Instance.new("UIPadding", dropdown.ItemsFrame)
+                    dropdown.ListPadding.PaddingTop = UDim.new(0, 2)
+                    dropdown.ListPadding.PaddingBottom = UDim.new(0, 2)
+                    dropdown.ListPadding.PaddingLeft = UDim.new(0, 2)
+                    dropdown.ListPadding.PaddingRight = UDim.new(0, 2)
+                    dropdown.BlackOutline2Items = Instance.new("Frame", dropdown.Main)
+                    dropdown.BlackOutline2Items.Name = "blackline3"
+                    dropdown.BlackOutline2Items.ZIndex = 7
+                    dropdown.BlackOutline2Items.Size = dropdown.ItemsFrame.Size + UDim2.fromOffset(6, 6)
+                    dropdown.BlackOutline2Items.BorderSizePixel = 0
+                    dropdown.BlackOutline2Items.BackgroundColor3 = window.theme.outlinecolor2
+                    dropdown.BlackOutline2Items.Position = dropdown.ItemsFrame.Position + UDim2.fromOffset(-3, -3)
+                    dropdown.BlackOutline2Items.Visible = false
+                    updateevent.Event:Connect(function(theme)
+                        dropdown.BlackOutline2Items.BackgroundColor3 = theme.outlinecolor2
+                    end)
+                    dropdown.OutlineItems = Instance.new("Frame", dropdown.Main)
+                    dropdown.OutlineItems.Name = "blackline8"
+                    dropdown.OutlineItems.ZIndex = 7
+                    dropdown.OutlineItems.Size = dropdown.ItemsFrame.Size + UDim2.fromOffset(4, 4)
+                    dropdown.OutlineItems.BorderSizePixel = 0
+                    dropdown.OutlineItems.BackgroundColor3 = window.theme.outlinecolor
+                    dropdown.OutlineItems.Position = dropdown.ItemsFrame.Position + UDim2.fromOffset(-2, -2)
+                    dropdown.OutlineItems.Visible = false
+                    updateevent.Event:Connect(function(theme)
+                        dropdown.OutlineItems.BackgroundColor3 = theme.outlinecolor
+                    end)
+                    dropdown.BlackOutlineItems = Instance.new("Frame", dropdown.Main)
+                    dropdown.BlackOutlineItems.Name = "blackline3"
+                    dropdown.BlackOutlineItems.ZIndex = 7
+                    dropdown.BlackOutlineItems.Size = dropdown.ItemsFrame.Size + UDim2.fromOffset(-2, -2)
+                    dropdown.BlackOutlineItems.BorderSizePixel = 0
+                    dropdown.BlackOutlineItems.BackgroundColor3 = window.theme.outlinecolor2
+                    dropdown.BlackOutlineItems.Position = dropdown.ItemsFrame.Position + UDim2.fromOffset(-1, -1)
+                    dropdown.BlackOutlineItems.Visible = false
+                    updateevent.Event:Connect(function(theme)
+                        dropdown.BlackOutlineItems.BackgroundColor3 = theme.outlinecolor2
+                    end)
+                    dropdown.IgnoreBackButtons = Instance.new("TextButton", dropdown.Main)
+                    dropdown.IgnoreBackButtons.BackgroundTransparency = 1
+                    dropdown.IgnoreBackButtons.BorderSizePixel = 0
+                    dropdown.IgnoreBackButtons.Position = UDim2.fromOffset(0, dropdown.Main.Size.Y.Offset + 8)
+                    dropdown.IgnoreBackButtons.Size = UDim2.new(0, 0, 0, 0)
+                    dropdown.IgnoreBackButtons.ZIndex = 7
+                    dropdown.IgnoreBackButtons.Text = ""
+                    dropdown.IgnoreBackButtons.Visible = false
+                    dropdown.IgnoreBackButtons.AutoButtonColor = false
+                    if dropdown.flag and dropdown.flag ~= "" then
+                        library.flags[dropdown.flag] = dropdown.multichoice and {
+                            dropdown.default or dropdown.defaultitems[1] or ""
+                        } or (dropdown.default or dropdown.defaultitems[1] or "")
+                    end
+                    function dropdown:isSelected(item)
+                        for i, v in pairs(dropdown.values) do
+                            if v == item then
+                                return true
+                            end
+                        end
+                        return false
+                    end
+                    function dropdown:updateText(text)
+                        if #text >= 27 then
+                            text = text:sub(1, 25) .. ".."
+                        end
+                        dropdown.SelectedLabel.Text = text
+                    end
+                    dropdown.Changed = Instance.new("BindableEvent")
+                    function dropdown:Set(value)
+                        if type(value) == "table" then
+                            dropdown.values = value
+                            dropdown:updateText(table.concat(value, ", "))
+                            pcall(dropdown.callback, value)
+                        else
+                            dropdown:updateText(value)
+                            dropdown.values = {
+                                value
+                            }
+                            pcall(dropdown.callback, value)
+                        end
+                        dropdown.Changed:Fire(value)
+                        if dropdown.flag and dropdown.flag ~= "" then
+                            library.flags[dropdown.flag] = dropdown.multichoice and dropdown.values or dropdown.values[1]
+                        end
+                    end
+                    function dropdown:Get()
+                        return dropdown.multichoice and dropdown.values or dropdown.values[1]
+                    end
+                    dropdown.items = { }
+                    function dropdown:Add(v)
+                        local Item = Instance.new("TextButton", dropdown.ItemsFrame)
+                        Item.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+                        Item.TextColor3 = Color3.fromRGB(255, 255, 255)
+                        Item.BorderSizePixel = 0
+                        Item.Position = UDim2.fromOffset(0, 0)
+                        Item.Size = UDim2.fromOffset(dropdown.Main.Size.X.Offset - 4, 20)
+                        Item.ZIndex = 9
+                        Item.Text = v
+                        Item.Name = v
+                        Item.AutoButtonColor = false
+                        Item.Font = window.theme.font
+                        Item.TextSize = 15
+                        Item.TextXAlignment = Enum.TextXAlignment.Left
+                        Item.TextStrokeTransparency = 1
+                        dropdown.ItemsFrame.CanvasSize = dropdown.ItemsFrame.CanvasSize + UDim2.fromOffset(0, Item.AbsoluteSize.Y)
+                        Item.MouseButton1Down:Connect(function()
+                            if dropdown.multichoice then
+                                if dropdown:isSelected(v) then
+                                    for i2, v2 in pairs(dropdown.values) do
+                                        if v2 == v then
+                                            table.remove(dropdown.values, i2)
+                                        end
+                                    end
+                                    dropdown:Set(dropdown.values)
+                                else
+                                    table.insert(dropdown.values, v)
+                                    dropdown:Set(dropdown.values)
+                                end
+                                return
+                            else
+                                dropdown.Nav.Rotation = 90
+                                dropdown.ItemsFrame.Visible = false
+                                dropdown.ItemsFrame.Active = false
+                                dropdown.OutlineItems.Visible = false
+                                dropdown.BlackOutlineItems.Visible = false
+                                dropdown.BlackOutline2Items.Visible = false
+                                dropdown.IgnoreBackButtons.Visible = false
+                                dropdown.IgnoreBackButtons.Active = false
+                            end
+                            dropdown:Set(v)
+                            return
+                        end)
+                        runservice.RenderStepped:Connect(function()
+                            if dropdown.multichoice and dropdown:isSelected(v) or dropdown.values[1] == v then
+                                Item.BackgroundColor3 = Color3.fromRGB(64, 64, 64)
+                                Item.TextColor3 = window.theme.accentcolor
+                                Item.Text = " " .. v
+                            else
+                                Item.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+                                Item.TextColor3 = Color3.fromRGB(255, 255, 255)
+                                Item.Text = v
+                            end
+                        end)
+                        table.insert(dropdown.items, v)
+                        dropdown.ItemsFrame.Size = UDim2.fromOffset(dropdown.Main.Size.X.Offset, math.clamp(#dropdown.items * Item.AbsoluteSize.Y, 20, 156) + 4)
+                        dropdown.ItemsFrame.CanvasSize = UDim2.fromOffset(dropdown.ItemsFrame.AbsoluteSize.X, (#dropdown.items * Item.AbsoluteSize.Y) + 4)
+                        dropdown.OutlineItems.Size = dropdown.ItemsFrame.Size + UDim2.fromOffset(4, 4)
+                        dropdown.BlackOutlineItems.Size = dropdown.ItemsFrame.Size + UDim2.fromOffset(2, 2)
+                        dropdown.BlackOutline2Items.Size = dropdown.ItemsFrame.Size + UDim2.fromOffset(6, 6)
+                        dropdown.IgnoreBackButtons.Size = dropdown.ItemsFrame.Size
+                    end
+                    function dropdown:Remove(value)
+                        local item = dropdown.ItemsFrame:FindFirstChild(value)
+                        if item then
+                            for i, v in pairs(dropdown.items) do
+                                if v == value then
+                                    table.remove(dropdown.items, i)
+                                end
+                            end
+                            dropdown.ItemsFrame.Size = UDim2.fromOffset(dropdown.Main.Size.X.Offset, math.clamp(#dropdown.items * item.AbsoluteSize.Y, 20, 156) + 4)
+                            dropdown.ItemsFrame.CanvasSize = UDim2.fromOffset(dropdown.ItemsFrame.AbsoluteSize.X, (#dropdown.items * item.AbsoluteSize.Y) + 4)
+                            dropdown.OutlineItems.Size = dropdown.ItemsFrame.Size + UDim2.fromOffset(2, 2)
+                            dropdown.BlackOutlineItems.Size = dropdown.ItemsFrame.Size + UDim2.fromOffset(4, 4)
+                            dropdown.BlackOutline2Items.Size = dropdown.ItemsFrame.Size + UDim2.fromOffset(6, 6)
+                            dropdown.IgnoreBackButtons.Size = dropdown.ItemsFrame.Size
+                            item:Remove()
+                        end
+                    end
+                    function dropdown:getList()
+                        return dropdown.items
+                    end
+                    for i, v in pairs(dropdown.defaultitems) do
+                        dropdown:Add(v)
+                    end
+                    if dropdown.default then
+                        dropdown:Set(dropdown.default)
+                    end
+                    local MouseButton1Down = function()
+                        if dropdown.Nav.Rotation == 90 then
+                            tweenservice:Create(dropdown.Nav, TweenInfo.new(0.1, Enum.EasingStyle.Linear, Enum.EasingDirection.In), {
+                                Rotation = -90
+                            }):Play()
+                            if dropdown.items and #dropdown.items ~= 0 then
+                                dropdown.ItemsFrame.ScrollingEnabled = true
+                                sector.Main.Parent.ScrollingEnabled = false
+                                dropdown.ItemsFrame.Visible = true
+                                dropdown.ItemsFrame.Active = true
+                                dropdown.IgnoreBackButtons.Visible = true
+                                dropdown.IgnoreBackButtons.Active = true
+                                dropdown.OutlineItems.Visible = true
+                                dropdown.BlackOutlineItems.Visible = true
+                                dropdown.BlackOutline2Items.Visible = true
+                            end
+                        else
+                            tweenservice:Create(dropdown.Nav, TweenInfo.new(0.1, Enum.EasingStyle.Linear, Enum.EasingDirection.In), {
+                                Rotation = 90
+                            }):Play()
+                            dropdown.ItemsFrame.ScrollingEnabled = false
+                            sector.Main.Parent.ScrollingEnabled = true
+                            dropdown.ItemsFrame.Visible = false
+                            dropdown.ItemsFrame.Active = false
+                            dropdown.IgnoreBackButtons.Visible = false
+                            dropdown.IgnoreBackButtons.Active = false
+                            dropdown.OutlineItems.Visible = false
+                            dropdown.BlackOutlineItems.Visible = false
+                            dropdown.BlackOutline2Items.Visible = false
+                        end
+                    end
+                    dropdown.Main.MouseButton1Down:Connect(MouseButton1Down)
+                    dropdown.Nav.MouseButton1Down:Connect(MouseButton1Down)
+                    dropdown.BlackOutline2.MouseEnter:Connect(function()
+                        dropdown.BlackOutline2.BackgroundColor3 = window.theme.accentcolor
+                    end)
+                    dropdown.BlackOutline2.MouseLeave:Connect(function()
+                        dropdown.BlackOutline2.BackgroundColor3 = window.theme.outlinecolor2
+                    end)
+                    sector:FixSize()
+                    table.insert(library.items, dropdown)
+                    return dropdown
+                end
+                function toggle:AddTextbox(default, callback, flag)
+                    local textbox = { }
+                    textbox.callback = callback or function()
+                    end
+                    textbox.default = default
+                    textbox.value = ""
+                    textbox.flag = flag or ( (toggle.text or "") .. tostring(#(sector.Items:GetChildren())) .. "a")
+                    textbox.Holder = Instance.new("Frame", sector.Items)
+                    textbox.Holder.Name = "holder"
+                    textbox.Holder.ZIndex = 5
+                    textbox.Holder.Size = UDim2.fromOffset(sector.Main.Size.X.Offset - 12, 14)
+                    textbox.Holder.BorderSizePixel = 0
+                    textbox.Holder.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                    textbox.Gradient = Instance.new("UIGradient", textbox.Holder)
+                    textbox.Gradient.Rotation = 90
+                    textbox.Gradient.Color = ColorSequence.new({
+                        ColorSequenceKeypoint.new(0.00, Color3.fromRGB(49, 49, 49)),
+                        ColorSequenceKeypoint.new(1.00, Color3.fromRGB(39, 39, 39))
+                    })
+                    textbox.Main = Instance.new("TextBox", textbox.Holder)
+                    textbox.Main.PlaceholderText = ""
+                    textbox.Main.Text = ""
+                    textbox.Main.BackgroundTransparency = 1
+                    textbox.Main.Font = window.theme.font
+                    textbox.Main.Name = "textbox"
+                    textbox.Main.MultiLine = false
+                    textbox.Main.ClearTextOnFocus = false
+                    textbox.Main.ZIndex = 5
+                    textbox.Main.TextScaled = true
+                    textbox.Main.Size = textbox.Holder.Size
+                    textbox.Main.TextSize = 15
+                    textbox.Main.TextColor3 = Color3.fromRGB(255, 255, 255)
+                    textbox.Main.BorderSizePixel = 0
+                    textbox.Main.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+                    textbox.Main.TextXAlignment = Enum.TextXAlignment.Left
+                    if textbox.flag and textbox.flag ~= "" then
+                        library.flags[textbox.flag] = textbox.default or ""
+                    end
+                    function textbox:Set(text)
+                        textbox.value = text
+                        textbox.Main.Text = text
+                        if textbox.flag and textbox.flag ~= "" then
+                            library.flags[textbox.flag] = text
+                        end
+                        pcall(textbox.callback, text)
+                    end
+                    updateevent.Event:Connect(function(theme)
+                        textbox.Main.Font = theme.font
+                    end)
+                    function textbox:Get()
+                        return textbox.value
+                    end
+                    if textbox.default then
+                        textbox:Set(textbox.default)
+                    end
+                    textbox.Main.FocusLost:Connect(function()
+                        textbox:Set(textbox.Main.Text)
+                    end)
+                    textbox.BlackOutline2 = Instance.new("Frame", textbox.Main)
+                    textbox.BlackOutline2.Name = "blackline"
+                    textbox.BlackOutline2.ZIndex = 4
+                    textbox.BlackOutline2.Size = textbox.Main.Size + UDim2.fromOffset(6, 6)
+                    textbox.BlackOutline2.BorderSizePixel = 0
+                    textbox.BlackOutline2.BackgroundColor3 = window.theme.outlinecolor2
+                    textbox.BlackOutline2.Position = UDim2.fromOffset(-3, -3)
+                    updateevent.Event:Connect(function(theme)
+                        textbox.BlackOutline2.BackgroundColor3 = theme.outlinecolor2
+                    end)
+                    textbox.Outline = Instance.new("Frame", textbox.Main)
+                    textbox.Outline.Name = "blackline"
+                    textbox.Outline.ZIndex = 4
+                    textbox.Outline.Size = textbox.Main.Size + UDim2.fromOffset(4, 4)
+                    textbox.Outline.BorderSizePixel = 0
+                    textbox.Outline.BackgroundColor3 = window.theme.outlinecolor
+                    textbox.Outline.Position = UDim2.fromOffset(-2, -2)
+                    updateevent.Event:Connect(function(theme)
+                        textbox.Outline.BackgroundColor3 = theme.outlinecolor
+                    end)
+                    textbox.BlackOutline = Instance.new("Frame", textbox.Main)
+                    textbox.BlackOutline.Name = "blackline"
+                    textbox.BlackOutline.ZIndex = 4
+                    textbox.BlackOutline.Size = textbox.Main.Size + UDim2.fromOffset(2, 2)
+                    textbox.BlackOutline.BorderSizePixel = 0
+                    textbox.BlackOutline.BackgroundColor3 = window.theme.outlinecolor2
+                    textbox.BlackOutline.Position = UDim2.fromOffset(-1, -1)
+                    updateevent.Event:Connect(function(theme)
+                        textbox.BlackOutline.BackgroundColor3 = theme.outlinecolor2
+                    end)
+                    textbox.BlackOutline2.MouseEnter:Connect(function()
+                        textbox.BlackOutline2.BackgroundColor3 = window.theme.accentcolor
+                    end)
+                    textbox.BlackOutline2.MouseLeave:Connect(function()
+                        textbox.BlackOutline2.BackgroundColor3 = window.theme.outlinecolor2
+                    end)
+                    sector:FixSize()
+                    table.insert(library.items, textbox)
+                    return textbox
+                end
+                function toggle:AddColorpicker(default, callback, flag)
+                    local colorpicker = { }
+                    colorpicker.callback = callback or function()
+                    end
+                    colorpicker.default = default or Color3.fromRGB(255, 255, 255)
+                    colorpicker.value = colorpicker.default
+                    colorpicker.flag = flag or ( (toggle.text or "") .. tostring(#toggle.Items:GetChildren()))
+                    colorpicker.Main = Instance.new("Frame", toggle.Items)
+                    colorpicker.Main.ZIndex = 6
+                    colorpicker.Main.BorderSizePixel = 0
+                    colorpicker.Main.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                    colorpicker.Main.Size = UDim2.fromOffset(16, 10)
+                    colorpicker.Gradient = Instance.new("UIGradient", colorpicker.Main)
+                    colorpicker.Gradient.Rotation = 90
+                    local clr = Color3.new(math.clamp(colorpicker.value.R / 1.7, 0, 1), math.clamp(colorpicker.value.G / 1.7, 0, 1), math.clamp(colorpicker.value.B / 1.7, 0, 1))
+                    colorpicker.Gradient.Color = ColorSequence.new({
+                        ColorSequenceKeypoint.new(0.00, colorpicker.value),
+                        ColorSequenceKeypoint.new(1.00, clr)
+                    })
+                    colorpicker.BlackOutline2 = Instance.new("Frame", colorpicker.Main)
+                    colorpicker.BlackOutline2.Name = "blackline"
+                    colorpicker.BlackOutline2.ZIndex = 4
+                    colorpicker.BlackOutline2.Size = colorpicker.Main.Size + UDim2.fromOffset(6, 6)
+                    colorpicker.BlackOutline2.BorderSizePixel = 0
+                    colorpicker.BlackOutline2.BackgroundColor3 = window.theme.outlinecolor2
+                    colorpicker.BlackOutline2.Position = UDim2.fromOffset(-3, -3)
+                    updateevent.Event:Connect(function(theme)
+                        if window.OpenedColorPickers[colorpicker.MainPicker] then
+                            colorpicker.BlackOutline2.BackgroundColor3 = theme.accentcolor
+                        else
+                            colorpicker.BlackOutline2.BackgroundColor3 = theme.outlinecolor2
+                        end
+                    end)
+                    colorpicker.Outline = Instance.new("Frame", colorpicker.Main)
+                    colorpicker.Outline.Name = "blackline"
+                    colorpicker.Outline.ZIndex = 4
+                    colorpicker.Outline.Size = colorpicker.Main.Size + UDim2.fromOffset(4, 4)
+                    colorpicker.Outline.BorderSizePixel = 0
+                    colorpicker.Outline.BackgroundColor3 = window.theme.outlinecolor
+                    colorpicker.Outline.Position = UDim2.fromOffset(-2, -2)
+                    updateevent.Event:Connect(function(theme)
+                        colorpicker.Outline.BackgroundColor3 = theme.outlinecolor
+                    end)
+                    colorpicker.BlackOutline = Instance.new("Frame", colorpicker.Main)
+                    colorpicker.BlackOutline.Name = "blackline"
+                    colorpicker.BlackOutline.ZIndex = 4
+                    colorpicker.BlackOutline.Size = colorpicker.Main.Size + UDim2.fromOffset(2, 2)
+                    colorpicker.BlackOutline.BorderSizePixel = 0
+                    colorpicker.BlackOutline.BackgroundColor3 = window.theme.outlinecolor2
+                    colorpicker.BlackOutline.Position = UDim2.fromOffset(-1, -1)
+                    updateevent.Event:Connect(function(theme)
+                        colorpicker.BlackOutline.BackgroundColor3 = theme.outlinecolor2
+                    end)
+                    colorpicker.BlackOutline2.MouseEnter:Connect(function()
+                        colorpicker.BlackOutline2.BackgroundColor3 = window.theme.accentcolor
+                    end)
+                    colorpicker.BlackOutline2.MouseLeave:Connect(function()
+                        if not window.OpenedColorPickers[colorpicker.MainPicker] then
+                            colorpicker.BlackOutline2.BackgroundColor3 = window.theme.outlinecolor2
+                        end
+                    end)
+                    colorpicker.MainPicker = Instance.new("TextButton", colorpicker.Main)
+                    colorpicker.MainPicker.Name = "picker"
+                    colorpicker.MainPicker.ZIndex = 100
+                    colorpicker.MainPicker.Visible = false
+                    colorpicker.MainPicker.AutoButtonColor = false
+                    colorpicker.MainPicker.Text = ""
+                    window.OpenedColorPickers[colorpicker.MainPicker] = false
+                    colorpicker.MainPicker.Size = UDim2.fromOffset(180, 196)
+                    colorpicker.MainPicker.BorderSizePixel = 0
+                    colorpicker.MainPicker.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+                    colorpicker.MainPicker.Rotation = 0.000000000000001
+                    colorpicker.MainPicker.Position = UDim2.fromOffset(-colorpicker.MainPicker.AbsoluteSize.X + colorpicker.Main.AbsoluteSize.X, 17)
+                    colorpicker.BlackOutline3 = Instance.new("Frame", colorpicker.MainPicker)
+                    colorpicker.BlackOutline3.Name = "blackline"
+                    colorpicker.BlackOutline3.ZIndex = 98
+                    colorpicker.BlackOutline3.Size = colorpicker.MainPicker.Size + UDim2.fromOffset(6, 6)
+                    colorpicker.BlackOutline3.BorderSizePixel = 0
+                    colorpicker.BlackOutline3.BackgroundColor3 = window.theme.outlinecolor2
+                    colorpicker.BlackOutline3.Position = UDim2.fromOffset(-3, -3)
+                    updateevent.Event:Connect(function(theme)
+                        colorpicker.BlackOutline3.BackgroundColor3 = theme.outlinecolor2
+                    end)
+                    colorpicker.Outline2 = Instance.new("Frame", colorpicker.MainPicker)
+                    colorpicker.Outline2.Name = "blackline"
+                    colorpicker.Outline2.ZIndex = 98
+                    colorpicker.Outline2.Size = colorpicker.MainPicker.Size + UDim2.fromOffset(4, 4)
+                    colorpicker.Outline2.BorderSizePixel = 0
+                    colorpicker.Outline2.BackgroundColor3 = window.theme.outlinecolor
+                    colorpicker.Outline2.Position = UDim2.fromOffset(-2, -2)
+                    updateevent.Event:Connect(function(theme)
+                        colorpicker.Outline2.BackgroundColor3 = theme.outlinecolor
+                    end)
+                    colorpicker.BlackOutline3 = Instance.new("Frame", colorpicker.MainPicker)
+                    colorpicker.BlackOutline3.Name = "blackline"
+                    colorpicker.BlackOutline3.ZIndex = 98
+                    colorpicker.BlackOutline3.Size = colorpicker.MainPicker.Size + UDim2.fromOffset(2, 2)
+                    colorpicker.BlackOutline3.BorderSizePixel = 0
+                    colorpicker.BlackOutline3.BackgroundColor3 = window.theme.outlinecolor2
+                    colorpicker.BlackOutline3.Position = UDim2.fromOffset(-1, -1)
+                    updateevent.Event:Connect(function(theme)
+                        colorpicker.BlackOutline3.BackgroundColor3 = theme.outlinecolor2
+                    end)
+                    colorpicker.hue = Instance.new("ImageLabel", colorpicker.MainPicker)
+                    colorpicker.hue.ZIndex = 101
+                    colorpicker.hue.Position = UDim2.new(0, 3, 0, 3)
+                    colorpicker.hue.Size = UDim2.new(0, 172, 0, 172)
+                    colorpicker.hue.Image = "rbxassetid://4155801252"
+                    colorpicker.hue.ScaleType = Enum.ScaleType.Stretch
+                    colorpicker.hue.BackgroundColor3 = Color3.new(1, 0, 0)
+                    colorpicker.hue.BorderColor3 = window.theme.outlinecolor2
+                    updateevent.Event:Connect(function(theme)
+                        colorpicker.hue.BorderColor3 = theme.outlinecolor2
+                    end)
+                    colorpicker.hueselectorpointer = Instance.new("ImageLabel", colorpicker.MainPicker)
+                    colorpicker.hueselectorpointer.ZIndex = 101
+                    colorpicker.hueselectorpointer.BackgroundTransparency = 1
+                    colorpicker.hueselectorpointer.BorderSizePixel = 0
+                    colorpicker.hueselectorpointer.Position = UDim2.new(0, 0, 0, 0)
+                    colorpicker.hueselectorpointer.Size = UDim2.new(0, 7, 0, 7)
+                    colorpicker.hueselectorpointer.Image = "rbxassetid://6885856475"
+                    colorpicker.selector = Instance.new("TextLabel", colorpicker.MainPicker)
+                    colorpicker.selector.ZIndex = 100
+                    colorpicker.selector.Position = UDim2.new(0, 3, 0, 181)
+                    colorpicker.selector.Size = UDim2.new(0, 173, 0, 10)
+                    colorpicker.selector.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                    colorpicker.selector.BorderColor3 = window.theme.outlinecolor2
+                    colorpicker.selector.Text = ""
+                    updateevent.Event:Connect(function(theme)
+                        colorpicker.selector.BorderColor3 = theme.outlinecolor2
+                    end)
+                    colorpicker.gradient = Instance.new("UIGradient", colorpicker.selector)
+                    colorpicker.gradient.Color = ColorSequence.new({
+                        ColorSequenceKeypoint.new(0, Color3.new(1, 0, 0)),
+                        ColorSequenceKeypoint.new(0.17, Color3.new(1, 0, 1)),
+                        ColorSequenceKeypoint.new(0.33, Color3.new(0, 0, 1)),
+                        ColorSequenceKeypoint.new(0.5, Color3.new(0, 1, 1)),
+                        ColorSequenceKeypoint.new(0.67, Color3.new(0, 1, 0)),
+                        ColorSequenceKeypoint.new(0.83, Color3.new(1, 1, 0)),
+                        ColorSequenceKeypoint.new(1, Color3.new(1, 0, 0))
+                    })
+                    colorpicker.pointer = Instance.new("Frame", colorpicker.selector)
+                    colorpicker.pointer.ZIndex = 101
+                    colorpicker.pointer.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+                    colorpicker.pointer.Position = UDim2.new(0, 0, 0, 0)
+                    colorpicker.pointer.Size = UDim2.new(0, 2, 0, 10)
+                    colorpicker.pointer.BorderColor3 = Color3.fromRGB(255, 255, 255)
+                    if colorpicker.flag and colorpicker.flag ~= "" then
+                        library.flags[colorpicker.flag] = colorpicker.default
+                    end
+                    function colorpicker:RefreshHue()
+                        local x = (mouse.X - colorpicker.hue.AbsolutePosition.X) / colorpicker.hue.AbsoluteSize.X
+                        local y = (mouse.Y - colorpicker.hue.AbsolutePosition.Y) / colorpicker.hue.AbsoluteSize.Y
+                        colorpicker.hueselectorpointer:TweenPosition(UDim2.new(math.clamp(x * colorpicker.hue.AbsoluteSize.X, 0.5, 0.952 * colorpicker.hue.AbsoluteSize.X) / colorpicker.hue.AbsoluteSize.X, 0, math.clamp(y * colorpicker.hue.AbsoluteSize.Y, 0.5, 0.885 * colorpicker.hue.AbsoluteSize.Y) / colorpicker.hue.AbsoluteSize.Y, 0), Enum.EasingDirection.In, Enum.EasingStyle.Sine, 0.05)
+                        colorpicker:Set(Color3.fromHSV(colorpicker.color, math.clamp(x * colorpicker.hue.AbsoluteSize.X, 0.5, 1 * colorpicker.hue.AbsoluteSize.X) / colorpicker.hue.AbsoluteSize.X, 1 - (math.clamp(y * colorpicker.hue.AbsoluteSize.Y, 0.5, 1 * colorpicker.hue.AbsoluteSize.Y) / colorpicker.hue.AbsoluteSize.Y)))
+                    end
+                    function colorpicker:RefreshSelector()
+                        local pos = math.clamp((mouse.X - colorpicker.hue.AbsolutePosition.X) / colorpicker.hue.AbsoluteSize.X, 0, 1)
+                        colorpicker.color = 1 - pos
+                        colorpicker.pointer:TweenPosition(UDim2.new(pos, 0, 0, 0), Enum.EasingDirection.In, Enum.EasingStyle.Sine, 0.05)
+                        colorpicker.hue.BackgroundColor3 = Color3.fromHSV(1 - pos, 1, 1)
+                        local x = (colorpicker.hueselectorpointer.AbsolutePosition.X - colorpicker.hue.AbsolutePosition.X) / colorpicker.hue.AbsoluteSize.X
+                        local y = (colorpicker.hueselectorpointer.AbsolutePosition.Y - colorpicker.hue.AbsolutePosition.Y) / colorpicker.hue.AbsoluteSize.Y
+                        colorpicker:Set(Color3.fromHSV(colorpicker.color, math.clamp(x * colorpicker.hue.AbsoluteSize.X, 0.5, 1 * colorpicker.hue.AbsoluteSize.X) / colorpicker.hue.AbsoluteSize.X, 1 - (math.clamp(y * colorpicker.hue.AbsoluteSize.Y, 0.5, 1 * colorpicker.hue.AbsoluteSize.Y) / colorpicker.hue.AbsoluteSize.Y)))
+                    end
+                    function colorpicker:Set(value)
+                        local color = Color3.new(math.clamp(value.r, 0, 1), math.clamp(value.g, 0, 1), math.clamp(value.b, 0, 1))
+                        colorpicker.value = color
+                        if colorpicker.flag and colorpicker.flag ~= "" then
+                            library.flags[colorpicker.flag] = color
+                        end
+                        local clr = Color3.new(math.clamp(color.R / 1.7, 0, 1), math.clamp(color.G / 1.7, 0, 1), math.clamp(color.B / 1.7, 0, 1))
+                        colorpicker.Gradient.Color = ColorSequence.new({
+                            ColorSequenceKeypoint.new(0.00, color),
+                            ColorSequenceKeypoint.new(1.00, clr)
+                        })
+                        pcall(colorpicker.callback, color)
+                    end
+                    function colorpicker:Get(value)
+                        return colorpicker.value
+                    end
+                    colorpicker:Set(colorpicker.default)
+                    local dragging_selector = false
+                    local dragging_hue = false
+                    colorpicker.selector.InputBegan:Connect(function(input)
+                        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                            dragging_selector = true
+                            colorpicker:RefreshSelector()
+                        end
+                    end)
+                    colorpicker.selector.InputEnded:Connect(function(input)
+                        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                            dragging_selector = false
+                            colorpicker:RefreshSelector()
+                        end
+                    end)
+                    colorpicker.hue.InputBegan:Connect(function(input)
+                        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                            dragging_hue = true
+                            colorpicker:RefreshHue()
+                        end
+                    end)
+                    colorpicker.hue.InputEnded:Connect(function(input)
+                        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                            dragging_hue = false
+                            colorpicker:RefreshHue()
+                        end
+                    end)
+                    uis.InputChanged:Connect(function(input)
+                        if dragging_selector and input.UserInputType == Enum.UserInputType.MouseMovement then
+                            colorpicker:RefreshSelector()
+                        end
+                        if dragging_hue and input.UserInputType == Enum.UserInputType.MouseMovement then
+                            colorpicker:RefreshHue()
+                        end
+                    end)
+                    local inputBegan = function(input)
+                        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                            for i, v in pairs(window.OpenedColorPickers) do
+                                if v and i ~= colorpicker.MainPicker then
+                                    i.Visible = false
+                                    window.OpenedColorPickers[i] = false
+                                end
+                            end
+                            colorpicker.MainPicker.Visible = not colorpicker.MainPicker.Visible
+                            window.OpenedColorPickers[colorpicker.MainPicker] = colorpicker.MainPicker.Visible
+                            if window.OpenedColorPickers[colorpicker.MainPicker] then
+                                colorpicker.BlackOutline2.BackgroundColor3 = window.theme.accentcolor
+                            else
+                                colorpicker.BlackOutline2.BackgroundColor3 = window.theme.outlinecolor2
+                            end
+                        end
+                    end
+                    colorpicker.Main.InputBegan:Connect(inputBegan)
+                    colorpicker.Outline.InputBegan:Connect(inputBegan)
+                    colorpicker.BlackOutline2.InputBegan:Connect(inputBegan)
+                    table.insert(library.items, colorpicker)
+                    return colorpicker
+                end
+                function toggle:AddSlider(min, default, max, decimals, callback, flag)
+                    local slider = { }
+                    slider.text = text or ""
+                    slider.callback = callback or function(value)
+                    end
+                    slider.min = min or 0
+                    slider.max = max or 100
+                    slider.decimals = decimals or 1
+                    slider.default = default or slider.min
+                    slider.flag = flag or ( (toggle.text or "") .. tostring(#toggle.Items:GetChildren()))
+                    slider.value = slider.default
+                    local dragging = false
+                    slider.Main = Instance.new("TextButton", sector.Items)
+                    slider.Main.Name = "slider"
+                    slider.Main.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                    slider.Main.Position = UDim2.fromOffset(0, 0)
+                    slider.Main.BorderSizePixel = 0
+                    slider.Main.Size = UDim2.fromOffset(sector.Main.Size.X.Offset - 12, 12)
+                    slider.Main.AutoButtonColor = false
+                    slider.Main.Text = ""
+                    slider.Main.ZIndex = 7
+                    slider.InputLabel = Instance.new("TextLabel", slider.Main)
+                    slider.InputLabel.BackgroundTransparency = 1
+                    slider.InputLabel.Size = slider.Main.Size
+                    slider.InputLabel.Font = window.theme.font
+                    slider.InputLabel.Text = "0"
+                    slider.InputLabel.TextColor3 = Color3.fromRGB(240, 240, 240)
+                    slider.InputLabel.Position = slider.Main.Position
+                    slider.InputLabel.Selectable = false
+                    slider.InputLabel.TextSize = 15
+                    slider.InputLabel.ZIndex = 9
+                    slider.InputLabel.TextStrokeTransparency = 1
+                    slider.InputLabel.TextXAlignment = Enum.TextXAlignment.Center
+                    updateevent.Event:Connect(function(theme)
+                        slider.InputLabel.Font = theme.font
+                        slider.InputLabel.TextColor3 = theme.itemscolor
+                    end)
+                    slider.BlackOutline2 = Instance.new("Frame", slider.Main)
+                    slider.BlackOutline2.Name = "blackline"
+                    slider.BlackOutline2.ZIndex = 4
+                    slider.BlackOutline2.Size = slider.Main.Size + UDim2.fromOffset(6, 6)
+                    slider.BlackOutline2.BorderSizePixel = 0
+                    slider.BlackOutline2.BackgroundColor3 = window.theme.outlinecolor2
+                    slider.BlackOutline2.Position = UDim2.fromOffset(-3, -3)
+                    updateevent.Event:Connect(function(theme)
+                        slider.BlackOutline2.BackgroundColor3 = theme.outlinecolor2
+                    end)
+                    slider.Outline = Instance.new("Frame", slider.Main)
+                    slider.Outline.Name = "blackline"
+                    slider.Outline.ZIndex = 4
+                    slider.Outline.Size = slider.Main.Size + UDim2.fromOffset(4, 4)
+                    slider.Outline.BorderSizePixel = 0
+                    slider.Outline.BackgroundColor3 = window.theme.outlinecolor
+                    slider.Outline.Position = UDim2.fromOffset(-2, -2)
+                    updateevent.Event:Connect(function(theme)
+                        slider.Outline.BackgroundColor3 = theme.outlinecolor
+                    end)
+                    slider.BlackOutline = Instance.new("Frame", slider.Main)
+                    slider.BlackOutline.Name = "blackline"
+                    slider.BlackOutline.ZIndex = 4
+                    slider.BlackOutline.Size = slider.Main.Size + UDim2.fromOffset(2, 2)
+                    slider.BlackOutline.BorderSizePixel = 0
+                    slider.BlackOutline.BackgroundColor3 = window.theme.outlinecolor2
+                    slider.BlackOutline.Position = UDim2.fromOffset(-1, -1)
+                    updateevent.Event:Connect(function(theme)
+                        slider.BlackOutline.BackgroundColor3 = theme.outlinecolor2
+                    end)
+                    slider.Gradient = Instance.new("UIGradient", slider.Main)
+                    slider.Gradient.Rotation = 90
+                    slider.Gradient.Color = ColorSequence.new({
+                        ColorSequenceKeypoint.new(0.00, Color3.fromRGB(49, 49, 49)),
+                        ColorSequenceKeypoint.new(1.00, Color3.fromRGB(41, 41, 41))
+                    })
+                    slider.SlideBar = Instance.new("Frame", slider.Main)
+                    slider.SlideBar.BackgroundColor3 = Color3.fromRGB(255, 255, 255) --Color3.fromRGB(204, 0, 102)
+                    slider.SlideBar.ZIndex = 8
+                    slider.SlideBar.BorderSizePixel = 0
+                    slider.SlideBar.Size = UDim2.fromOffset(0, slider.Main.Size.Y.Offset)
+                    slider.Gradient2 = Instance.new("UIGradient", slider.SlideBar)
+                    slider.Gradient2.Rotation = 90
+                    slider.Gradient2.Color = ColorSequence.new({
+                        ColorSequenceKeypoint.new(0.00, window.theme.accentcolor),
+                        ColorSequenceKeypoint.new(1.00, window.theme.accentcolor2)
+                    })
+                    updateevent.Event:Connect(function(theme)
+                        slider.Gradient2.Color = ColorSequence.new({
+                            ColorSequenceKeypoint.new(0.00, theme.accentcolor),
+                            ColorSequenceKeypoint.new(1.00, theme.accentcolor2)
+                        })
+                    end)
+                    slider.BlackOutline2.MouseEnter:Connect(function()
+                        slider.BlackOutline2.BackgroundColor3 = window.theme.accentcolor
+                    end)
+                    slider.BlackOutline2.MouseLeave:Connect(function()
+                        slider.BlackOutline2.BackgroundColor3 = window.theme.outlinecolor2
+                    end)
+                    if slider.flag and slider.flag ~= "" then
+                        library.flags[slider.flag] = slider.default or slider.min or 0
+                    end
+                    function slider:Get()
+                        return slider.value
+                    end
+                    function slider:Set(value)
+                        slider.value = math.clamp(math.round(value * slider.decimals) / slider.decimals, slider.min, slider.max)
+                        local percent = 1 - ((slider.max - slider.value) / (slider.max - slider.min))
+                        if slider.flag and slider.flag ~= "" then
+                            library.flags[slider.flag] = slider.value
+                        end
+                        slider.SlideBar:TweenSize(UDim2.fromOffset(percent * slider.Main.AbsoluteSize.X, slider.Main.AbsoluteSize.Y), Enum.EasingDirection.In, Enum.EasingStyle.Sine, 0.05)
+                        slider.InputLabel.Text = slider.value
+                        pcall(slider.callback, slider.value)
+                    end
+                    slider:Set(slider.default)
+                    function slider:Refresh()
+                        local mousePos = camera:WorldToViewportPoint(mouse.Hit.p)
+                        local percent = math.clamp(mousePos.X - slider.SlideBar.AbsolutePosition.X, 0, slider.Main.AbsoluteSize.X) / slider.Main.AbsoluteSize.X
+                        local value = math.floor((slider.min + (slider.max - slider.min) * percent) * slider.decimals) / slider.decimals
+                        value = math.clamp(value, slider.min, slider.max)
+                        slider:Set(value)
+                    end
+                    slider.SlideBar.InputBegan:Connect(function(input)
+                        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                            dragging = true
+                            slider:Refresh()
+                        end
+                    end)
+                    slider.SlideBar.InputEnded:Connect(function(input)
+                        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                            dragging = false
+                        end
+                    end)
+                    slider.Main.InputBegan:Connect(function(input)
+                        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                            dragging = true
+                            slider:Refresh()
+                        end
+                    end)
+                    slider.Main.InputEnded:Connect(function(input)
+                        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                            dragging = false
+                        end
+                    end)
+                    uis.InputChanged:Connect(function(input)
+                        if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+                            slider:Refresh()
+                        end
+                    end)
+                    sector:FixSize()
+                    table.insert(library.items, slider)
+                    return slider
+                end
+                toggle.Main.MouseButton1Down:Connect(function()
+                    toggle:Set(not toggle.CheckedFrame.Visible)
+                end)
+                toggle.Label.InputBegan:Connect(function(input)
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                        toggle:Set(not toggle.CheckedFrame.Visible)
+                    end
+                end)
+                local MouseEnter = function()
+                    toggle.BlackOutline2.BackgroundColor3 = window.theme.accentcolor
+                end
+                local MouseLeave = function()
+                    toggle.BlackOutline2.BackgroundColor3 = window.theme.outlinecolor2
+                end
+                toggle.Label.MouseEnter:Connect(MouseEnter)
+                toggle.Label.MouseLeave:Connect(MouseLeave)
+                toggle.BlackOutline2.MouseEnter:Connect(MouseEnter)
+                toggle.BlackOutline2.MouseLeave:Connect(MouseLeave)
+                sector:FixSize()
+                table.insert(library.items, toggle)
+                return toggle
+            end
+            function sector:AddTextbox(text, default, callback, flag)
+                local textbox = { }
+                textbox.text = text or ""
+                textbox.callback = callback or function()
+                end
+                textbox.default = default
+                textbox.value = ""
+                textbox.flag = flag or text or ""
+                textbox.Label = Instance.new("TextButton", sector.Items)
+                textbox.Label.Name = "Label"
+                textbox.Label.AutoButtonColor = false
+                textbox.Label.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                textbox.Label.BackgroundTransparency = 1
+                textbox.Label.Position = UDim2.fromOffset(sector.Main.Size.X.Offset, 0)
+                textbox.Label.Size = UDim2.fromOffset(sector.Main.Size.X.Offset - 12, 0)
+                textbox.Label.Font = window.theme.font
+                textbox.Label.ZIndex = 5
+                textbox.Label.Text = textbox.text
+                textbox.Label.TextColor3 = window.theme.itemscolor
+                textbox.Label.TextSize = 15
+                textbox.Label.TextStrokeTransparency = 1
+                textbox.Label.TextXAlignment = Enum.TextXAlignment.Left
+                updateevent.Event:Connect(function(theme)
+                    textbox.Label.Font = theme.font
+                end)
+                textbox.Holder = Instance.new("Frame", sector.Items)
+                textbox.Holder.Name = "holder"
+                textbox.Holder.ZIndex = 5
+                textbox.Holder.Size = UDim2.fromOffset(sector.Main.Size.X.Offset - 12, 14)
+                textbox.Holder.BorderSizePixel = 0
+                textbox.Holder.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                textbox.Gradient = Instance.new("UIGradient", textbox.Holder)
+                textbox.Gradient.Rotation = 90
+                textbox.Gradient.Color = ColorSequence.new({
+                    ColorSequenceKeypoint.new(0.00, Color3.fromRGB(49, 49, 49)),
+                    ColorSequenceKeypoint.new(1.00, Color3.fromRGB(39, 39, 39))
+                })
+                textbox.Main = Instance.new("TextBox", textbox.Holder)
+                textbox.Main.PlaceholderText = textbox.text
+                textbox.Main.PlaceholderColor3 = Color3.fromRGB(190, 190, 190)
+                textbox.Main.Text = ""
+                textbox.Main.BackgroundTransparency = 1
+                textbox.Main.Font = window.theme.font
+                textbox.Main.Name = "textbox"
+                textbox.Main.MultiLine = false
+                textbox.Main.ClearTextOnFocus = false
+                textbox.Main.ZIndex = 5
+                textbox.Main.TextScaled = true
+                textbox.Main.Size = textbox.Holder.Size
+                textbox.Main.TextSize = 15
+                textbox.Main.TextColor3 = Color3.fromRGB(255, 255, 255)
+                textbox.Main.BorderSizePixel = 0
+                textbox.Main.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+                textbox.Main.TextXAlignment = Enum.TextXAlignment.Left
+                if textbox.flag and textbox.flag ~= "" then
+                    library.flags[textbox.flag] = textbox.default or ""
+                end
+                function textbox:Set(text)
+                    textbox.value = text
+                    textbox.Main.Text = text
+                    if textbox.flag and textbox.flag ~= "" then
+                        library.flags[textbox.flag] = text
+                    end
+                    pcall(textbox.callback, text)
+                end
+                updateevent.Event:Connect(function(theme)
+                    textbox.Main.Font = theme.font
+                end)
+                function textbox:Get()
+                    return textbox.value
+                end
+                if textbox.default then
+                    textbox:Set(textbox.default)
+                end
+                textbox.Main.FocusLost:Connect(function()
+                    textbox:Set(textbox.Main.Text)
+                end)
+                textbox.BlackOutline2 = Instance.new("Frame", textbox.Main)
+                textbox.BlackOutline2.Name = "blackline"
+                textbox.BlackOutline2.ZIndex = 4
+                textbox.BlackOutline2.Size = textbox.Main.Size + UDim2.fromOffset(6, 6)
+                textbox.BlackOutline2.BorderSizePixel = 0
+                textbox.BlackOutline2.BackgroundColor3 = window.theme.outlinecolor2
+                textbox.BlackOutline2.Position = UDim2.fromOffset(-3, -3)
+                updateevent.Event:Connect(function(theme)
+                    textbox.BlackOutline2.BackgroundColor3 = theme.outlinecolor2
+                end)
+                textbox.Outline = Instance.new("Frame", textbox.Main)
+                textbox.Outline.Name = "blackline"
+                textbox.Outline.ZIndex = 4
+                textbox.Outline.Size = textbox.Main.Size + UDim2.fromOffset(4, 4)
+                textbox.Outline.BorderSizePixel = 0
+                textbox.Outline.BackgroundColor3 = window.theme.outlinecolor
+                textbox.Outline.Position = UDim2.fromOffset(-2, -2)
+                updateevent.Event:Connect(function(theme)
+                    textbox.Outline.BackgroundColor3 = theme.outlinecolor
+                end)
+                textbox.BlackOutline = Instance.new("Frame", textbox.Main)
+                textbox.BlackOutline.Name = "blackline"
+                textbox.BlackOutline.ZIndex = 4
+                textbox.BlackOutline.Size = textbox.Main.Size + UDim2.fromOffset(2, 2)
+                textbox.BlackOutline.BorderSizePixel = 0
+                textbox.BlackOutline.BackgroundColor3 = window.theme.outlinecolor2
+                textbox.BlackOutline.Position = UDim2.fromOffset(-1, -1)
+                updateevent.Event:Connect(function(theme)
+                    textbox.BlackOutline.BackgroundColor3 = theme.outlinecolor2
+                end)
+                textbox.BlackOutline2.MouseEnter:Connect(function()
+                    textbox.BlackOutline2.BackgroundColor3 = window.theme.accentcolor
+                end)
+                textbox.BlackOutline2.MouseLeave:Connect(function()
+                    textbox.BlackOutline2.BackgroundColor3 = window.theme.outlinecolor2
+                end)
+                sector:FixSize()
+                table.insert(library.items, textbox)
+                return textbox
+            end
+            function sector:AddSlider(text, min, default, max, decimals, callback, flag)
+                local slider = { }
+                slider.text = text or ""
+                slider.callback = callback or function(value)
+                end
+                slider.min = min or 0
+                slider.max = max or 100
+                slider.decimals = decimals or 1
+                slider.default = default or slider.min
+                slider.flag = flag or text or ""
+                slider.value = slider.default
+                local dragging = false
+                slider.MainBack = Instance.new("Frame", sector.Items)
+                slider.MainBack.Name = "MainBack"
+                slider.MainBack.ZIndex = 7
+                slider.MainBack.Size = UDim2.fromOffset(sector.Main.Size.X.Offset - 12, 25)
+                slider.MainBack.BorderSizePixel = 0
+                slider.MainBack.BackgroundTransparency = 1
+                slider.Label = Instance.new("TextLabel", slider.MainBack)
+                slider.Label.BackgroundTransparency = 1
+                slider.Label.Size = UDim2.fromOffset(sector.Main.Size.X.Offset - 12, 6)
+                slider.Label.Font = window.theme.font
+                slider.Label.Text = slider.text .. ":"
+                slider.Label.TextColor3 = window.theme.itemscolor
+                slider.Label.Position = UDim2.fromOffset(0, 0)
+                slider.Label.TextSize = 15
+                slider.Label.ZIndex = 4
+                slider.Label.TextStrokeTransparency = 1
+                slider.Label.TextXAlignment = Enum.TextXAlignment.Left
+                updateevent.Event:Connect(function(theme)
+                    slider.Label.Font = theme.font
+                    slider.Label.TextColor3 = theme.itemscolor
+                end)
+                local size = textservice:GetTextSize(slider.Label.Text, slider.Label.TextSize, slider.Label.Font, Vector2.new(200, 300))
+                slider.InputLabel = Instance.new("TextBox", slider.MainBack)
+                slider.InputLabel.BackgroundTransparency = 1
+                slider.InputLabel.ClearTextOnFocus = false
+                slider.InputLabel.Size = UDim2.fromOffset(sector.Main.Size.X.Offset - size.X - 15, 12)
+                slider.InputLabel.Font = window.theme.font
+                slider.InputLabel.Text = "0"
+                slider.InputLabel.TextColor3 = window.theme.itemscolor
+                slider.InputLabel.Position = UDim2.fromOffset(size.X + 3, -3)
+                slider.InputLabel.TextSize = 15
+                slider.InputLabel.ZIndex = 4
+                slider.InputLabel.TextStrokeTransparency = 1
+                slider.InputLabel.TextXAlignment = Enum.TextXAlignment.Left
+                updateevent.Event:Connect(function(theme)
+                    slider.InputLabel.Font = theme.font
+                    slider.InputLabel.TextColor3 = theme.itemscolor
+                    local size = textservice:GetTextSize(slider.Label.Text, slider.Label.TextSize, slider.Label.Font, Vector2.new(200, 300))
+                    slider.InputLabel.Size = UDim2.fromOffset(sector.Main.Size.X.Offset - size.X - 15, 12)
+                end)
+                slider.Main = Instance.new("TextButton", slider.MainBack)
+                slider.Main.Name = "slider"
+                slider.Main.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                slider.Main.Position = UDim2.fromOffset(0, 15)
+                slider.Main.BorderSizePixel = 0
+                slider.Main.Size = UDim2.fromOffset(sector.Main.Size.X.Offset - 12, 12)
+                slider.Main.AutoButtonColor = false
+                slider.Main.Text = ""
+                slider.Main.ZIndex = 5
+                slider.BlackOutline2 = Instance.new("Frame", slider.Main)
+                slider.BlackOutline2.Name = "blackline"
+                slider.BlackOutline2.ZIndex = 4
+                slider.BlackOutline2.Size = slider.Main.Size + UDim2.fromOffset(6, 6)
+                slider.BlackOutline2.BorderSizePixel = 0
+                slider.BlackOutline2.BackgroundColor3 = window.theme.outlinecolor2
+                slider.BlackOutline2.Position = UDim2.fromOffset(-3, -3)
+                updateevent.Event:Connect(function(theme)
+                    slider.BlackOutline2.BackgroundColor3 = theme.outlinecolor2
+                end)
+                slider.Outline = Instance.new("Frame", slider.Main)
+                slider.Outline.Name = "blackline"
+                slider.Outline.ZIndex = 4
+                slider.Outline.Size = slider.Main.Size + UDim2.fromOffset(4, 4)
+                slider.Outline.BorderSizePixel = 0
+                slider.Outline.BackgroundColor3 = window.theme.outlinecolor
+                slider.Outline.Position = UDim2.fromOffset(-2, -2)
+                updateevent.Event:Connect(function(theme)
+                    slider.Outline.BackgroundColor3 = theme.outlinecolor
+                end)
+                slider.BlackOutline = Instance.new("Frame", slider.Main)
+                slider.BlackOutline.Name = "blackline"
+                slider.BlackOutline.ZIndex = 4
+                slider.BlackOutline.Size = slider.Main.Size + UDim2.fromOffset(2, 2)
+                slider.BlackOutline.BorderSizePixel = 0
+                slider.BlackOutline.BackgroundColor3 = window.theme.outlinecolor2
+                slider.BlackOutline.Position = UDim2.fromOffset(-1, -1)
+                updateevent.Event:Connect(function(theme)
+                    slider.BlackOutline.BackgroundColor3 = theme.outlinecolor2
+                end)
+                slider.Gradient = Instance.new("UIGradient", slider.Main)
+                slider.Gradient.Rotation = 90
+                slider.Gradient.Color = ColorSequence.new({
+                    ColorSequenceKeypoint.new(0.00, Color3.fromRGB(49, 49, 49)),
+                    ColorSequenceKeypoint.new(1.00, Color3.fromRGB(41, 41, 41))
+                })
+                slider.SlideBar = Instance.new("Frame", slider.Main)
+                slider.SlideBar.BackgroundColor3 = Color3.fromRGB(255, 255, 255) --Color3.fromRGB(204, 0, 102)
+                slider.SlideBar.ZIndex = 5
+                slider.SlideBar.BorderSizePixel = 0
+                slider.SlideBar.Size = UDim2.fromOffset(0, slider.Main.Size.Y.Offset)
+                slider.Gradient2 = Instance.new("UIGradient", slider.SlideBar)
+                slider.Gradient2.Rotation = 90
+                slider.Gradient2.Color = ColorSequence.new({
+                    ColorSequenceKeypoint.new(0.00, window.theme.accentcolor),
+                    ColorSequenceKeypoint.new(1.00, window.theme.accentcolor2)
+                })
+                updateevent.Event:Connect(function(theme)
+                    slider.Gradient2.Color = ColorSequence.new({
+                        ColorSequenceKeypoint.new(0.00, theme.accentcolor),
+                        ColorSequenceKeypoint.new(1.00, theme.accentcolor2)
+                    })
+                end)
+                slider.BlackOutline2.MouseEnter:Connect(function()
+                    slider.BlackOutline2.BackgroundColor3 = window.theme.accentcolor
+                end)
+                slider.BlackOutline2.MouseLeave:Connect(function()
+                    slider.BlackOutline2.BackgroundColor3 = window.theme.outlinecolor2
+                end)
+                if slider.flag and slider.flag ~= "" then
+                    library.flags[slider.flag] = slider.default or slider.min or 0
+                end
+                function slider:Get()
+                    return slider.value
+                end
+                function slider:Set(value)
+                    slider.value = math.clamp(math.round(value * slider.decimals) / slider.decimals, slider.min, slider.max)
+                    local percent = 1 - ((slider.max - slider.value) / (slider.max - slider.min))
+                    if slider.flag and slider.flag ~= "" then
+                        library.flags[slider.flag] = slider.value
+                    end
+                    slider.SlideBar:TweenSize(UDim2.fromOffset(percent * slider.Main.AbsoluteSize.X, slider.Main.AbsoluteSize.Y), Enum.EasingDirection.In, Enum.EasingStyle.Sine, 0.05)
+                    slider.InputLabel.Text = slider.value
+                    pcall(slider.callback, slider.value)
+                end
+                slider:Set(slider.default)
+                slider.InputLabel.FocusLost:Connect(function(Return)
+                    if not Return then
+                        return
+                    end
+                    if (slider.InputLabel.Text:match("^%d+$")) then
+                        slider:Set(tonumber(slider.InputLabel.Text))
+                    else
+                        slider.InputLabel.Text = tostring(slider.value)
+                    end
+                end)
+                function slider:Refresh()
+                    local mousePos = camera:WorldToViewportPoint(mouse.Hit.p)
+                    local percent = math.clamp(mousePos.X - slider.SlideBar.AbsolutePosition.X, 0, slider.Main.AbsoluteSize.X) / slider.Main.AbsoluteSize.X
+                    local value = math.floor((slider.min + (slider.max - slider.min) * percent) * slider.decimals) / slider.decimals
+                    value = math.clamp(value, slider.min, slider.max)
+                    slider:Set(value)
+                end
+                slider.SlideBar.InputBegan:Connect(function(input)
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                        dragging = true
+                        slider:Refresh()
+                    end
+                end)
+                slider.SlideBar.InputEnded:Connect(function(input)
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                        dragging = false
+                    end
+                end)
+                slider.Main.InputBegan:Connect(function(input)
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                        dragging = true
+                        slider:Refresh()
+                    end
+                end)
+                slider.Main.InputEnded:Connect(function(input)
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                        dragging = false
+                    end
+                end)
+                uis.InputChanged:Connect(function(input)
+                    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+                        slider:Refresh()
+                    end
+                end)
+                sector:FixSize()
+                table.insert(library.items, slider)
+                return slider
+            end
+            function sector:AddColorpicker(text, default, callback, flag)
+                local colorpicker = { }
+                colorpicker.text = text or ""
+                colorpicker.callback = callback or function()
+                end
+                colorpicker.default = default or Color3.fromRGB(255, 255, 255)
+                colorpicker.value = colorpicker.default
+                colorpicker.flag = flag or text or ""
+                colorpicker.Label = Instance.new("TextLabel", sector.Items)
+                colorpicker.Label.BackgroundTransparency = 1
+                colorpicker.Label.Size = UDim2.fromOffset(156, 10)
+                colorpicker.Label.ZIndex = 4
+                colorpicker.Label.Font = window.theme.font
+                colorpicker.Label.Text = colorpicker.text
+                colorpicker.Label.TextColor3 = window.theme.itemscolor
+                colorpicker.Label.TextSize = 15
+                colorpicker.Label.TextStrokeTransparency = 1
+                colorpicker.Label.TextXAlignment = Enum.TextXAlignment.Left
+                updateevent.Event:Connect(function(theme)
+                    colorpicker.Label.Font = theme.font
+                    colorpicker.Label.TextColor3 = theme.itemscolor
+                end)
+                colorpicker.Main = Instance.new("Frame", colorpicker.Label)
+                colorpicker.Main.ZIndex = 6
+                colorpicker.Main.BorderSizePixel = 0
+                colorpicker.Main.Position = UDim2.fromOffset(sector.Main.Size.X.Offset - 29, 0)
+                colorpicker.Main.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                colorpicker.Main.Size = UDim2.fromOffset(16, 10)
+                colorpicker.Gradient = Instance.new("UIGradient", colorpicker.Main)
+                colorpicker.Gradient.Rotation = 90
+                local clr = Color3.new(math.clamp(colorpicker.value.R / 1.7, 0, 1), math.clamp(colorpicker.value.G / 1.7, 0, 1), math.clamp(colorpicker.value.B / 1.7, 0, 1))
+                colorpicker.Gradient.Color = ColorSequence.new({
+                    ColorSequenceKeypoint.new(0.00, colorpicker.value),
+                    ColorSequenceKeypoint.new(1.00, clr)
+                })
+                colorpicker.BlackOutline2 = Instance.new("Frame", colorpicker.Main)
+                colorpicker.BlackOutline2.Name = "blackline"
+                colorpicker.BlackOutline2.ZIndex = 4
+                colorpicker.BlackOutline2.Size = colorpicker.Main.Size + UDim2.fromOffset(6, 6)
+                colorpicker.BlackOutline2.BorderSizePixel = 0
+                colorpicker.BlackOutline2.BackgroundColor3 = window.theme.outlinecolor2
+                colorpicker.BlackOutline2.Position = UDim2.fromOffset(-3, -3)
+                updateevent.Event:Connect(function(theme)
+                    colorpicker.BlackOutline2.BackgroundColor3 = window.OpenedColorPickers[colorpicker.MainPicker] and theme.accentcolor or theme.outlinecolor2
+                end)
+                colorpicker.Outline = Instance.new("Frame", colorpicker.Main)
+                colorpicker.Outline.Name = "blackline"
+                colorpicker.Outline.ZIndex = 4
+                colorpicker.Outline.Size = colorpicker.Main.Size + UDim2.fromOffset(4, 4)
+                colorpicker.Outline.BorderSizePixel = 0
+                colorpicker.Outline.BackgroundColor3 = window.theme.outlinecolor
+                colorpicker.Outline.Position = UDim2.fromOffset(-2, -2)
+                updateevent.Event:Connect(function(theme)
+                    colorpicker.Outline.BackgroundColor3 = theme.outlinecolor
+                end)
+                colorpicker.BlackOutline = Instance.new("Frame", colorpicker.Main)
+                colorpicker.BlackOutline.Name = "blackline"
+                colorpicker.BlackOutline.ZIndex = 4
+                colorpicker.BlackOutline.Size = colorpicker.Main.Size + UDim2.fromOffset(2, 2)
+                colorpicker.BlackOutline.BorderSizePixel = 0
+                colorpicker.BlackOutline.BackgroundColor3 = window.theme.outlinecolor2
+                colorpicker.BlackOutline.Position = UDim2.fromOffset(-1, -1)
+                updateevent.Event:Connect(function(theme)
+                    colorpicker.BlackOutline.BackgroundColor3 = theme.outlinecolor2
+                end)
+                colorpicker.BlackOutline2.MouseEnter:Connect(function()
+                    colorpicker.BlackOutline2.BackgroundColor3 = window.theme.accentcolor
+                end)
+                colorpicker.BlackOutline2.MouseLeave:Connect(function()
+                    if not window.OpenedColorPickers[colorpicker.MainPicker] then
+                        colorpicker.BlackOutline2.BackgroundColor3 = window.theme.outlinecolor2
+                    end
+                end)
+                colorpicker.MainPicker = Instance.new("TextButton", colorpicker.Main)
+                colorpicker.MainPicker.Name = "picker"
+                colorpicker.MainPicker.ZIndex = 100
+                colorpicker.MainPicker.Visible = false
+                colorpicker.MainPicker.AutoButtonColor = false
+                colorpicker.MainPicker.Text = ""
+                window.OpenedColorPickers[colorpicker.MainPicker] = false
+                colorpicker.MainPicker.Size = UDim2.fromOffset(180, 196)
+                colorpicker.MainPicker.BorderSizePixel = 0
+                colorpicker.MainPicker.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+                colorpicker.MainPicker.Rotation = 0.000000000000001
+                colorpicker.MainPicker.Position = UDim2.fromOffset(-colorpicker.MainPicker.AbsoluteSize.X + colorpicker.Main.AbsoluteSize.X, 15)
+                colorpicker.BlackOutline3 = Instance.new("Frame", colorpicker.MainPicker)
+                colorpicker.BlackOutline3.Name = "blackline"
+                colorpicker.BlackOutline3.ZIndex = 98
+                colorpicker.BlackOutline3.Size = colorpicker.MainPicker.Size + UDim2.fromOffset(6, 6)
+                colorpicker.BlackOutline3.BorderSizePixel = 0
+                colorpicker.BlackOutline3.BackgroundColor3 = window.theme.outlinecolor2
+                colorpicker.BlackOutline3.Position = UDim2.fromOffset(-3, -3)
+                updateevent.Event:Connect(function(theme)
+                    colorpicker.BlackOutline3.BackgroundColor3 = theme.outlinecolor2
+                end)
+                colorpicker.Outline2 = Instance.new("Frame", colorpicker.MainPicker)
+                colorpicker.Outline2.Name = "blackline"
+                colorpicker.Outline2.ZIndex = 98
+                colorpicker.Outline2.Size = colorpicker.MainPicker.Size + UDim2.fromOffset(4, 4)
+                colorpicker.Outline2.BorderSizePixel = 0
+                colorpicker.Outline2.BackgroundColor3 = window.theme.outlinecolor
+                colorpicker.Outline2.Position = UDim2.fromOffset(-2, -2)
+                updateevent.Event:Connect(function(theme)
+                    colorpicker.Outline2.BackgroundColor3 = theme.outlinecolor
+                end)
+                colorpicker.BlackOutline3 = Instance.new("Frame", colorpicker.MainPicker)
+                colorpicker.BlackOutline3.Name = "blackline"
+                colorpicker.BlackOutline3.ZIndex = 98
+                colorpicker.BlackOutline3.Size = colorpicker.MainPicker.Size + UDim2.fromOffset(2, 2)
+                colorpicker.BlackOutline3.BorderSizePixel = 0
+                colorpicker.BlackOutline3.BackgroundColor3 = window.theme.outlinecolor2
+                colorpicker.BlackOutline3.Position = UDim2.fromOffset(-1, -1)
+                updateevent.Event:Connect(function(theme)
+                    colorpicker.BlackOutline3.BackgroundColor3 = theme.outlinecolor2
+                end)
+                colorpicker.hue = Instance.new("ImageLabel", colorpicker.MainPicker)
+                colorpicker.hue.ZIndex = 101
+                colorpicker.hue.Position = UDim2.new(0, 3, 0, 3)
+                colorpicker.hue.Size = UDim2.new(0, 172, 0, 172)
+                colorpicker.hue.Image = "rbxassetid://4155801252"
+                colorpicker.hue.ScaleType = Enum.ScaleType.Stretch
+                colorpicker.hue.BackgroundColor3 = Color3.new(1, 0, 0)
+                colorpicker.hue.BorderColor3 = window.theme.outlinecolor2
+                updateevent.Event:Connect(function(theme)
+                    colorpicker.hue.BorderColor3 = theme.outlinecolor2
+                end)
+                colorpicker.hueselectorpointer = Instance.new("ImageLabel", colorpicker.MainPicker)
+                colorpicker.hueselectorpointer.ZIndex = 101
+                colorpicker.hueselectorpointer.BackgroundTransparency = 1
+                colorpicker.hueselectorpointer.BorderSizePixel = 0
+                colorpicker.hueselectorpointer.Position = UDim2.new(0, 0, 0, 0)
+                colorpicker.hueselectorpointer.Size = UDim2.new(0, 7, 0, 7)
+                colorpicker.hueselectorpointer.Image = "rbxassetid://6885856475"
+                colorpicker.selector = Instance.new("TextLabel", colorpicker.MainPicker)
+                colorpicker.selector.ZIndex = 100
+                colorpicker.selector.Position = UDim2.new(0, 3, 0, 181)
+                colorpicker.selector.Size = UDim2.new(0, 173, 0, 10)
+                colorpicker.selector.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                colorpicker.selector.BorderColor3 = window.theme.outlinecolor2
+                colorpicker.selector.Text = ""
+                updateevent.Event:Connect(function(theme)
+                    colorpicker.selector.BorderColor3 = theme.outlinecolor2
+                end)
+                colorpicker.gradient = Instance.new("UIGradient", colorpicker.selector)
+                colorpicker.gradient.Color = ColorSequence.new({
+                    ColorSequenceKeypoint.new(0, Color3.new(1, 0, 0)),
+                    ColorSequenceKeypoint.new(0.17, Color3.new(1, 0, 1)),
+                    ColorSequenceKeypoint.new(0.33, Color3.new(0, 0, 1)),
+                    ColorSequenceKeypoint.new(0.5, Color3.new(0, 1, 1)),
+                    ColorSequenceKeypoint.new(0.67, Color3.new(0, 1, 0)),
+                    ColorSequenceKeypoint.new(0.83, Color3.new(1, 1, 0)),
+                    ColorSequenceKeypoint.new(1, Color3.new(1, 0, 0))
+                })
+                colorpicker.pointer = Instance.new("Frame", colorpicker.selector)
+                colorpicker.pointer.ZIndex = 101
+                colorpicker.pointer.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+                colorpicker.pointer.Position = UDim2.new(0, 0, 0, 0)
+                colorpicker.pointer.Size = UDim2.new(0, 2, 0, 10)
+                colorpicker.pointer.BorderColor3 = Color3.fromRGB(255, 255, 255)
+                if colorpicker.flag and colorpicker.flag ~= "" then
+                    library.flags[colorpicker.flag] = colorpicker.default
+                end
+                function colorpicker:RefreshSelector()
+                    local pos = math.clamp((mouse.X - colorpicker.hue.AbsolutePosition.X) / colorpicker.hue.AbsoluteSize.X, 0, 1)
+                    colorpicker.color = 1 - pos
+                    colorpicker.pointer:TweenPosition(UDim2.new(pos, 0, 0, 0), Enum.EasingDirection.In, Enum.EasingStyle.Sine, 0.05)
+                    colorpicker.hue.BackgroundColor3 = Color3.fromHSV(1 - pos, 1, 1)
+                end
+                function colorpicker:RefreshHue()
+                    local x = (mouse.X - colorpicker.hue.AbsolutePosition.X) / colorpicker.hue.AbsoluteSize.X
+                    local y = (mouse.Y - colorpicker.hue.AbsolutePosition.Y) / colorpicker.hue.AbsoluteSize.Y
+                    colorpicker.hueselectorpointer:TweenPosition(UDim2.new(math.clamp(x * colorpicker.hue.AbsoluteSize.X, 0.5, 0.952 * colorpicker.hue.AbsoluteSize.X) / colorpicker.hue.AbsoluteSize.X, 0, math.clamp(y * colorpicker.hue.AbsoluteSize.Y, 0.5, 0.885 * colorpicker.hue.AbsoluteSize.Y) / colorpicker.hue.AbsoluteSize.Y, 0), Enum.EasingDirection.In, Enum.EasingStyle.Sine, 0.05)
+                    colorpicker:Set(Color3.fromHSV(colorpicker.color, math.clamp(x * colorpicker.hue.AbsoluteSize.X, 0.5, 1 * colorpicker.hue.AbsoluteSize.X) / colorpicker.hue.AbsoluteSize.X, 1 - (math.clamp(y * colorpicker.hue.AbsoluteSize.Y, 0.5, 1 * colorpicker.hue.AbsoluteSize.Y) / colorpicker.hue.AbsoluteSize.Y)))
+                end
+                function colorpicker:Set(value)
+                    local color = Color3.new(math.clamp(value.r, 0, 1), math.clamp(value.g, 0, 1), math.clamp(value.b, 0, 1))
+                    colorpicker.value = color
+                    if colorpicker.flag and colorpicker.flag ~= "" then
+                        library.flags[colorpicker.flag] = color
+                    end
+                    local clr = Color3.new(math.clamp(color.R / 1.7, 0, 1), math.clamp(color.G / 1.7, 0, 1), math.clamp(color.B / 1.7, 0, 1))
+                    colorpicker.Gradient.Color = ColorSequence.new({
+                        ColorSequenceKeypoint.new(0.00, color),
+                        ColorSequenceKeypoint.new(1.00, clr)
+                    })
+                    pcall(colorpicker.callback, color)
+                end
+                function colorpicker:Get()
+                    return colorpicker.value
+                end
+                colorpicker:Set(colorpicker.default)
+                function colorpicker:AddDropdown(items, default, multichoice, callback, flag)
+                    local dropdown = { }
+                    dropdown.defaultitems = items or { }
+                    dropdown.default = default
+                    dropdown.callback = callback or function()
+                    end
+                    dropdown.multichoice = multichoice or false
+                    dropdown.values = { }
+                    dropdown.flag = flag or ((colorpicker.text or "") .. tostring( #(sector.Items:GetChildren()) ))
+                    dropdown.Main = Instance.new("TextButton", sector.Items)
+                    dropdown.Main.Name = "dropdown"
+                    dropdown.Main.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                    dropdown.Main.BorderSizePixel = 0
+                    dropdown.Main.Size = UDim2.fromOffset(sector.Main.Size.X.Offset - 12, 16)
+                    dropdown.Main.Position = UDim2.fromOffset(0, 0)
+                    dropdown.Main.ZIndex = 5
+                    dropdown.Main.AutoButtonColor = false
+                    dropdown.Main.Font = window.theme.font
+                    dropdown.Main.Text = ""
+                    dropdown.Main.TextColor3 = Color3.fromRGB(255, 255, 255)
+                    dropdown.Main.TextSize = 15
+                    dropdown.Main.TextXAlignment = Enum.TextXAlignment.Left
+                    updateevent.Event:Connect(function(theme)
+                        dropdown.Main.Font = theme.font
+                    end)
+                    dropdown.Gradient = Instance.new("UIGradient", dropdown.Main)
+                    dropdown.Gradient.Rotation = 90
+                    dropdown.Gradient.Color = ColorSequence.new{
+                        ColorSequenceKeypoint.new(0.00, Color3.fromRGB(49, 49, 49)),
+                        ColorSequenceKeypoint.new(1.00, Color3.fromRGB(39, 39, 39))
+                    }
+                    dropdown.SelectedLabel = Instance.new("TextLabel", dropdown.Main)
+                    dropdown.SelectedLabel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                    dropdown.SelectedLabel.BackgroundTransparency = 1
+                    dropdown.SelectedLabel.Position = UDim2.fromOffset(5, 2)
+                    dropdown.SelectedLabel.Size = UDim2.fromOffset(130, 13)
+                    dropdown.SelectedLabel.Font = window.theme.font
+                    dropdown.SelectedLabel.Text = colorpicker.text
+                    dropdown.SelectedLabel.ZIndex = 5
+                    dropdown.SelectedLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+                    dropdown.SelectedLabel.TextSize = 15
+                    dropdown.SelectedLabel.TextStrokeTransparency = 1
+                    dropdown.SelectedLabel.TextXAlignment = Enum.TextXAlignment.Left
+                    updateevent.Event:Connect(function(theme)
+                        dropdown.SelectedLabel.Font = theme.font
+                    end)
+                    dropdown.Nav = Instance.new("ImageButton", dropdown.Main)
+                    dropdown.Nav.Name = "navigation"
+                    dropdown.Nav.BackgroundTransparency = 1
+                    dropdown.Nav.LayoutOrder = 10
+                    dropdown.Nav.Position = UDim2.fromOffset(sector.Main.Size.X.Offset - 26, 5)
+                    dropdown.Nav.Rotation = 90
+                    dropdown.Nav.ZIndex = 5
+                    dropdown.Nav.Size = UDim2.fromOffset(8, 8)
+                    dropdown.Nav.Image = "rbxassetid://4918373417"
+                    dropdown.Nav.ImageColor3 = Color3.fromRGB(210, 210, 210)
+                    dropdown.BlackOutline2 = Instance.new("Frame", dropdown.Main)
+                    dropdown.BlackOutline2.Name = "blackline"
+                    dropdown.BlackOutline2.ZIndex = 4
+                    dropdown.BlackOutline2.Size = dropdown.Main.Size + UDim2.fromOffset(6, 6)
+                    dropdown.BlackOutline2.BorderSizePixel = 0
+                    dropdown.BlackOutline2.BackgroundColor3 = window.theme.outlinecolor2
+                    dropdown.BlackOutline2.Position = UDim2.fromOffset(-3, -3)
+                    updateevent.Event:Connect(function(theme)
+                        dropdown.BlackOutline2.BackgroundColor3 = theme.outlinecolor2
+                    end)
+                    dropdown.Outline = Instance.new("Frame", dropdown.Main)
+                    dropdown.Outline.Name = "blackline"
+                    dropdown.Outline.ZIndex = 4
+                    dropdown.Outline.Size = dropdown.Main.Size + UDim2.fromOffset(4, 4)
+                    dropdown.Outline.BorderSizePixel = 0
+                    dropdown.Outline.BackgroundColor3 = window.theme.outlinecolor
+                    dropdown.Outline.Position = UDim2.fromOffset(-2, -2)
+                    updateevent.Event:Connect(function(theme)
+                        dropdown.Outline.BackgroundColor3 = theme.outlinecolor
+                    end)
+                    dropdown.BlackOutline = Instance.new("Frame", dropdown.Main)
+                    dropdown.BlackOutline.Name = "blackline"
+                    dropdown.BlackOutline.ZIndex = 4
+                    dropdown.BlackOutline.Size = dropdown.Main.Size + UDim2.fromOffset(2, 2)
+                    dropdown.BlackOutline.BorderSizePixel = 0
+                    dropdown.BlackOutline.BackgroundColor3 = window.theme.outlinecolor2
+                    dropdown.BlackOutline.Position = UDim2.fromOffset(-1, -1)
+                    updateevent.Event:Connect(function(theme)
+                        dropdown.BlackOutline.BackgroundColor3 = theme.outlinecolor2
+                    end)
+                    dropdown.ItemsFrame = Instance.new("ScrollingFrame", dropdown.Main)
+                    dropdown.ItemsFrame.Name = "itemsframe"
+                    dropdown.ItemsFrame.BorderSizePixel = 0
+                    dropdown.ItemsFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+                    dropdown.ItemsFrame.Position = UDim2.fromOffset(0, dropdown.Main.Size.Y.Offset + 8)
+                    dropdown.ItemsFrame.ScrollBarThickness = 2
+                    dropdown.ItemsFrame.ZIndex = 8
+                    dropdown.ItemsFrame.ScrollingDirection = "Y"
+                    dropdown.ItemsFrame.Visible = false
+                    dropdown.ItemsFrame.CanvasSize = UDim2.fromOffset(dropdown.Main.AbsoluteSize.X, 0)
+                    dropdown.ListLayout = Instance.new("UIListLayout", dropdown.ItemsFrame)
+                    dropdown.ListLayout.FillDirection = Enum.FillDirection.Vertical
+                    dropdown.ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+                    dropdown.ListPadding = Instance.new("UIPadding", dropdown.ItemsFrame)
+                    dropdown.ListPadding.PaddingTop = UDim.new(0, 2)
+                    dropdown.ListPadding.PaddingBottom = UDim.new(0, 2)
+                    dropdown.ListPadding.PaddingLeft = UDim.new(0, 2)
+                    dropdown.ListPadding.PaddingRight = UDim.new(0, 2)
+                    dropdown.BlackOutline2Items = Instance.new("Frame", dropdown.Main)
+                    dropdown.BlackOutline2Items.Name = "blackline"
+                    dropdown.BlackOutline2Items.ZIndex = 7
+                    dropdown.BlackOutline2Items.Size = dropdown.ItemsFrame.Size + UDim2.fromOffset(6, 6)
+                    dropdown.BlackOutline2Items.BorderSizePixel = 0
+                    dropdown.BlackOutline2Items.BackgroundColor3 = window.theme.outlinecolor2
+                    dropdown.BlackOutline2Items.Position = dropdown.ItemsFrame.Position + UDim2.fromOffset(-3, -3)
+                    dropdown.BlackOutline2Items.Visible = false
+                    updateevent.Event:Connect(function(theme)
+                        dropdown.BlackOutline2Items.BackgroundColor3 = theme.outlinecolor2
+                    end)
+                    dropdown.OutlineItems = Instance.new("Frame", dropdown.Main)
+                    dropdown.OutlineItems.Name = "blackline"
+                    dropdown.OutlineItems.ZIndex = 7
+                    dropdown.OutlineItems.Size = dropdown.ItemsFrame.Size + UDim2.fromOffset(4, 4)
+                    dropdown.OutlineItems.BorderSizePixel = 0
+                    dropdown.OutlineItems.BackgroundColor3 = window.theme.outlinecolor
+                    dropdown.OutlineItems.Position = dropdown.ItemsFrame.Position + UDim2.fromOffset(-2, -2)
+                    dropdown.OutlineItems.Visible = false
+                    updateevent.Event:Connect(function(theme)
+                        dropdown.OutlineItems.BackgroundColor3 = theme.outlinecolor
+                    end)
+                    dropdown.BlackOutlineItems = Instance.new("Frame", dropdown.Main)
+                    dropdown.BlackOutlineItems.Name = "blackline"
+                    dropdown.BlackOutlineItems.ZIndex = 7
+                    dropdown.BlackOutlineItems.Size = dropdown.ItemsFrame.Size + UDim2.fromOffset(-2, -2)
+                    dropdown.BlackOutlineItems.BorderSizePixel = 0
+                    dropdown.BlackOutlineItems.BackgroundColor3 = window.theme.outlinecolor2
+                    dropdown.BlackOutlineItems.Position = dropdown.ItemsFrame.Position + UDim2.fromOffset(-1, -1)
+                    dropdown.BlackOutlineItems.Visible = false
+                    updateevent.Event:Connect(function(theme)
+                        dropdown.BlackOutlineItems.BackgroundColor3 = theme.outlinecolor2
+                    end)
+                    dropdown.IgnoreBackButtons = Instance.new("TextButton", dropdown.Main)
+                    dropdown.IgnoreBackButtons.BackgroundTransparency = 1
+                    dropdown.IgnoreBackButtons.BorderSizePixel = 0
+                    dropdown.IgnoreBackButtons.Position = UDim2.fromOffset(0, dropdown.Main.Size.Y.Offset + 8)
+                    dropdown.IgnoreBackButtons.Size = UDim2.new(0, 0, 0, 0)
+                    dropdown.IgnoreBackButtons.ZIndex = 7
+                    dropdown.IgnoreBackButtons.Text = ""
+                    dropdown.IgnoreBackButtons.Visible = false
+                    dropdown.IgnoreBackButtons.AutoButtonColor = false
+                    if dropdown.flag and dropdown.flag ~= "" then
+                        library.flags[dropdown.flag] = dropdown.multichoice and {
+                            dropdown.default or dropdown.defaultitems[1] or ""
+                        } or (dropdown.default or dropdown.defaultitems[1] or "")
+                    end
+                    function dropdown:isSelected(item)
+                        for i, v in pairs(dropdown.values) do
+                            if v == item then
+                                return true
+                            end
+                        end
+                        return false
+                    end
+                    function dropdown:updateText(text)
+                        if #text >= 27 then
+                            text = text:sub(1, 25) .. ".."
+                        end
+                        dropdown.SelectedLabel.Text = text
+                    end
+                    dropdown.Changed = Instance.new("BindableEvent")
+                    function dropdown:Set(value)
+                        if type(value) == "table" then
+                            dropdown.values = value
+                            dropdown:updateText(table.concat(value, ", "))
+                            pcall(dropdown.callback, value)
+                        else
+                            dropdown:updateText(value)
+                            dropdown.values = {
+                                value
+                            }
+                            pcall(dropdown.callback, value)
+                        end
+                        dropdown.Changed:Fire(value)
+                        if dropdown.flag and dropdown.flag ~= "" then
+                            library.flags[dropdown.flag] = dropdown.multichoice and dropdown.values or dropdown.values[1]
+                        end
+                    end
+                    function dropdown:Get()
+                        return dropdown.multichoice and dropdown.values or dropdown.values[1]
+                    end
+                    dropdown.items = { }
+                    function dropdown:Add(v)
+                        local Item = Instance.new("TextButton", dropdown.ItemsFrame)
+                        Item.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+                        Item.TextColor3 = Color3.fromRGB(255, 255, 255)
+                        Item.BorderSizePixel = 0
+                        Item.Position = UDim2.fromOffset(0, 0)
+                        Item.Size = UDim2.fromOffset(dropdown.Main.Size.X.Offset - 4, 20)
+                        Item.ZIndex = 9
+                        Item.Text = v
+                        Item.Name = v
+                        Item.AutoButtonColor = false
+                        Item.Font = window.theme.font
+                        Item.TextSize = 15
+                        Item.TextXAlignment = Enum.TextXAlignment.Left
+                        Item.TextStrokeTransparency = 1
+                        dropdown.ItemsFrame.CanvasSize = dropdown.ItemsFrame.CanvasSize + UDim2.fromOffset(0, Item.AbsoluteSize.Y)
+                        Item.MouseButton1Down:Connect(function()
+                            if dropdown.multichoice then
+                                if dropdown:isSelected(v) then
+                                    for i2, v2 in pairs(dropdown.values) do
+                                        if v2 == v then
+                                            table.remove(dropdown.values, i2)
+                                        end
+                                    end
+                                    dropdown:Set(dropdown.values)
+                                else
+                                    table.insert(dropdown.values, v)
+                                    dropdown:Set(dropdown.values)
+                                end
+                                return
+                            else
+                                dropdown.Nav.Rotation = 90
+                                dropdown.ItemsFrame.Visible = false
+                                dropdown.ItemsFrame.Active = false
+                                dropdown.OutlineItems.Visible = false
+                                dropdown.BlackOutlineItems.Visible = false
+                                dropdown.BlackOutline2Items.Visible = false
+                                dropdown.IgnoreBackButtons.Visible = false
+                                dropdown.IgnoreBackButtons.Active = false
+                            end
+                            dropdown:Set(v)
+                            return
+                        end)
+                        runservice.RenderStepped:Connect(function()
+                            if dropdown.multichoice and dropdown:isSelected(v) or dropdown.values[1] == v then
+                                Item.BackgroundColor3 = Color3.fromRGB(64, 64, 64)
+                                Item.TextColor3 = window.theme.accentcolor
+                                Item.Text = " " .. v
+                            else
+                                Item.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+                                Item.TextColor3 = Color3.fromRGB(255, 255, 255)
+                                Item.Text = v
+                            end
+                        end)
+                        table.insert(dropdown.items, v)
+                        dropdown.ItemsFrame.Size = UDim2.fromOffset(dropdown.Main.Size.X.Offset, math.clamp(#dropdown.items * Item.AbsoluteSize.Y, 20, 156) + 4)
+                        dropdown.ItemsFrame.CanvasSize = UDim2.fromOffset(dropdown.ItemsFrame.AbsoluteSize.X, (#dropdown.items * Item.AbsoluteSize.Y) + 4)
+                        dropdown.OutlineItems.Size = dropdown.ItemsFrame.Size + UDim2.fromOffset(4, 4)
+                        dropdown.BlackOutlineItems.Size = dropdown.ItemsFrame.Size + UDim2.fromOffset(2, 2)
+                        dropdown.BlackOutline2Items.Size = dropdown.ItemsFrame.Size + UDim2.fromOffset(6, 6)
+                        dropdown.IgnoreBackButtons.Size = dropdown.ItemsFrame.Size
+                    end
+                    function dropdown:Remove(value)
+                        local item = dropdown.ItemsFrame:FindFirstChild(value)
+                        if item then
+                            for i, v in pairs(dropdown.items) do
+                                if v == value then
+                                    table.remove(dropdown.items, i)
+                                end
+                            end
+                            dropdown.ItemsFrame.Size = UDim2.fromOffset(dropdown.Main.Size.X.Offset, math.clamp(#dropdown.items * item.AbsoluteSize.Y, 20, 156) + 4)
+                            dropdown.ItemsFrame.CanvasSize = UDim2.fromOffset(dropdown.ItemsFrame.AbsoluteSize.X, (#dropdown.items * item.AbsoluteSize.Y) + 4)
+                            dropdown.OutlineItems.Size = dropdown.ItemsFrame.Size + UDim2.fromOffset(2, 2)
+                            dropdown.BlackOutlineItems.Size = dropdown.ItemsFrame.Size + UDim2.fromOffset(4, 4)
+                            dropdown.BlackOutline2Items.Size = dropdown.ItemsFrame.Size + UDim2.fromOffset(6, 6)
+                            dropdown.IgnoreBackButtons.Size = dropdown.ItemsFrame.Size
+                            item:Remove()
+                        end
+                    end
+                    function dropdown:getList()
+                        return dropdown.items
+                    end
+                    for i, v in pairs(dropdown.defaultitems) do
+                        dropdown:Add(v)
+                    end
+                    if dropdown.default then
+                        dropdown:Set(dropdown.default)
+                    end
+                    local MouseButton1Down = function()
+                        if dropdown.Nav.Rotation == 90 then
+                            dropdown.ItemsFrame.ScrollingEnabled = true
+                            sector.Main.Parent.ScrollingEnabled = false
+                            tweenservice:Create(dropdown.Nav, TweenInfo.new(0.1, Enum.EasingStyle.Linear, Enum.EasingDirection.In), {
+                                Rotation = -90
+                            }):Play()
+                            dropdown.ItemsFrame.Visible = true
+                            dropdown.ItemsFrame.Active = true
+                            dropdown.IgnoreBackButtons.Visible = true
+                            dropdown.IgnoreBackButtons.Active = true
+                            dropdown.OutlineItems.Visible = true
+                            dropdown.BlackOutlineItems.Visible = true
+                            dropdown.BlackOutline2Items.Visible = true
+                        else
+                            dropdown.ItemsFrame.ScrollingEnabled = false
+                            sector.Main.Parent.ScrollingEnabled = true
+                            tweenservice:Create(dropdown.Nav, TweenInfo.new(0.1, Enum.EasingStyle.Linear, Enum.EasingDirection.In), {
+                                Rotation = 90
+                            }):Play()
+                            dropdown.ItemsFrame.Visible = false
+                            dropdown.ItemsFrame.Active = false
+                            dropdown.IgnoreBackButtons.Visible = false
+                            dropdown.IgnoreBackButtons.Active = false
+                            dropdown.OutlineItems.Visible = false
+                            dropdown.BlackOutlineItems.Visible = false
+                            dropdown.BlackOutline2Items.Visible = false
+                        end
+                    end
+                    dropdown.Main.MouseButton1Down:Connect(MouseButton1Down)
+                    dropdown.Nav.MouseButton1Down:Connect(MouseButton1Down)
+                    dropdown.BlackOutline2.MouseEnter:Connect(function()
+                        dropdown.BlackOutline2.BackgroundColor3 = window.theme.accentcolor
+                    end)
+                    dropdown.BlackOutline2.MouseLeave:Connect(function()
+                        dropdown.BlackOutline2.BackgroundColor3 = window.theme.outlinecolor2
+                    end)
+                    sector:FixSize()
+                    table.insert(library.items, dropdown)
+                    return dropdown
+                end
+                local dragging_selector = false
+                local dragging_hue = false
+                colorpicker.selector.InputBegan:Connect(function(input)
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                        dragging_selector = true
+                        colorpicker:RefreshSelector()
+                    end
+                end)
+                colorpicker.selector.InputEnded:Connect(function(input)
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                        dragging_selector = false
+                        colorpicker:RefreshSelector()
+                    end
+                end)
+                colorpicker.hue.InputBegan:Connect(function(input)
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                        dragging_hue = true
+                        colorpicker:RefreshHue()
+                    end
+                end)
+                colorpicker.hue.InputEnded:Connect(function(input)
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                        dragging_hue = false
+                        colorpicker:RefreshHue()
+                    end
+                end)
+                uis.InputChanged:Connect(function(input)
+                    if dragging_selector and input.UserInputType == Enum.UserInputType.MouseMovement then
+                        colorpicker:RefreshSelector()
+                    end
+                    if dragging_hue and input.UserInputType == Enum.UserInputType.MouseMovement then
+                        colorpicker:RefreshHue()
+                    end
+                end)
+                local inputBegan = function(input)
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                        for i, v in pairs(window.OpenedColorPickers) do
+                            if v and i ~= colorpicker.MainPicker then
+                                i.Visible = false
+                                window.OpenedColorPickers[i] = false
+                            end
+                        end
+                        colorpicker.MainPicker.Visible = not colorpicker.MainPicker.Visible
+                        window.OpenedColorPickers[colorpicker.MainPicker] = colorpicker.MainPicker.Visible
+                        if window.OpenedColorPickers[colorpicker.MainPicker] then
+                            colorpicker.BlackOutline2.BackgroundColor3 = window.theme.accentcolor
+                        else
+                            colorpicker.BlackOutline2.BackgroundColor3 = window.theme.outlinecolor2
+                        end
+                    end
+                end
+                colorpicker.Main.InputBegan:Connect(inputBegan)
+                colorpicker.Outline.InputBegan:Connect(inputBegan)
+                colorpicker.BlackOutline2.InputBegan:Connect(inputBegan)
+                sector:FixSize()
+                table.insert(library.items, colorpicker)
+                return colorpicker
+            end
+            function sector:AddKeybind(text, default, newkeycallback, callback, flag)
+                local keybind = { }
+                keybind.text = text or ""
+                keybind.default = default or "None"
+                keybind.callback = callback or function()
+                end
+                keybind.newkeycallback = newkeycallback or function(key)
+                end
+                keybind.flag = flag or text or ""
+                keybind.value = keybind.default
+                keybind.Main = Instance.new("TextLabel", sector.Items)
+                keybind.Main.BackgroundTransparency = 1
+                keybind.Main.Size = UDim2.fromOffset(156, 10)
+                keybind.Main.ZIndex = 4
+                keybind.Main.Font = window.theme.font
+                keybind.Main.Text = keybind.text
+                keybind.Main.TextColor3 = window.theme.itemscolor
+                keybind.Main.TextSize = 15
+                keybind.Main.TextStrokeTransparency = 1
+                keybind.Main.TextXAlignment = Enum.TextXAlignment.Left
+                updateevent.Event:Connect(function(theme)
+                    keybind.Main.Font = theme.font
+                    keybind.Main.TextColor3 = theme.itemscolor
+                end)
+                keybind.Bind = Instance.new("TextButton", keybind.Main)
+                keybind.Bind.Name = "keybind"
+                keybind.Bind.BackgroundTransparency = 1
+                keybind.Bind.BorderColor3 = window.theme.outlinecolor
+                keybind.Bind.ZIndex = 5
+                keybind.Bind.BorderSizePixel = 0
+                keybind.Bind.Position = UDim2.fromOffset(sector.Main.Size.X.Offset - 10, 0)
+                keybind.Bind.Font = window.theme.font
+                keybind.Bind.TextColor3 = Color3.fromRGB(136, 136, 136)
+                keybind.Bind.TextSize = 15
+                keybind.Bind.TextXAlignment = Enum.TextXAlignment.Right
+                keybind.Bind.MouseButton1Down:Connect(function()
+                    keybind.Bind.Text = "[...]"
+                    keybind.Bind.TextColor3 = window.theme.accentcolor
+                end)
+                updateevent.Event:Connect(function(theme)
+                    keybind.Bind.BorderColor3 = theme.outlinecolor
+                    keybind.Bind.Font = theme.font
+                end)
+                if keybind.flag and keybind.flag ~= "" then
+                    library.flags[keybind.flag] = keybind.default
+                end
+                local shorter_keycodes = {
+                    ["LeftShift"] = "LSHIFT",
+                    ["RightShift"] = "RSHIFT",
+                    ["LeftControl"] = "LCTRL",
+                    ["RightControl"] = "RCTRL",
+                    ["LeftAlt"] = "LALT",
+                    ["RightAlt"] = "RALT"
+                }
+                function keybind:Set(value)
+                    if value == "None" then
+                        keybind.value = value
+                        keybind.Bind.Text = "[" .. value .. "]"
+                        local size = textservice:GetTextSize(keybind.Bind.Text, keybind.Bind.TextSize, keybind.Bind.Font, Vector2.new(2000, 2000))
+                        keybind.Bind.Size = UDim2.fromOffset(size.X, size.Y)
+                        keybind.Bind.Position = UDim2.fromOffset(sector.Main.Size.X.Offset - 10 - keybind.Bind.AbsoluteSize.X, 0)
+                        if keybind.flag and keybind.flag ~= "" then
+                            library.flags[keybind.flag] = value
+                        end
+                        pcall(keybind.newkeycallback, value)
+                    end
+                    keybind.value = value
+                    keybind.Bind.Text = "[" .. (shorter_keycodes[value.Name or value] or (value.Name or value)) .. "]"
+                    local size = textservice:GetTextSize(keybind.Bind.Text, keybind.Bind.TextSize, keybind.Bind.Font, Vector2.new(2000, 2000))
+                    keybind.Bind.Size = UDim2.fromOffset(size.X, size.Y)
+                    keybind.Bind.Position = UDim2.fromOffset(sector.Main.Size.X.Offset - 10 - keybind.Bind.AbsoluteSize.X, 0)
+                    if keybind.flag and keybind.flag ~= "" then
+                        library.flags[keybind.flag] = value
+                    end
+                    pcall(keybind.newkeycallback, value)
+                end
+                keybind:Set(keybind.default and keybind.default or "None")
+                function keybind:Get()
+                    return keybind.value
+                end
+                uis.InputBegan:Connect(function(input, gameProcessed)
+                    if not gameProcessed then
+                        if keybind.Bind.Text == "[...]" then
+                            keybind.Bind.TextColor3 = Color3.fromRGB(136, 136, 136)
+                            if input.UserInputType == Enum.UserInputType.Keyboard then
+                                keybind:Set(input.KeyCode)
+                            else
+                                keybind:Set("None")
+                            end
+                        else
+                            if keybind.value ~= "None" and input.KeyCode == keybind.value then
+                                pcall(keybind.callback)
+                            end
+                        end
+                    end
+                end)
+                sector:FixSize()
+                table.insert(library.items, keybind)
+                return keybind
+            end
+            function sector:AddDropdown(text, items, default, multichoice, callback, flag)
+                local dropdown = { }
+                dropdown.text = text or ""
+                dropdown.defaultitems = items or { }
+                dropdown.default = default
+                dropdown.callback = callback or function()
+                end
+                dropdown.multichoice = multichoice or false
+                dropdown.values = { }
+                dropdown.flag = flag or text or ""
+                dropdown.MainBack = Instance.new("Frame", sector.Items)
+                dropdown.MainBack.Name = "backlabel"
+                dropdown.MainBack.ZIndex = 7
+                dropdown.MainBack.Size = UDim2.fromOffset(sector.Main.Size.X.Offset - 12, 34)
+                dropdown.MainBack.BorderSizePixel = 0
+                dropdown.MainBack.BackgroundTransparency = 1
+                dropdown.Label = Instance.new("TextLabel", dropdown.MainBack)
+                dropdown.Label.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                dropdown.Label.BackgroundTransparency = 1
+                dropdown.Label.Size = UDim2.fromOffset(sector.Main.Size.X.Offset - 12, 10)
+                dropdown.Label.Position = UDim2.fromOffset(0, 0)
+                dropdown.Label.Font = window.theme.font
+                dropdown.Label.Text = dropdown.text
+                dropdown.Label.ZIndex = 4
+                dropdown.Label.TextColor3 = window.theme.itemscolor
+                dropdown.Label.TextSize = 15
+                dropdown.Label.TextStrokeTransparency = 1
+                dropdown.Label.TextXAlignment = Enum.TextXAlignment.Left
+                updateevent.Event:Connect(function(theme)
+                    dropdown.Label.Font = theme.font
+                    dropdown.Label.TextColor3 = theme.itemscolor
+                end)
+                dropdown.Main = Instance.new("TextButton", dropdown.MainBack)
+                dropdown.Main.Name = "dropdown"
+                dropdown.Main.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                dropdown.Main.BorderSizePixel = 0
+                dropdown.Main.Size = UDim2.fromOffset(sector.Main.Size.X.Offset - 12, 16)
+                dropdown.Main.Position = UDim2.fromOffset(0, 17)
+                dropdown.Main.ZIndex = 5
+                dropdown.Main.AutoButtonColor = false
+                dropdown.Main.Font = window.theme.font
+                dropdown.Main.Text = ""
+                dropdown.Main.TextColor3 = Color3.fromRGB(255, 255, 255)
+                dropdown.Main.TextSize = 15
+                dropdown.Main.TextXAlignment = Enum.TextXAlignment.Left
+                updateevent.Event:Connect(function(theme)
+                    dropdown.Main.Font = theme.font
+                end)
+                dropdown.Gradient = Instance.new("UIGradient", dropdown.Main)
+                dropdown.Gradient.Rotation = 90
+                dropdown.Gradient.Color = ColorSequence.new{
+                    ColorSequenceKeypoint.new(0.00, Color3.fromRGB(49, 49, 49)),
+                    ColorSequenceKeypoint.new(1.00, Color3.fromRGB(39, 39, 39))
+                }
+                dropdown.SelectedLabel = Instance.new("TextLabel", dropdown.Main)
+                dropdown.SelectedLabel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                dropdown.SelectedLabel.BackgroundTransparency = 1
+                dropdown.SelectedLabel.Position = UDim2.fromOffset(5, 2)
+                dropdown.SelectedLabel.Size = UDim2.fromOffset(130, 13)
+                dropdown.SelectedLabel.Font = window.theme.font
+                dropdown.SelectedLabel.Text = dropdown.text
+                dropdown.SelectedLabel.ZIndex = 5
+                dropdown.SelectedLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+                dropdown.SelectedLabel.TextSize = 15
+                dropdown.SelectedLabel.TextStrokeTransparency = 1
+                dropdown.SelectedLabel.TextXAlignment = Enum.TextXAlignment.Left
+                updateevent.Event:Connect(function(theme)
+                    dropdown.SelectedLabel.Font = theme.font
+                end)
+                dropdown.Nav = Instance.new("ImageButton", dropdown.Main)
+                dropdown.Nav.Name = "navigation"
+                dropdown.Nav.BackgroundTransparency = 1
+                dropdown.Nav.LayoutOrder = 10
+                dropdown.Nav.Position = UDim2.fromOffset(sector.Main.Size.X.Offset - 26, 5)
+                dropdown.Nav.Rotation = 90
+                dropdown.Nav.ZIndex = 5
+                dropdown.Nav.Size = UDim2.fromOffset(8, 8)
+                dropdown.Nav.Image = "rbxassetid://4918373417"
+                dropdown.Nav.ImageColor3 = Color3.fromRGB(210, 210, 210)
+                dropdown.BlackOutline2 = Instance.new("Frame", dropdown.Main)
+                dropdown.BlackOutline2.Name = "blackline"
+                dropdown.BlackOutline2.ZIndex = 4
+                dropdown.BlackOutline2.Size = dropdown.Main.Size + UDim2.fromOffset(6, 6)
+                dropdown.BlackOutline2.BorderSizePixel = 0
+                dropdown.BlackOutline2.BackgroundColor3 = window.theme.outlinecolor2
+                dropdown.BlackOutline2.Position = UDim2.fromOffset(-3, -3)
+                updateevent.Event:Connect(function(theme)
+                    dropdown.BlackOutline2.BackgroundColor3 = theme.outlinecolor2
+                end)
+                dropdown.Outline = Instance.new("Frame", dropdown.Main)
+                dropdown.Outline.Name = "blackline"
+                dropdown.Outline.ZIndex = 4
+                dropdown.Outline.Size = dropdown.Main.Size + UDim2.fromOffset(4, 4)
+                dropdown.Outline.BorderSizePixel = 0
+                dropdown.Outline.BackgroundColor3 = window.theme.outlinecolor
+                dropdown.Outline.Position = UDim2.fromOffset(-2, -2)
+                updateevent.Event:Connect(function(theme)
+                    dropdown.Outline.BackgroundColor3 = theme.outlinecolor
+                end)
+                dropdown.BlackOutline = Instance.new("Frame", dropdown.Main)
+                dropdown.BlackOutline.Name = "blackline"
+                dropdown.BlackOutline.ZIndex = 4
+                dropdown.BlackOutline.Size = dropdown.Main.Size + UDim2.fromOffset(2, 2)
+                dropdown.BlackOutline.BorderSizePixel = 0
+                dropdown.BlackOutline.BackgroundColor3 = window.theme.outlinecolor2
+                dropdown.BlackOutline.Position = UDim2.fromOffset(-1, -1)
+                updateevent.Event:Connect(function(theme)
+                    dropdown.BlackOutline.BackgroundColor3 = theme.outlinecolor2
+                end)
+                dropdown.ItemsFrame = Instance.new("ScrollingFrame", dropdown.Main)
+                dropdown.ItemsFrame.Name = "itemsframe"
+                dropdown.ItemsFrame.BorderSizePixel = 0
+                dropdown.ItemsFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+                dropdown.ItemsFrame.Position = UDim2.fromOffset(0, dropdown.Main.Size.Y.Offset + 8)
+                dropdown.ItemsFrame.ScrollBarThickness = 2
+                dropdown.ItemsFrame.ZIndex = 8
+                dropdown.ItemsFrame.ScrollingDirection = "Y"
+                dropdown.ItemsFrame.Visible = false
+                dropdown.ItemsFrame.CanvasSize = UDim2.fromOffset(dropdown.Main.AbsoluteSize.X, 0)
+                dropdown.ListLayout = Instance.new("UIListLayout", dropdown.ItemsFrame)
+                dropdown.ListLayout.FillDirection = Enum.FillDirection.Vertical
+                dropdown.ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+                dropdown.ListPadding = Instance.new("UIPadding", dropdown.ItemsFrame)
+                dropdown.ListPadding.PaddingTop = UDim.new(0, 2)
+                dropdown.ListPadding.PaddingBottom = UDim.new(0, 2)
+                dropdown.ListPadding.PaddingLeft = UDim.new(0, 2)
+                dropdown.ListPadding.PaddingRight = UDim.new(0, 2)
+                dropdown.BlackOutline2Items = Instance.new("Frame", dropdown.Main)
+                dropdown.BlackOutline2Items.Name = "blackline"
+                dropdown.BlackOutline2Items.ZIndex = 7
+                dropdown.BlackOutline2Items.Size = dropdown.ItemsFrame.Size + UDim2.fromOffset(6, 6)
+                dropdown.BlackOutline2Items.BorderSizePixel = 0
+                dropdown.BlackOutline2Items.BackgroundColor3 = window.theme.outlinecolor2
+                dropdown.BlackOutline2Items.Position = dropdown.ItemsFrame.Position + UDim2.fromOffset(-3, -3)
+                dropdown.BlackOutline2Items.Visible = false
+                updateevent.Event:Connect(function(theme)
+                    dropdown.BlackOutline2Items.BackgroundColor3 = theme.outlinecolor2
+                end)
+                dropdown.OutlineItems = Instance.new("Frame", dropdown.Main)
+                dropdown.OutlineItems.Name = "blackline"
+                dropdown.OutlineItems.ZIndex = 7
+                dropdown.OutlineItems.Size = dropdown.ItemsFrame.Size + UDim2.fromOffset(4, 4)
+                dropdown.OutlineItems.BorderSizePixel = 0
+                dropdown.OutlineItems.BackgroundColor3 = window.theme.outlinecolor
+                dropdown.OutlineItems.Position = dropdown.ItemsFrame.Position + UDim2.fromOffset(-2, -2)
+                dropdown.OutlineItems.Visible = false
+                updateevent.Event:Connect(function(theme)
+                    dropdown.OutlineItems.BackgroundColor3 = theme.outlinecolor
+                end)
+                dropdown.BlackOutlineItems = Instance.new("Frame", dropdown.Main)
+                dropdown.BlackOutlineItems.Name = "blackline"
+                dropdown.BlackOutlineItems.ZIndex = 7
+                dropdown.BlackOutlineItems.Size = dropdown.ItemsFrame.Size + UDim2.fromOffset(-2, -2)
+                dropdown.BlackOutlineItems.BorderSizePixel = 0
+                dropdown.BlackOutlineItems.BackgroundColor3 = window.theme.outlinecolor2
+                dropdown.BlackOutlineItems.Position = dropdown.ItemsFrame.Position + UDim2.fromOffset(-1, -1)
+                dropdown.BlackOutlineItems.Visible = false
+                updateevent.Event:Connect(function(theme)
+                    dropdown.BlackOutlineItems.BackgroundColor3 = theme.outlinecolor2
+                end)
+                dropdown.IgnoreBackButtons = Instance.new("TextButton", dropdown.Main)
+                dropdown.IgnoreBackButtons.BackgroundTransparency = 1
+                dropdown.IgnoreBackButtons.BorderSizePixel = 0
+                dropdown.IgnoreBackButtons.Position = UDim2.fromOffset(0, dropdown.Main.Size.Y.Offset + 8)
+                dropdown.IgnoreBackButtons.Size = UDim2.new(0, 0, 0, 0)
+                dropdown.IgnoreBackButtons.ZIndex = 7
+                dropdown.IgnoreBackButtons.Text = ""
+                dropdown.IgnoreBackButtons.Visible = false
+                dropdown.IgnoreBackButtons.AutoButtonColor = false
+                if dropdown.flag and dropdown.flag ~= "" then
+                    library.flags[dropdown.flag] = dropdown.multichoice and {
+                        dropdown.default or dropdown.defaultitems[1] or ""
+                    } or (dropdown.default or dropdown.defaultitems[1] or "")
+                end
+                function dropdown:isSelected(item)
+                    for i, v in pairs(dropdown.values) do
+                        if v == item then
+                            return true
+                        end
+                    end
+                    return false
+                end
+                function dropdown:GetOptions()
+                    return dropdown.values
+                end
+                function dropdown:updateText(text)
+                    if #text >= 27 then
+                        text = text:sub(1, 25) .. ".."
+                    end
+                    dropdown.SelectedLabel.Text = text
+                end
+                dropdown.Changed = Instance.new("BindableEvent")
+                function dropdown:Set(value)
+                    if type(value) == "table" then
+                        dropdown.values = value
+                        dropdown:updateText(table.concat(value, ", "))
+                        pcall(dropdown.callback, value)
+                    else
+                        dropdown:updateText(value)
+                        dropdown.values = {
+                            value
+                        }
+                        pcall(dropdown.callback, value)
+                    end
+                    dropdown.Changed:Fire(value)
+                    if dropdown.flag and dropdown.flag ~= "" then
+                        library.flags[dropdown.flag] = dropdown.multichoice and dropdown.values or dropdown.values[1]
+                    end
+                end
+                function dropdown:Get()
+                    return dropdown.multichoice and dropdown.values or dropdown.values[1]
+                end
+                dropdown.items = { }
+                function dropdown:Add(v)
+                    local Item = Instance.new("TextButton", dropdown.ItemsFrame)
+                    Item.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+                    Item.TextColor3 = Color3.fromRGB(255, 255, 255)
+                    Item.BorderSizePixel = 0
+                    Item.Position = UDim2.fromOffset(0, 0)
+                    Item.Size = UDim2.fromOffset(dropdown.Main.Size.X.Offset - 4, 20)
+                    Item.ZIndex = 9
+                    Item.Text = v
+                    Item.Name = v
+                    Item.AutoButtonColor = false
+                    Item.Font = window.theme.font
+                    Item.TextSize = 15
+                    Item.TextXAlignment = Enum.TextXAlignment.Left
+                    Item.TextStrokeTransparency = 1
+                    dropdown.ItemsFrame.CanvasSize = dropdown.ItemsFrame.CanvasSize + UDim2.fromOffset(0, Item.AbsoluteSize.Y)
+                    Item.MouseButton1Down:Connect(function()
+                        if dropdown.multichoice then
+                            if dropdown:isSelected(v) then
+                                for i2, v2 in pairs(dropdown.values) do
+                                    if v2 == v then
+                                        table.remove(dropdown.values, i2)
+                                    end
+                                end
+                                dropdown:Set(dropdown.values)
+                            else
+                                table.insert(dropdown.values, v)
+                                dropdown:Set(dropdown.values)
+                            end
+                            return
+                        else
+                            dropdown.Nav.Rotation = 90
+                            dropdown.ItemsFrame.Visible = false
+                            dropdown.ItemsFrame.Active = false
+                            dropdown.OutlineItems.Visible = false
+                            dropdown.BlackOutlineItems.Visible = false
+                            dropdown.BlackOutline2Items.Visible = false
+                            dropdown.IgnoreBackButtons.Visible = false
+                            dropdown.IgnoreBackButtons.Active = false
+                        end
+                        dropdown:Set(v)
+                        return
+                    end)
+                    runservice.RenderStepped:Connect(function()
+                        if dropdown.multichoice and dropdown:isSelected(v) or dropdown.values[1] == v then
+                            Item.BackgroundColor3 = Color3.fromRGB(64, 64, 64)
+                            Item.TextColor3 = window.theme.accentcolor
+                            Item.Text = " " .. v
+                        else
+                            Item.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+                            Item.TextColor3 = Color3.fromRGB(255, 255, 255)
+                            Item.Text = v
+                        end
+                    end)
+                    table.insert(dropdown.items, v)
+                    dropdown.ItemsFrame.Size = UDim2.fromOffset(dropdown.Main.Size.X.Offset, math.clamp(#dropdown.items * Item.AbsoluteSize.Y, 20, 156) + 4)
+                    dropdown.ItemsFrame.CanvasSize = UDim2.fromOffset(dropdown.ItemsFrame.AbsoluteSize.X, (#dropdown.items * Item.AbsoluteSize.Y) + 4)
+                    dropdown.OutlineItems.Size = dropdown.ItemsFrame.Size + UDim2.fromOffset(4, 4)
+                    dropdown.BlackOutlineItems.Size = dropdown.ItemsFrame.Size + UDim2.fromOffset(2, 2)
+                    dropdown.BlackOutline2Items.Size = dropdown.ItemsFrame.Size + UDim2.fromOffset(6, 6)
+                    dropdown.IgnoreBackButtons.Size = dropdown.ItemsFrame.Size
+                end
+                function dropdown:Remove(value)
+                    local item = dropdown.ItemsFrame:FindFirstChild(value)
+                    if item then
+                        for i, v in pairs(dropdown.items) do
+                            if v == value then
+                                table.remove(dropdown.items, i)
+                            end
+                        end
+                        dropdown.ItemsFrame.Size = UDim2.fromOffset(dropdown.Main.Size.X.Offset, math.clamp(#dropdown.items * item.AbsoluteSize.Y, 20, 156) + 4)
+                        dropdown.ItemsFrame.CanvasSize = UDim2.fromOffset(dropdown.ItemsFrame.AbsoluteSize.X, (#dropdown.items * item.AbsoluteSize.Y) + 4)
+                        dropdown.OutlineItems.Size = dropdown.ItemsFrame.Size + UDim2.fromOffset(2, 2)
+                        dropdown.BlackOutlineItems.Size = dropdown.ItemsFrame.Size + UDim2.fromOffset(4, 4)
+                        dropdown.BlackOutline2Items.Size = dropdown.ItemsFrame.Size + UDim2.fromOffset(6, 6)
+                        dropdown.IgnoreBackButtons.Size = dropdown.ItemsFrame.Size
+                        item:Remove()
+                    end
+                end
+                function dropdown:getList()
+                    return dropdown.items
+                end
+                for i, v in pairs(dropdown.defaultitems) do
+                    dropdown:Add(v)
+                end
+                if dropdown.default then
+                    dropdown:Set(dropdown.default)
+                end
+                local MouseButton1Down = function()
+                    if dropdown.Nav.Rotation == 90 then
+                        tweenservice:Create(dropdown.Nav, TweenInfo.new(0.1, Enum.EasingStyle.Linear, Enum.EasingDirection.In), {
+                            Rotation = -90
+                        }):Play()
+                        if dropdown.items and #dropdown.items ~= 0 then
+                            dropdown.ItemsFrame.ScrollingEnabled = true
+                            sector.Main.Parent.ScrollingEnabled = false
+                            dropdown.ItemsFrame.Visible = true
+                            dropdown.ItemsFrame.Active = true
+                            dropdown.IgnoreBackButtons.Visible = true
+                            dropdown.IgnoreBackButtons.Active = true
+                            dropdown.OutlineItems.Visible = true
+                            dropdown.BlackOutlineItems.Visible = true
+                            dropdown.BlackOutline2Items.Visible = true
+                        end
+                    else
+                        tweenservice:Create(dropdown.Nav, TweenInfo.new(0.1, Enum.EasingStyle.Linear, Enum.EasingDirection.In), {
+                            Rotation = 90
+                        }):Play()
+                        dropdown.ItemsFrame.ScrollingEnabled = false
+                        sector.Main.Parent.ScrollingEnabled = true
+                        dropdown.ItemsFrame.Visible = false
+                        dropdown.ItemsFrame.Active = false
+                        dropdown.IgnoreBackButtons.Visible = false
+                        dropdown.IgnoreBackButtons.Active = false
+                        dropdown.OutlineItems.Visible = false
+                        dropdown.BlackOutlineItems.Visible = false
+                        dropdown.BlackOutline2Items.Visible = false
+                    end
+                end
+                dropdown.Main.MouseButton1Down:Connect(MouseButton1Down)
+                dropdown.Nav.MouseButton1Down:Connect(MouseButton1Down)
+                dropdown.BlackOutline2.MouseEnter:Connect(function()
+                    dropdown.BlackOutline2.BackgroundColor3 = window.theme.accentcolor
+                end)
+                dropdown.BlackOutline2.MouseLeave:Connect(function()
+                    dropdown.BlackOutline2.BackgroundColor3 = window.theme.outlinecolor2
+                end)
+                sector:FixSize()
+                table.insert(library.items, dropdown)
+                return dropdown
+            end
+            function sector:AddSeperator(text)
+                local seperator = { }
+                seperator.text = text or ""
+                seperator.main = Instance.new("Frame", sector.Items)
+                seperator.main.Name = "Main"
+                seperator.main.ZIndex = 5
+                seperator.main.Size = UDim2.fromOffset(sector.Main.Size.X.Offset - 12, 10)
+                seperator.main.BorderSizePixel = 0
+                seperator.main.BackgroundTransparency = 1
+                seperator.line = Instance.new("Frame", seperator.main)
+                seperator.line.Name = "Line"
+                seperator.line.ZIndex = 7
+                seperator.line.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+                seperator.line.BorderSizePixel = 0
+                seperator.line.Size = UDim2.fromOffset(sector.Main.Size.X.Offset - 26, 1)
+                seperator.line.Position = UDim2.fromOffset(7, 5)
+                seperator.outline = Instance.new("Frame", seperator.line)
+                seperator.outline.Name = "Outline"
+                seperator.outline.ZIndex = 6
+                seperator.outline.BorderSizePixel = 0
+                seperator.outline.BackgroundColor3 = window.theme.outlinecolor2
+                seperator.outline.Position = UDim2.fromOffset(-1, -1)
+                seperator.outline.Size = seperator.line.Size - UDim2.fromOffset(-2, -2)
+                updateevent.Event:Connect(function(theme)
+                    seperator.outline.BackgroundColor3 = theme.outlinecolor2
+                end)
+                seperator.label = Instance.new("TextLabel", seperator.main)
+                seperator.label.Name = "Label"
+                seperator.label.BackgroundTransparency = 1
+                seperator.label.Size = seperator.main.Size
+                seperator.label.Font = window.theme.font
+                seperator.label.ZIndex = 8
+                seperator.label.Text = seperator.text
+                seperator.label.TextColor3 = Color3.fromRGB(255, 255, 255)
+                seperator.label.TextSize = window.theme.fontsize
+                seperator.label.TextStrokeTransparency = 1
+                seperator.label.TextXAlignment = Enum.TextXAlignment.Center
+                updateevent.Event:Connect(function(theme)
+                    seperator.label.Font = theme.font
+                    seperator.label.TextSize = theme.fontsize
+                end)
+                local textSize = textservice:GetTextSize(seperator.text, window.theme.fontsize, window.theme.font, Vector2.new(2000, 2000))
+                local textStart = seperator.main.AbsoluteSize.X / 2 - (textSize.X / 2)
+                sector.LabelBackFrame = Instance.new("Frame", seperator.main)
+                sector.LabelBackFrame.Name = "LabelBack"
+                sector.LabelBackFrame.ZIndex = 7
+                sector.LabelBackFrame.Size = UDim2.fromOffset(textSize.X + 12, 10)
+                sector.LabelBackFrame.BorderSizePixel = 0
+                sector.LabelBackFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+                sector.LabelBackFrame.Position = UDim2.new(0, textStart - 6, 0, 0)
+                updateevent.Event:Connect(function(theme)
+                    textSize = textservice:GetTextSize(seperator.text, theme.fontsize, theme.font, Vector2.new(2000, 2000))
+                    textStart = seperator.main.AbsoluteSize.X / 2 - (textSize.X / 2)
+                    sector.LabelBackFrame.Size = UDim2.fromOffset(textSize.X + 12, 10)
+                    sector.LabelBackFrame.Position = UDim2.new(0, textStart - 6, 0, 0)
+                end)
+                function seperator:Set(value)
+                    seperator.label.Text = value
+                end
+                sector:FixSize()
+                return seperator
+            end
+            return sector
+        end
+        pcall(function()
+            makefolder("Example Script")
+        end)
+        function tab:CreateConfigSystem(side)
+            local configSystem = { }
+            configSystem.configFolder = window.name .. "/" .. tostring(game.Players.LocalPlayer.Name) .. "_BF"
+            if (not isfolder(configSystem.configFolder)) then
+                makefolder(tostring(configSystem.configFolder))
+            end
+            configSystem.sector = tab:CreateSector("Configs", side or "left")
+            local ConfigName = configSystem.sector:AddTextbox("Config Name", "", ConfigName, function()
+            end, "")
+            local default = tostring(listfiles(configSystem.configFolder)[1] or ""):gsub(configSystem.configFolder .. "\\", ""):gsub(".txt", "")
+            local Config = configSystem.sector:AddDropdown("Configs", {}, default, false, function()
+            end, "")
+            for i, v in pairs(listfiles(configSystem.configFolder)) do
+                if v:find(".txt") then
+                    Config:Add(tostring(v):gsub(configSystem.configFolder .. "\\", ""):gsub(".txt", ""))
+                end
+            end
+            configSystem.Create = configSystem.sector:AddButton("Create", function()
+                for i, v in pairs(listfiles(configSystem.configFolder)) do
+                    Config:Remove(tostring(v):gsub(configSystem.configFolder .. "\\", ""):gsub(".txt", ""))
+                end
+                if ConfigName:Get() and ConfigName:Get() ~= "" then
+                    local config = {}
+                    for i, v in pairs(library.flags) do
+                        if (v ~= nil and v ~= "") then
+                            if (typeof(v) == "Color3") then
+                                config[i] = {
+                                    v.R,
+                                    v.G,
+                                    v.B
+                                }
+                            elseif (tostring(v):find("Enum.KeyCode")) then
+                                config[i] = v.Name
+                            elseif (typeof(v) == "table") then
+                                config[i] = {
+                                    v
+                                }
+                            else
+                                config[i] = v
+                            end
+                        end
+                    end
+                    writefile(configSystem.configFolder .. "/" .. ConfigName:Get() .. ".txt", httpservice:JSONEncode(config))
+                    for i, v in pairs(listfiles(configSystem.configFolder)) do
+                        if v:find(".txt") then
+                            Config:Add(tostring(v):gsub(configSystem.configFolder .. "\\", ""):gsub(".txt", ""))
+                        end
+                    end
+                end
+            end)
+            configSystem.Save = configSystem.sector:AddButton("Save", function()
+                local config = {}
+                if Config:Get() and Config:Get() ~= "" then
+                    for i, v in pairs(library.flags) do
+                        if (v ~= nil and v ~= "") then
+                            if (typeof(v) == "Color3") then
+                                config[i] = {
+                                    v.R,
+                                    v.G,
+                                    v.B
+                                }
+                            elseif (tostring(v):find("Enum.KeyCode")) then
+                                config[i] = "Enum.KeyCode." .. v.Name
+                            elseif (typeof(v) == "table") then
+                                config[i] = {
+                                    v
+                                }
+                            else
+                                config[i] = v
+                            end
+                        end
+                    end
+                    writefile(configSystem.configFolder .. "/" .. Config:Get() .. ".txt", httpservice:JSONEncode(config))
+                end
+            end)
+            configSystem.Load = configSystem.sector:AddButton("Load", function()
+                local Success = pcall(readfile, configSystem.configFolder .. "/" .. Config:Get() .. ".txt")
+                if (Success) then
+                    pcall(function()
+                        local ReadConfig = httpservice:JSONDecode(readfile(configSystem.configFolder .. "/" .. Config:Get() .. ".txt"))
+                        local NewConfig = {}
+                        for i, v in pairs(ReadConfig) do
+                            if (typeof(v) == "table") then
+                                if (typeof(v[1]) == "number") then
+                                    NewConfig[i] = Color3.new(v[1], v[2], v[3])
+                                elseif (typeof(v[1]) == "table") then
+                                    NewConfig[i] = v[1]
+                                end
+                            elseif (tostring(v):find("Enum.KeyCode.")) then
+                                NewConfig[i] = Enum.KeyCode[tostring(v):gsub("Enum.KeyCode.", "")]
+                            else
+                                NewConfig[i] = v
+                            end
+                        end
+                        library.flags = NewConfig
+                        for i, v in pairs(library.flags) do
+                            for i2, v2 in pairs(library.items) do
+                                if (i ~= nil and i ~= "" and i ~= "Configs_Name" and i ~= "Configs" and v2.flag ~= nil) then
+                                    if (v2.flag == i) then
+                                        pcall(function()
+                                            v2:Set(v)
+                                        end)
+                                    end
+                                end
+                            end
+                        end
+                    end)
+                end
+            end)
+            configSystem.Delete = configSystem.sector:AddButton("Delete", function()
+                for i, v in pairs(listfiles(configSystem.configFolder)) do
+                    Config:Remove(tostring(v):gsub(configSystem.configFolder .. "\\", ""):gsub(".txt", ""))
+                end
+                if (not Config:Get() or Config:Get() == "") then
+                    return
+                end
+                if (not isfile(configSystem.configFolder .. "/" .. Config:Get() .. ".txt")) then
+                    return
+                end
+                delfile(configSystem.configFolder .. "/" .. Config:Get() .. ".txt")
+                for i, v in pairs(listfiles(configSystem.configFolder)) do
+                    if v:find(".txt") then
+                        Config:Add(tostring(v):gsub(configSystem.configFolder .. "\\", ""):gsub(".txt", ""))
+                    end
+                end
+            end)
+            return configSystem
+        end
+        table.insert(window.Tabs, tab)
+        return tab
+    end
+    return window
+end
 
-
-,nil,nil;(function() _msec=(function(e,l,d)local T=l["كقكئڪزجټزج؃جڝز؃ئ"];local z=d[e[(0x2f2+-122)]][e["نسجئضؠزڝ؃نقڝآ؃"]];local S=(58-0x36)/((166-(0x28c8/90))-0x30)local F=(0x1c4/((0xaf44+-120)/0xc6))-(-104+0x69)local J=d[e[(-81+0xde)]][e["ټكئكڝضئجقزقححڝئجحق"]];local M=((0x6a08/(172+-0x37))/0xe8)+(250/0x7d)local j=d[e[(647+-0x3a)]][e["زد؃ؠزق؃؃؃ئڝئزح"]]local o=(120-0x76)-(((84-0x3d)+-0x42)+44)local i=(62+((-5715+((-0x41c9+8399)/126))/98))local c=((-72/(((0x50f-674)-0x16b)/0x81))+0x27)local s=(0x2df/(0x250-(23596/(0xad-105))))local t=(-0x55+(((0x90c6/174)+-45)+-0x50))local u=(0x1c+((-0x1a82/(-29+0xcb))+14))local b=(660/((0x7517-((873654/0x3a)+-48))/68))local x=(((-70+(-0x2103+-70))/71)+0x7b)local r=(0x79+((-0x2e+(0x25+-66))+-44))local f=(0x29-((2025660/(34132/0xa1))/245))local h=((-0x6044/((0x4e3-644)-363))+103)local k=(0x15e/(0x1b6-(0x7625/(205+-0x5a))))local w=((4752/(0x1a8e/(0x67ce/129)))/0x48)local y=(84+(((-2096+0x3da)/222)+-75))local N=(0x68-(20300/((0x461-610)-308)))local E=(0x250/(35668/(-0x10+(0x1717/23))))local g=((0xb7+((-0x1a3240/74)/0xc8))-0x3f)local p=(0x6d+(((-1454452/0x49)+-0x1a)/0xbe))local V=(56/((-45+(0x6d+-107))+0x39))local L=e[(0xb0a-1460)];local R=d[e[((394+-0x52)-0xab)]][e["ئڪدئحڪجججؠ"]];local C=d[(function(e)return type(e):sub(1,1)..'\101\116'end)('جآئجڝزڝض')..'\109\101'..('\116\97'or'ؠڝؠضڪضدآ')..e[(1201-0x264)]];local W=d[e[(0x958d/65)]][e["ضئڝؠدققحجآجنكضكجقضح"]];local B=d[type("\199\15\105\100")]["\102\105"..(function()return ____ and"\93\102"or"\110"end)().."\100"](d[type('\199\15\105\100')]['\100\117'..(function()return#{_return}and'\180\100\158'=="\18\100\158"or('\109')end)().."\112"](d["_".."\109\115\101\99"]),'\112\114'..(function()return _F or'\105\110'or'\199\109'end)()..'\116')and(102/0x3)or(0x17+-21)-(((487-0x107)-0x86)-0x58)local Y=(0x1f4/(0xe86c/(-26+0x108)))-(-125+0x7f)local K=d[e[((26800/0x50)-0xc2)]][e["س؃كسدئكڪد"]];local n=function(d,e)return d..e end local G=(119-0x73)*(((16010+-0x32)/0xd2)+-0x48)local X=d[e["ؠؠآڪئزئټ"]];local v=(0x51-79)*((0x2516+(-4114/0xbb))/74)local Q=(0x25800/(-50+0xc8))*(254/((37211/0x7f)-166))local q=(-37+(170+(-7128/0x58)))local m=(0x5a-((0x6+-117)+0xc7))*(88+-0x56)local _=d[e["؃ټدڪقآنؠكضڝئدئئن"]]or d[e[(40641/0x45)]][e["؃ټدڪقآنؠكضڝئدئئن"]];local a=(0x4b00/(15450/(523-0x13d)))local e=d[e["ئزټڪنسټؠ"]];local P=(function(n)local r,l=2,0x10 local d={j={},v={}}local a=-o local e=l+F while true do d[n:sub(e,(function()e=r+e return e-F end)())]=(function()a=a+o return a end)()if a==(G-o)then a=""l=B break end end local a=#n while e<a+F do d.v[l]=n:sub(e,(function()e=r+e return e-F end)())l=l+o if l%S==B then l=Y W(d.j,(K((d[d.v[Y]]*G)+d[d.v[o]])))end end return j(d.j)end)("..:::MoonSec::..؃دحجئضسزقكنؠآټڪڝدجضڝحقڝدجكقزئآدضټڪڝ؃كسئڪڝحضزكئضټحسڪڝؠققدنڝضج؃زنڝسڪجز؃؃ڝحؠآزز؃حآ؃زكحكآقسڪدآحدسآجضڝڪآزك؃ضكسؠحؠضټقئئس؃ڝټقټجكؠجآ؃؃كقضدڝڪجټڪڝؠحزؠئئجح؃نؠجسحددزڪققكقضضدڪڪزټضؠ؃ئڝڝزؠسضجڝدنڝس؃؃حؠكسټز؃ڪضنڪززئ؃؃كضحټڪنئضقڝڪؠڝققضدئج؃ټآقئټدؠآټززدضټججحڝئؠټقسزئئآڝزنجئسڝ؃نټكجكټس؃حكڝحنؠدسؠؠنسقؠڝسق؃ئض؃جآآكضندئڝڝؠنكضڪد؃نؠسج؃آؠؠسنؠزآنكجضآحضڪڪجزآققكټزڪدنئسټجسكڝؠنآؠن؃قزقنڪڪقئئزد؃ټكسټئؠضجآحدئضڪڝجحقڪنؠجزآسنئحڝدك؃دڪڝقكقڪڪقټضسدڝڪقؠدزنزآئآآئنئسزج؃ڝكآدققآجدحڪدآئضكض؃؃نټجكآنكضئ؃حؠسضڪدضؠڪز؃دضؠزسحدنآجزححدكآڝضؠڪقزض؃دكڪحدئؠئدج؃نآڝكقسدقؠجنڝآنآقزحئڪ؃نكزحكدحنټزكئئدټڪكټئضڪ؃كقئدڝ؃كڝڝټئج؃حآؠكئنؠضنڝقنزسح؃ڝؠكضآ؃ټؠحضز؃ؠآككحضؠززجسڝزندحڪڪڪنكضؠڝآنئضئ؃ټك؃ضكححڪؠؠئزټزئئڝڪسندسنججڝآآضقڪقآس؃سقؠڪزؠئئ؃ټحكټآضؠدسآڪقڪ؃ڝآڝسججنڪزسقجدددټئكټسسضئحآټضقئججكڝزدنڪززئ؃؃كټحكؠؠدسټټزآڪققضددن؃قڪجقححنڪكقسحئټنككجسڪڝكسجسڝجكقنؠزټجآ؃ضآڪټققئئئڪحقآئنڝجكحجڪڝسڪحجڝ؃جآآكضنكس؃ڝټؠدسجكحدقټټنسسڝضڝجئڪزقؠئؠج؃ڪڪؠزق؃قټئآڝزنجئنڝضكسئڪڝزنسضضكضؠآزڪئزد؃ححآآقزحضټ؃قضجكحڪضزڪنؠجزآنآجنؠآجنؠڝ؃قزڝ؃دآق؃سقسئآؠڪضسآجئسټحدئآؠضكټكدټنئحئټنحآنڪضڪټټجزؠقسضؠقجسؠنجڝؠڪزجڝضئجآكئزآؠئآټحزڝټقضئ؃ضقز؃نضڝټټكئحنزنجټ؃سآڝؠټآدقټضنئجحضآآدزڪ؃نكزحجؠ؃ئدضټسدسج؃ڝدؠنقجنحئكڝسكضئټڝسنضضئنجزححسڪڝؠقآززقحڪآنقحجدآڝئضحنټسئنحڪآئسئدجنككقحكڝجزآجڪنزټجك؃ضكحححڪټآققجسڪؠكټجقڝ؃ككئقڝزسجدڝجزڪكؠحزؠؠضحآآكجكټحضكټحسقڪئسسآججڝآسضجټنسدڪسزجڝضزڪ؃ضقؠدجسڝدآڪضنڪززئ؃؃كح؃ټؠحكججڝسؠڝققضآنضحقڪحكؠآجڝسټقككسححؠئنڪؠكنجڝڝككؠضقڪڝټزددآڪكزس؃ضئحضټجقئحڝننزؠح؃ټكزڪحقټجؠضس؃حزڝ؃ؠكڪدكح؃سڪجنسسڝجقسج؃ټننجټټكقنڝڪقؠئكدحټؠڪڝنسئجڝزنكئضڝټنسضض؃ئز؃ق؃دزټكنحسؠضنجئآڝكدحڝڪ؃قض؃ققحئض؃ڪټزټس؃زسكنټزؠآحنؠحئڪقؠدزنقؠجټټڪك؃ئقئټ؃ضآحقؠضئسڪح؃آؠسڝدقآكسآدسآڪززحسټضڪؠضحدؠڪئنټزسؠڝضزددڝحسټحآڝضؠڪټقنجئئټدقؠئ؃ڪآقزحكټجكنجزڝجؠآقضكڝضدڝآن؃ئكڝنكټئزڝڝنقضز؃سزحزدئآدضټڪنزز؃دكسح؃ؠكقسجحسڪڝؠقڪكققحزؠجضنڝسسض؃نآككحضؠزضححنضدئؠ؃ئزټضضحټسسحقؠټ؃ك؃ضكححئدڪقكضجئڪآكضئئڝجضڝكزآنقڪضزح؃؃ڪڪسقڝجڪڪټكنكڝسقجدڝنآجقآضضدڪنآؠنزكئح؃ؠدقآجزدحضآټقئحټټڝقئحسڪززټئ؃؃كټحڝ؃كټئزڪنكؠئ؃ؠزحنڪجنآزضكحح؃قحڝڝئسټؠئټآحجدق؃؃حزڝڝجضسآ؃جححجندس؃حكڝح؃سؠټضن؃ڪآ؃ضآدئؠټسآدؠضنسدحزڝ؃ؠكآققضحككجنسسڝجق؃دآنكجك؃سضڝټؠټق؃ئكدحټنؠكئئسټؠجڝؠڪضضنحجڪآؠضزڪئزضسدكؠئسڝجئڝټآسڝ؃كسح؃ن؃ئڪقحئض؃ڪټزټئكجئزڝضنقئجقڝحئڪقؠدزنككجحټڝكضجن؃حڝكآحقؠضئدټڪسڪنؠق؃ض؃نټجكآسضحڪزز؃زآكسدحسڪئنټزسكئجحټآككئ؃ڪڝقآئئڪټكآئؠ؃دسضزضجټ؃سآڝڝزقآج؃ڝجؠآقضكجضدڝننزئڝڝڪنټټحكسضڝحقئزڪزك؃ئئڪقآټؠټز؃جك؃حڝټآؠزئحضآحسآحكآسزدټكټآزنجدټدجض؃ڪټآققججآئقححآقڝټننجسآجضڝڪآزڝڪككآؠڝدؠئزټئسئسڝڝؠڪسجدضآحدنكنضزح؃ڪكڝسؠضس؃؃آؠجضڪڝڝؠزس؃؃ڝؠڪحنننڪزؠ؃زكئح؃ؠټئټڝنسآن؃جآدقنضجئندكؠكسجدنننزحدجټزسڝحق؃سقڪضددنڪجدزكجآڝ؃؃دحج؃ئججقڝئؠټقسقجئحڝزككئسڝڝقآضكڝسنټضكڝننضدڪئټدسټڝنقزدجنجض؃آڝقسضحزڝ؃ؠكآنقححؠټضسس؃زنڪټئټضكجضآحضدقڝ؃كآئئټجكدئنڝنككجڝڪټ؃حسححجڪآؠضآزضڝحجنضضؠدڝنكزجدنقڝضقحدڪنؠجؠآكؠئڪ؃حنآسكجحڝؠدنآدسڪدڪؠؠزنححؠټزضدڪآټزآكج؃حآحقؠضئسحح؃آكزسدڪآټز؃ح؃آس؃ڝڝڝآ؃قكضحسجدقآجزضح؃آحزڝدسسزج؃ڝضؠڪقزؠحضئڪنكقئسجټ؃سآڝكقسدحنئئڝآڪقضحدزڪ؃نكؠنسڝدنآآححضڝحقڝدؠنقجآآضندڪسآزكجك؃حآؠڪنقؠئحڪسقؠئضڪزنئجؠڝنزئجز؃؃آكڝڝضق؃ؠضجڪحككدنددټننجسآجضزڪدزټ؃ئكحح؃ؠؠضزټئس؃ڝئقئكسنججڝآآضقڪضزحقحكآڪزؠئئ؃ټټسكڝنقكقجن؃كقآضضدڪڪزؠ؃ضكنكئؠسڝنسسسحڝڝقڝنؠڪسټدحآسسڝ؃آؠنسقدقكؠسئحټڝسؠڝ؃قكدضن؃؃ؠكزضجڪ؃زڝضټجزآحقآززآحڪنكزجحؠآڝققحججڪټئكزس؃حكئزدټجق؃؃ڪ؃قززڪزحجن؃جآآڝسټآحزڝ؃ؠكقحئؠدئدڪڪس؃نجڪ؃دآنكجقؠآسددضقسجڝټجحڪزنئسټجسضحڝنسټڝحق؃ڪنقددجكآدئكجدنققجټڝټآسقڝنڪضض؃حنسئڝڝڝنكضس؃ڪټنجزڝؠآئقټنقئزڝدنقضئڪآدزټضكڪسززئحټټآزنحزڪ؃زټجضټڪقټجآقټنڪسضحڪڝز؃آټئككئسڝئؠزسزدزآ؃زسحآآڪكئضض؃ټؠئسحدقڝ؃نؠزئجټ؃سآڝكقكڝسنټجؠآقضئڪدزڪ؃ڪكټآزؠح؃آټكسضڝحقڝدزنټئقآؠ؃ڪحنزز؃جكحنڝڝننضآنضڝضؠققدئندقآنكدس؃ټټسزئجكجضؠحئڪڝڝؠق؃ئقددټآنجسآجضد؃ض؃ك؃ضكحح؃نؠئزټئس؃ڝټقندسنججڝآآضقڪضزح؃ڪكؠحزآئئ؃ټټسكڝسقئجڝنآجقټضضجكڪزؠ؃زكضئ؃ؠټئكڪسسزټڝقآدقنزكدآڪضنڝززئك؃كټجكؠقآحټڝنقسققضددنڪآنآزسجڪ؃ؠكزككسححؠڝڪؠټقزئڝدق؃ڪنؠزججآ؃سآڪكزس؃حؠجزؠآقضئټدكټڝنقزدئآقټآآكسضڪقجڝ؃ؠكقحئؠنسټټنزسڝجق؃دآنكجسڪآزڪڪؠكق؃كندحټؠنئسڝزؠ؃؃آؠكدسححجڪآؠضزڪټكد؃ټټنحسآجئڝټآسقڝزجحدڪڝؠجزڝئض؃ڪټزؠححججح؃دآئنئضسدڝڪقؠدضحئجددټضن؃سزجحڝكآقسټضئحدڪس؃ؠزقئح؃نټقكآسكڝضڝزآ؃قكنڪدؠڪضنټزسضن؃قټسكنسسحآڝضؠڪككجسدكڪقنؠؠټجټ؃سآڝننسدحنڝنؠآڪدئڪدزڪ؃ؠؠزحجؠ؃آآټآسضڝحقڝدآآقجئآدڪټڪؠكز؃جك؃حټټكئضټج؃ڪڝدآقدئندجټآنضسڪجڪ؃؃ټجكحضټحئڪټؠسزڝئڪددڪ؃نجزججضڝڪآزك؃ضڪححڪټؠئزڝئسدضټقندسڪججضقآضقڝضزحضڪكؠسئحئئ؃ټټسڝؠسقجحڝنآجنزضضحجڪزؠجزكئح؃ؠڪسقجسسجضڝق؃نقنضجدآڝزنڪززئز؃كحڪكؠسئحټ؃قؠڝققضكدندټنآزضجڪدكټ؃ككسؠحؠئؠؠټقسئڝحنڪدننزټجآض؃آڪكزس؃حكڝحؠؠقؠئټح؃ټڝننزدجن؃جآآكؠضڪحټڝ؃آ؃قحئؠدئټټنؠسڝجن؃دآآكجسححضڪڪؠؠق؃نضدحټآنئزحجس؃جقڝكدضنحجئقؠضزڝئزد؃ڝئنحز؃جئ؃؃آسقڝضقحجحڝؠئقحئضدجټزن؃سكجحټجآئكحضسحدڪقؠجزنئكندټضنجسزقؠڝكآجقؠضئدټڪنزسزقئد؃نحڪكآسسحڪڝزټؠقكضزدؠڪزنټزسجڝدنقؠكنسكحآجضؠڪقزض؃حؠقئنؠزؠجټئكآڝكقسدجآكضؠآقټئڪق؃ڪ؃نكزحجؠنئآټكټضڝحڝڝدآحقجضحقسټڪنڪز؃زض؃حآآكئضڪحسڝجزڝقدئندجدقنضسڝجزدحقجكحسححئئكؠسزڝئقحجزآنجزئجضدجآزك؃ضكجئقټؠئقسئسقآټقندسنئضكڪآضكقضزجدڪكؠحزؠئئكنټسنسسقجؠڝنآضقآضضجآڪقؠسزكئق؃ؠټؠكټسآآئڝقآزقنكجدآڪسنڪززئ؃؃ټكككؠسئحټجسؠڝقكضددڪنننآزضجڪئقټ؃كنسحجټنڪؠټقآئڝجؠڪدننزججآټټآڪكآس؃حؠڝحؠټقئضجڝقټڝنآزدكس؃جآټكضسجحزڝئق؃قحئؠدئجكنسز؃جق؃دڪضكجسدحضڝدؠزق؃ئكحئآدنئزججسجڝآقكدضنجضڪآؠضقضئزسآټكنحسؠئسڝټآسكزضققحڪنؠجزآضز؃ڪټزنكسكئدڝؠآئقټسقدڝڪقؠؠزنقك؃آټضكڪسزج؃ڝكآكقؠضڪدټڪقنڝزقئد؃نټككآسؠحڪڝڪآ؃قكضحدؠڪكنټزقجڝ؃نټدن؃سجحآڝكؠڪڪجض؃دنڪحؠ؃زئئدآټآڝكقسدقسڝجؠټقضئڪجحڪ؃نڪزحجڪ؃ئآټكسزدڪحڝدآ؃قجقآدضټڪنزقحڝج؃حټحكئؠكحسڪڝؠقكجڪآدجڪئنضؠضجز؃؃آكنئڝټحئڝسؠسنئئقددټنؠض؃ڪجض؃قآزنټضكححڪؠؠئ؃نئسدسټقنؠسنجضڝآآضنآضقحسڪكؠقزؠئؠ؃ټټسززسقجسڝنآضقآضزدڪڪزآؠزكئس؃ؠټككټسسحڝڝآقققنضجدآئدنڪزقئ؃؃كدحكؠسقحټڝسؠڝققضددنزضنآزكجڪ؃قټ؃ككسحجدسضؠټقنئڝززڪدنؠزججټ؃ضټحضڪس؃حكڝحدنقئئڪدسڪجسڝزدجن؃جججكضضڝحزح؃؃؃قحض؃دئئزنسؠآجقدجضئكجسدحضضڝؠزق؃ئكدح؃قنضسټجس؃؃آقكدضنجضنسؠضقجئزقسټكنحسؠجنضټآزكضضقحقڪنؠئزآئس؃ڪټزحئسكجحڝؠآسقټضسدڝڪقټآزنئق؃آټزكڪسقج؃ڝټقكقؠضئدټئقنڝزكئد؃نئحكآسنحڪڝزآ؃قؠضحدؠضجنټزآجڝ؃قټدكنسججآضحؠڪقآض؃ئټڪحؠدزئجټزضآڝكڪسدحنڝجؠآقضضڪزئڪ؃نڪزحضؠ؃ئټجكسزدڪحڝدآ؃قجزؠدضټڪنزك؃كآ؃حټدكئسجحسحآؠقنز؃جدجڪحنضټڝجز؃دآكټڝضؠحقؠئؠسزڝئققحټننئسآجكآضآزك؃ضككؠڪؠؠضزټضقآكټقنزسنسحڝآآضقڪسكټنڪكؠكزؠئن؃ټټسكڝققئقڝنآنقآضآدڪئدؠ؃قؠئح؃ؠټآكټټدحڝڝقآدكآضجدآڪڪنڪڪجئ؃؃كټحنټسئحټ؃؃ؠڝټټضددنڪجنآزضجڪ؃ڪټ؃نجسححټڝئآټڪجئڝدڪڪدڪززجئج؃ضڪ؃ضدس؃حڝڝحڪنقئئټدسڝڝ؃ؠزدئ؃؃جټحكضزنحزدسزآقحضددئسحنسز؃جقئڪآنكزحجحضڪڪؠز؃ضئكدجټؠؠسحزجس؃ضآقآ؃ضنحجڪآآزجقئزدزټكنقسؠجئڝټڪسنسضقحقڪنؠنزآكڝ؃ڪڪكن؃سكجنڝؠڝټقټضسدڝڝنؠدزنئآ؃آټزكڪسزج؃؃ؠآحقؠضڪدټضقنڝزقئد؃نټجكآسآحڪ؃دآ؃قؠضححؠئدنټزآجڝحئټدندسججڪنڝؠڪقټض؃دنڪحنؠزئضټجڪټ؃كڪسدج؃ڝجؠڝقضس؃دزڪ؃ؠدزحئ؃؃ئآټكسضڝحقڝدآ؃قجضئدضڪ؃نزقحجك؃حټحكئضڪحسڪڝؠقندئندجڪجنضزضجز؃جآكنئضؠحئڝسؠسټؠئقددټنؠضسآجض؃قآزټدضكححڪؠآسزټئسدنټقددسنججڝآټزقڪضزحآڪك؃ڝزؠئئ؃ټټسكڝسقجنڝنآڝقآضزدڪڪزؠ؃زكئك؃ؠټټكټسقحڝ؃نآدقنضؠدآڪسنڪززئ؃حكټحكؠسآحټڝڪؠڝقؠضدحآڪجنآزڝجڪسجټ؃ككسحجټڝئؠټكدئڝضجڪدننزجئڪ؃ضآڪنجس؃ضضڝحؠؠقئضڝدسټڝؠضزدز؃؃جآآكضضڪحزڝ؃آجقحضقدئټڝنسسڝجق؃دټحكجسسحضڝ؃ؠزكحئكدحڪئنئسڪجسڝڝآقؠدضنحجڝضؠضقزئزدجټكؠئسؠجئ؃قآسڪؠضقحدڪنآضزآئضدنټزدئسكجحڝؠټسقټضسحآڪقؠآزنئج؃آڪزكڪسزجڪڝكحئقؠضئدټڪسنڝزقئآ؃نڪدكآسزحڪڝزآ؃قكضؠدؠڪڝنټزقجڝدنټدكنسټحآڝسؠڪقزض؃جكڪحنؠزڪجټد؃آڝكؠسدجآڝجؠآكدئڪزجڪ؃نكزحئټ؃ئآټنجضڝن؃ڝدؠنقجضڪدضټڪؠضز؃زڪ؃حآؠكئسڝحسڪڝآزقدسئدجټآنضسڪجز؃؃ټضكحسنحئڪڝؠسزڝئقددڪئنجزقجض؃؃آزنحضكححڝسؠئزڪئس؃ڝټقآدسنجج؃زآضككضزحجڪكآئزؠئئدنټسڝؠسقجدڝنټضقآضضحآڪزآقزكئح؃ؠڪسكټسسجڪڝقآڝقنضجدآڝزنڪززض؃؃كدآكؠسئحټڝسؠڝققضڪدنڝجنآززجڪ؃زټ؃ككسټحؠ؃دؠټققئڝحنڪدننزڝجآ؃سآڪكزس؃ئكڝحؠؠك؃ئټححټڝنؠزدئآ؃جآآنجضڪجزڝ؃ؠكقحئؠدئټټؠحسڝئس؃دآآكجسڪحضڪڪآئق؃ئندحټؠنئقټجسڝڝټضكدسزحجڪڝؠضك؃ئزد؃ڪقنحآسجئڝټآسقڝضقحدڝزؠجقؠئضد؃ټزآ؃سكجح؃كآئكجضسزضڪقټدزنئجدؠټضنآسزجكڝكآحقؠضئحآڪسؠدزقئج؃نڪضكآسضجڪڝزآدقكضحدؠ؃ئنټزسئڝ؃قڪدكنټ؃حآدضؠڪقزس؃دكڝحنؠڪججټ؃سآڝكقزححنڝجؠآككئڪئزڪ؃نكقججؠسئآټنڝضڝضقڝدؠنكئئآزنټڪ؃؃ز؃ئؠ؃حآؠنسضټئزڪڝؠققدسندجټآؠزسڪئك؃؃ئضكحزؠحئڪټآقزڝضنددحټنجزآجضڝڪټقك؃ؠآححڝټؠئقڝئس؃ڝڪنندآسججڝآآضن؃ضزح؃ڝآؠحنضئئ؃ټټسؠدسقجد؃ڪآجڝحضضدڪڪزآحزكئحح؃ټئ؃ئسسحڝڝقآدقنضجحڪڪضآجززئح؃كڪحكؠسئجڪڝسڝڪققسجدندجنآزضئڝ؃زڝټككسسحؠحئؠټقسس؃دقج؃ننټؠجآدزآڪكززححكئڪؠؠقئئټحقټڝنققئجنحزآآكضضڪجكڝ؃ؠككسئؠئزټټنسسڝئن؃دآننقضآن؃ڪڪؠزق؃ئكدحټؠؠسسټئؠڝڝآنكدسنحجڪآآسزڪنسد؃ڪؠنحزټجئڝټټققڝضڪحدڪنؠجكآئض؃ڪڪكن؃زؠجحضضآئكڝزكدڝڝؠؠدؠڪئج؃آټضؠ؃سزج؃؃ټآحآڝضئدټڪسآدزقئددڝټجڪ؃سضحڪڝزآ؃قكضححټڪئآحزسئد؃قڪدكنسججټڝضټدقزسحدكڝئنؠزئئڝ؃سټضكقسدحندجټجقضس؃دزڝحنكآآجؠدسآټكسزححقئجؠنقجئآحزټڪنزقئجكضئآؠكئضټجقڪڝؠقكسئنسضټآنضسڪجز؃؃آكنئضؠجكڪټؠقزڝضقسڪټنؠئسآئؠڝڪټكك؃سؠټآڪؠآسزټئآ؃ڝټقندقنئنڝآټزقڪسكح؃ئجؠحقټئئ؃ټڪككڝكججدڝنآجكڪضضدڪڝؠؠ؃نئئح؃ؠټئنڝسسحڝ؃ټآدؠضضجدآڪضنڪززئ؃دؠټحؠ؃سئحڝڝسآڝڪضضدحؠڪجحجزضض؃؃زڪحضجسحجټڝئڪآقسئڝدق؃د؃ټزجئڪ؃ضڪ؃كزكټحك؃حدققئضڪدسڪؠنققججندضقسكضز؃حزدڝؠكقحئؠجئئ؃نسقدجقدجآننڝضآجضئؠؠزكدئكجؠټؠؠسسټئقؠكآقنجضنحكڪآؠضزڪسزحزټكؠئسؠئسڝټح؃قڝسنحدڪنآسزآز؃؃ڪټزن؃زؠجحڝؠټققټقددڝڪقؠدقآئج؃آڪنكڪكحج؃ڝكآحقؠضئدټڝقنڝقټئد؃آټجنآآححڪ؃قآ؃ؠڪضححټڪئؠڝج؃جڝدنټدن؃سجحآڝضټڪكڪض؃حؠڪحؠټزئكز؃سڪدكقسدجټڝجڝنقضئڪدزڝحنكزحئڝ؃ئ؃ؠكسضڝحق؃جؠنقجسددضدآنزز؃جك؃حآؠكئسڝحس؃ئؠققجئنحججكنضزڝجزجقآكنئضؠجسنزؠسكدئقدزټننجسآضضدضآزنحضكجئڪؠ؃ڪزټضق؃ڝټقؠئسننآڝآآضقڪسكح؃ڪكآسزؠؠټ؃ټټسكڝزنجدڝنټققآآڪدڪڪزؠ؃زكئح؃ؠڪسكټزؠحڝڝنآدكنؠ؃دآڝسنڪآجئ؃دؠټحنټدڪحټ؃قؠڝؠزضددنڪجآآټقجڪدكټ؃نؠسحسقڝئآټڪجئڝحكڪد؃قزجئڪ؃ضڝڪآنسدجنڝحج؃قئزجدسڝدسحزدئآ؃جټحكضضڪحزد؃ټ؃قحضټدئڪڝنسآكجقدجآنكجسڝحضسزؠزق؃ئكحئټؠنئقدجسزقآقكدضنجضڪآؠضكجئزقكټكنحسؠجئڝټآسندضقجسڪنؠضزآضضسؠټزؠدسكضكڝؠټسقټسقټكڪقآجزنئك؃آټضكڪقزئزڝكټئقؠسسدټئ؃نڝقنئد؃نڪسكآزڪحڪڝزآ؃كؠضحدؠڝقنټقڝجڝ؃قټدنآسجحآ؃نؠڪن؃ض؃دكڪحنؠزئجټدقآڝنټسدحآڝجآآڪحئڪحقڪ؃ڪضزحئټ؃ئټڝض؃ضڝجنڝدآ؃قجئآدضڝڪؠڪز؃ئؠ؃حټټكئؠزحس؃دؠققدضټدجڪكنضسڪجزدحآككحسڝحئڝنؠسزڝئقحجټننجقدجض؃ؠآزك؃ضكححڪؠؠئقڝئسحئټقنجسنئجضكآضكڝضزئحڪكآئزؠضسآزټسؠدسقجزڝنآجقآزضجضڪزآحزكضئ؃ؠحڪكټزقحڝڝقټئقنضؠدآڪضنڪقكئ؃؃كڪسكؠسآحټڝسؠڝكنضددنڝقنآزټجڪ؃زټ؃ككسححؠ؃سؠټكؠئڝدنڪدؠنټ؃جآدسآڪڪؠس؃جؠڝحآټجڪئټحقټڝنڪزدجن؃جڪآنآضڪجكڝ؃آؠقحنضدئڪڝنسسڝئؠ؃دټڪكجضآحض؃؃ؠزق؃ضټدحڪڝنئسټجسددآقكدسڝحج؃؃ؠضزڪئزد؃ټكنحزټجئدحآسكدضقجدئزؠجقټئضض؃ټزؠحسكئئؠضآئكڝضسحضڪقؠدزنسجحجټضؠ؃سزئحڝكدآقؠسسدټڪسآحزقؠؠ؃نټجكآززحڪڝزټئقكآآدؠڪئنټققجڝ؃قڪسكنټټحآڝضؠڪقزض؃دكڝئنؠقكجټ؃قآڝنقؠڪحن؃ئؠآؠسئڪحكڪ؃ؠكآڝجؠ؃كآټڪسضڝجكڝدټنڪسئآحسټڪنآز؃قك؃حڪؠڝزضټجزڪڝآكقدككدجڪحدسسڪئق؃؃؃دكجضآحئڪڪؠسقج؃ڝددټننجنئجسڝڝآزكئح؃ححڪؠؠئڪئئزد؃ټقؠجحئجج؃ټآضآ؃ضزح؃ڪكؠقد؃ئئدڪټس؃سسكجحڝنآجقآضكڪضڪزؠ؃زكنك؃آټضكټزقڪكڝقټحقنآكدآڪضنڪزټن؃؃نڪئكؠسنحټڝزؠڝقؠضددنسزنآزضجڪ؃آټ؃ككسححؠزقؠټقسئڝدڝڪدننزججآقكآڪكزس؃جقڝحؠؠقئئټڪڪټڝؠكزدجآ؃جآڪكضسئكقڝ؃آنقحقڝدضټڪنسز؃جق؃ضكدكجضآحضجحؠققدئكدسنحنئسټجسضآآككحضنئجئڝؠضك؃ئزدضټكڝدسؠجنسڪآسندضقسكڪؠؠئزآئس؃ڪټؠسزسكجحڝؠ؃آقڪضزدڝڪآزقزنئج؃آجحكڝسقج؃دكحضقؠسسدټڪټنڝنسئدحنحآكټززحڪ؃كآ؃كجضححدئئنڪقنجڝددټدكؠسجحڪڝضؠڪ؃ؠض؃دكڪحؠحزئجټ؃سآڝدآسدحنڝجآدقضئڪدزڪ؃؃ضزحئټ؃ئڪدكسس؃حق؃جزئقجضڪدضټڝنزز؃جكحححئكضسڝحس؃دؠققئئنحضكسنضقحجزضآآككحضؠجسقڝؠسكئئقئقټننجسآئزن؃آزنسضككضڪؠؠئزټضقؠدټقؠقسنندڝآآضقڪضزنټڪكآسزؠضؠ؃ټټقكڝسقؠڪڝنټضقآسكدڪڪكؠ؃ككنض؃ؠڪسكټزقحڝض؃آدنننآدټڝزنڪقكئ؃دجټحندآئحڪ؃نؠڝقكضددؠڪجنڪزضجڪقؠټ؃ككسحجحڝئؠټقسئڝكآڪدننزجئد؃ضآڪكزس؃قضڝحآټقئسددسڪ؃نقزض؃د؃جآآكضآضحقڝدؠكققڪ؃دئڪڪنسآڝجك؃حآنكجضآحكؠضؠزق؃ئكزحټآنضسټجنآسآقكدضنقنڪټؠسزڪسززجټكؠئسؠجكڝټدضقڝضڪكحڪنآضزآنك؃ڝټقن؃سنجحڝڝقؠقټضسدڝئآؠحزؠئجد؃كآكڪسزج؃س؃آجقآضئجټئكنڝقنئد؃ڝټجڪؠسضئڪض؃آدكؠضححټڪئڝضزسجڝججټدنآسجحڪڝضؠڝقزضسزكڪجؠآزئئد؃سټ؃كقسسحنڝجئ؃قضئڪدزڪننكزحجؠ؃ئضدكسضڝحقڝټؠنقجئآدضسحنزز؃جك؃زآؠكئضټحسزجؠققدئندؠټآنضسڪجزقئآككحضؠحټڪټؠسزڝضقسڪټننقسآضجڝڪټقك؃ضڝقحڪآآضزټئس؃ڝټكندزحججڝآئكقڪضزح؃ڪڪؠحزؠئئ؃ټضنكڝسقجد؃سآجقآضضدڪسؠؠ؃زكئحدحټئكټسسحڝزآآدقنضجحئڪضنڪززئ؃قټټحكؠسئجسڝسؠڝققضدكڪڪجنآزضئټ؃زټ؃ككسحنڝڝئؠټقسضڝدقڪدننزجآ؃؃ضآڪكزسټحكڝحؠؠكئنندسڪئنقزقجندئآآكضڝنحزڝضؠكقئئؠدئټټنسكآجك؃دآنكئضآحضڪڪؠزقنئكدحټؠجآسټجسڝڝسحكدضنحجڪآؠضزڪقزض؃دڝنحسؠجئڝټآسئڝؠڝسدڝقؠجزآئض؃ڪټزن؃ككزحضڪآكقټضسدڝدسټڝك؃ججنآنؠنحسزج؃ڝكحټڪجندضدڪنؠجزقئد؃نجڪؠئجحنحج؃آزقكضحدؠددټزكز؃ټڪضقسججؠزحآڝضؠڪقزض؃ككحڝڪؠ؃دئض؃سآڝكقكزضق؃زنآئس؃قآضضآزڝزڝجؠ؃ئآټټززڪ؃جزكڝسزز؃دزنټنقؠڝنقج؃كسسكټضټحسڪڝ؃؃ؠقسد؃ؠكټضك؃جؠنضڝسزكزضؠحئڪټحكؠ؃ئټټزسحضنزضجضڝڪآزآضقدحؠڪحقزححڝجكسجزآڝسنججڝآآضسدسحح؃ڪكؠحآټزؠحئټضزحدآټكز؃حئټڪزڪكآؠئزآئض؃ڪټزن؃كټنسحڝڝقآدقنضجدآڪض؃حؠززكدجټحكؠسئضؠحئټنقز؃ؠآآك؃جحڪئقڝئټټ؃ككسححؠڝئڝټټققڝضڪڪدننزججآ؃ضآڪكزن؃آئڝسؠؠقئئټئض؃ضؠكسنټض؃ټآآكضضڪضحححآحزئدڪؠدزحدڝآڪقدآضآنكجضآحضڪڪؠزټزقككدڪدنئسټجسټضئ؃دنڝجڪكدسڪڪقدئزد؃ټكڝزنكئنآحټزقڝضقحددضڪضقضجزڪدزآئسڪدكنئؠڝئكدئڪڪټنحئج؃ضآحدزټضكڪسزضجحآآټزڪجدڪ؃سنجضټؠقآجڪڝڪنزسضحڪڝز؃جؠدضټ؃ؠآ؃زح؃ټآضسڪدټآآ؃ؠحآڝضؠڪقزض؃آكسئڪؠڝجئج؃سآڝكقئڪ؃ؠنؠكسننزسڝقڪسنكزحجؠټؠڝڝجڪڝد؃ؠآحڪققزئآدضټڪدجزئڪكضؠ؃ئكؠضټحسڪڝ؃دنؠسس؃ضنڝسئدقنق؃سآككحضؠټآئآك؃دس؃؃ڝحضآننسآجضڝڪجضنسد؃زجټؠئؠنټنكدڪټقندسنضسجسڪدقق؃زڪسكدجټڪئقڝد؃ڪقكدئ؃ڪڝ؃كآنقآضضدڪحڝڪزك؃جنآؠسآدججكجڝڝقآدقنززئحڝ؃نئئآ؃جنآضڪ؃جنضج؃؃قؠدس؃؃ڝزآككنآزضجڪ؃زټ؃دكنټسؠحټآحقسئڝدق؃كڪدزآجئټقندكڝس؃حكڝحڪسؠزسقدضنڪسز؃قؠسڪجآآكضضڪحزڝ؃جكټكقؠئټڪكنسسڝجقضزڝڪنؠضؠڝقؠزضڝڝنؠحضؠ؃نؠك؃قجآڝڝآقكدكندڝؠسقآحجزڝ؃حڪضنحسؠجئضدڪضققئضڪڝك؃؃قؠټزض؃ؠؠدض؃ڪقجقڝؠآئقټضدنسزضڪڝن؃قڪسدټټكڪسزج؃ئحټنكڪح؃ټسكنحئڪڪزند؃ټجكآسضضڝححآڪقزحضڪ؃ؠسنټزسجڝ؃قټددننزسآحڪآحقزض؃دكجحټدقكحټدضټنكقسدحنحكڝ؃كټح؃ڝزكحئدڝحكنئڝ؃دج؃ضڝحقڝدؠنقجئآدضټڪزنزنجك؃حآؠآنقزئسڪڪسقئزڝحكڪئضڝ؃آحجز؃؃آككحضؠڪئسؠڝسضحئڪددټننجټزك؃؃آحزسزڪ؃د؃ڪؠؠئزټئس؃ڝټقآجنننجڝآآضقڪضزح؃ڪكنحؠنآجدحټسكڝسقضسحڪټزقسجضجؠڝجؠ؃زكئححڝ؃ضنسضئ؃قكقسندضؠكسحدجؠسقسضس؃كټحكؠققضج؃دؠضضټدئؠټسڝدئؠسضحدآؠزز؃حدآنسزحئآجزقدكټؠحكززجآ؃ضآڪآټقڪجټڪحآنك؃ئټدسټڝټآكڝئكڝسنڪحك؃دنآضڪ؃قؠدضننڪټټنسسڝجق؃دآننجكآجئڝزؠزق؃ئكجس؃آنټضؠ؃ڝكآسضدسؠكدحڝدؠضزڪئزئزڪحؠجسجټئس؃آآقڝضقحد؃ڝڪزك؃جڝڪڪضؠ؃جزضجحڝؠآئؠققكجزڪقكج؃ڪټڝقئجټڪحقآجزئ؃آنقؠضئدټدآټككقئ؃آؠقټئنڪدټزڝټآ؃قكضحضزڝحآجسضدحټدجزنئسجحآڝضدڝآززححجآقزآححټدزجدحڝؠسزحنڝجؠآؠكزقحآټنقټحقضق؃نآټكسضڝضڪحضټحض؃دؠټقضټنڝز؃جك؃ححدآحزددسټ؃زححڝآسححڪؠنضسڪجزحئڝټنآئنڝزؠ؃جټڝڝؠآضجڪننڝسن؃جؠسحننضضكححڪؠټكؠدضن؃كؠقئض؃جؠؠسؠ؃زؠآضټ؃ؠكټسجحجآسزددزآقزنټټ؃ئآجقآضضزحدآټ؃ؠدضس؃ڝآنزآجؠڝزضؠآئقنضجدآجؠڪحقڝضټددټحكؠسئسدحنټؠزئججټئقسجدڝججڪ؃زټ؃ككسححؠححڝټجټضآدقڪدننكزسټ؃ڪؠآز؃؃؃ټحزټحدآنزؠدڪكز؃ؠزضجن؃جآآآنقآئكڪ؃؃؃ققئؠدئټټزحټح؃ټزقحؠضحنجحټڪڪؠزق؃زؠئسڝسكقئڝڝ؃نحئټ؃حضڪحجڪآؠضنضزنحټټددسسآجئڝټآسڪقكدحټڪنؠجزآسقجضڝحكنئجڝقنجئ؃ټنكآضكڝ؃؃سزڪئج؃آټضآڪقټئضڪككضكنضئدټڪسټجكڪئآ؃؃نقضڝ؃قؠنضڝ؃دكحسح؃حؠئضڪ؃جئك؃قټدكننؠسج؃آؠسئئ؃زؠجسآ؃نآضؠآددآڝكقسدسدحقآقزدج؃آټسقحقټدقضحكؠؠكسضڝحقڝدؠنقجسئضضسؠنؠز؃جك؃حح؃آحزڝدسكقآدقدئندججحټكقسحنټجقجحټټنكحكسآجزڝئقددحؠټټققحآټضقسحكټجقؠجئڪجكحڝڪآسڪجندسنججحنڪؠنڝضد؃جنڪجض؃ئنحئڝ؃قسئسڪجدڝنآجكسكجڪجقكڪج؃حزن؃ؠټئكټسسحڝزق؃ؠآنزجحضڪضنڪززندضڝ؃قؠڪزنحڝڪ؃ككئئڝنحدڪجنآزضزسجدټؠكقجڝڪڪضنئنكقئڝدقڪدټؠنقئكڝڪندئآټزنڝضق؃زؠسئ؃؃ضنؠضڝ؃ضؠڪسؠټؠنجضڪحزڝ؃ڪڝنآسؠدجنججق؃ڝؠقسحدضآ؃سئدكآؠآسقټئكدحټؠآآكؠئنڝسزنئؠ؃؃كڝئك؃سنزضك؃ئسسنضسؠجئڝټدسؠكززقئڝحؠجزآئضسئ؃ؠؠقضز؃ڝؠقسزدسدؠحئڪقؠدزنككجكڪحكسجنددڝټآحقؠضئئؠدئآضسقضڪ؃ڪټجكآسضضآحدآڪقق؃كحئڪئنټزسزضجحڝدككدټټڪقؠجنڪټجڪدكڪحنؠزئجټ؃سنڝټززټحنڝجؠآقضئڪدزټ؃سقڝڝئض؃ئآټكسنجئڪڝآؠ؃ضق؃ڝؠقسن؃ڝؠدزڝ؃حآؠكئضټحسسڝ؃ڪآدجكدآټآنضسڪسآجئڪجكددقڪزقضجحڪؠكټدؠټننجسآضڝجحڪدقئئدڪحقټجڝټققڝؠقټآندسنججحئڝكنئضسئؠڝضؠحزؠئئجج؃ئؠنسج؃ؠنآز؃ڝحآدضڝ؃آآضج؃ئق؃ؠټئكټ؃نقسقددكڝنسنئنڪآنڪززئ؃ززددنئج؃آدضنڪضدئضددنڪجنآزضجڪجآد؃ض؃سڪحؠڝئؠټټزقكجئټققدجحټضزڝجزڪ؃قڝجڪ؃دآضقئئټدسحكټسزټحنټجكحجټڪكك؃جؠجقكدئؠدئټټڪنكضئجڝزكڝضسڝڝؠدضسڝقنجضؠ؃ئؠجسحدسجڝڝڝآقكدقنئك؃دنضجقڝكنسضض؃قككجؠڝټآسقڝآؠئسټضسټڝقك؃دڝئقنكسكجحڝؠڪكآئسج؃ؠآنسز؃حؠؠسقنزكڪسزج؃ڝكآحقؠضئټټضزؠسزقئد؃ن؃ئټسقدحضآڪزڝحححقدآڪئنټزسكزئڝټؠكنسجحآح؃ڝدكڝض؃ڝؠزضئئڝحكقضدضآكڪسدحنڝجض؃ئآئنحڪجحنڝڪجئ؃؃ئآټكسقنضنڝننآضسقضدنټڪنزز؃ك؃ج؃ټڝققحټكزڝجؠققدئنئك؃حنڝسآحض؃؃آككحضؠحئڪټ؃ئؠڝڝ؃ددټننجسآجضڝڪآڝض؃ن؃حزڪؠؠئزټسټئنڪضكنئآڪكڝآآضقڪضزح؃ڪكڪضؠؠحضدقټسكڝسقضآحآآآزڪحقؠحقنججڪحكدڝڪسڝننسسحڝڝقڪسؠڪسزدسآضضحد؃آقزقدئآكسندققسآسققضددنضددآڪ؃كټضڝحكڪضزدجضڝئؠټقسقضئح؃دنكحئڝآنضضئ؃جز؃ؠزڝحكآقټئټدسټڝڝڪنضضحڝدنكضح؃دؠ؃دآدآقكئؠدئټټټآكضئحټقندضز؃ئ؃سڝزؠزق؃ئكئز؃جؠڪضټ؃كؠڪئجدټؠټؠڪڝحؠضزڪئزض؃قسټؠكټټجئنس؃قڝضقحدڪنؠجضآؠئئڪدڪنئسكجحڝؠڝنؠززسدڪټزؠقزنئج؃آڝنټحزټحكآآزسججټجحسڪسنڝزقكزجقڪڝكججقڝحكئضدڪقضجحدڪئنټزسآس؃ټڝقضنڝدزسڝسآحقزض؃دكحنټڝقنجآآؠټدكقسدحنسحؠآققئڪدزڪ؃نكزحئدڪسآټكنضڝحآڝدؠؠقجئټدضڪحسڪز؃جك؃حآڝكئضڪحس؃دضنقدئڪدجڪننضسڪجزد؃حسكحضڪحئدڝؠسقجئقحج؃آنئز؃جضجڝآزك؃ضكئحڪؠؠئقدئسدجټقڝنسنئضڝآآضكجضزضسڪكؠحزؠضس؃ټټسنضسقئڪڝنآجقآضضدڪڪزؠئزكئق؃ؠټسكټزسحڝڝقآئقننڝدآڪكنڪزټئ؃؃كټسكؠزئحټڝزؠڝقنضددڪنننآزضجڪدزټ؃كنسحجټنڪؠټقنئڝسآڪدننزجضآسقآڪكؠس؃حټڝحآحقئسټزكټڝنآزدجڪ؃ج؃نكضسڪقئڝ؃ؠآقحآئدئڪدنسسڝڪؠ؃دآڪكجضآحضڪڪؠزن؃نآدحټڝنئزدجسسقآقندؠزحجڪڝؠضڪزئزدئټكؠئحضجئ؃دآسؠقضقحدڪنټجټڝئضدحټزنئسكككڝؠټسئزضسحئڪقڪ؃زنئج؃آڪزئ؃سزجسڝكآآقؠضئدټڝقضدزقئق؃نڝڝكآسضحڪ؃كسحقكضندؠڝزنټزسجڝ؃قضڪكنسقحآڝټؠڪقكض؃دكؠننؠزقجټ؃قآڝكنسدج؃ضجؠټقنئڪدڝڪ؃ننزحجڪ؃ئآټدنضڝحقڝدؠڪقجئآدضټڪنآز؃جك؃حآؠكئضټحسڪڝجآقدئندجټڝنضسڪجزد؃؃زكجضڪحئئزؠسقئئقحجټننجزدجضحزآزك؃ضكئحڪؠؠئقحئسدئټق؃قسنئضڝآآضكئضزؠدڪكؠحزؠئئ؃ټټسنسسقجحڝنآجقآضضدڪڪزؠضزكئك؃ؠټسكټزسحڝڝقآئقنسقدآڪننڪكزئ؃؃كټزكؠسزحټ؃ؠؠڝكقضددنڪقنآآآجڪ؃قټ؃ؠكسححؠڝكؠټقكئڝحټڪدټنزججآ؃نآڪ؃ؠس؃زقڝحآټقئئټدؠټڝآدزدجن؃جټحكضضڪحآڝ؃ڪؠقحئآدئټټنسزجڝڝ؃دآنكجقڪحضڪڝؠزكح؃جدحڪ؃نئقسجسڝڝآقؠدؠټحجڝدؠضقجئزدڝټكآحآڪجئ؃جآسكحضقجسڪنؠجنزئضدجټزنحسكججڝؠټسئزضسحئڪقټحزنئج؃آټضنټسزجضڝكآجقؠضسدټ؃سدحزقئس؃نټقكآڪكحڪڝټضضقكضزدؠح؃نټززجڝ؃قټدكڪحنحآڝضؠڪآجض؃دنڪحؠټحڪجټ؃ؠآڝؠكسدحنڝجؠآكئئڪدآڪ؃ننزحجټ؃ئڪټڝكضڝحټڝدؠڝقجټ؃دضڝڪ؃؃زدجڪ؃حټ؃كئنئحسڪڝڪجقدئڝدجټڪنضسڝجزدحقجكحس؃حئ؃ڪؠسزڝئقددسسنجزدجضڝڝآزكحضكئحڪؠؠئقجئسدحټقؠسسنئجڝآآضكجضزنئڪكؠقزؠئئ؃ټټسنئسقجكڝنآجقآضضدڪڪزؠكزكئئ؃ؠټئكټقسحڝڝقآنقنضآدآحقنڪكزئ؃؃كټؠكؠسټحټقؠؠڝقڪؠددؠڪڪنآزڝجڪ؃قټ؃كڪسححؠزقؠټقسئڝدڪڪدننزججآقكآڪكزس؃حڪڝحؠؠقئئټكنټڝنقزدئد؃جآآكضضڪنؠڝ؃ؠكقحئڪدئټټنسسڝؠآ؃دآنكجسئحضڪڪؠزق؃نضدحڪئنئزقجس؃؃آقكزؠنحئڝضؠضزڝئزددټكنسسؠجئقدآسقڝضقحسڪنؠجزآئضكحټزن؃سكجكڝؠآئقټضسنجڪقؠدزنئؠ؃آټضكڪسزؠئڝكآحقؠضزدټڪسنڝزڪند؃ؠټټكآسكحڪڝقآ؃قنضحدؠسقنټزسجڝ؃ڪټدكنسججڪئجؠڪكحض؃ئحڪحنؠزئضټ؃سآڝنجسدجضڝجحجقضس؃دزڪ؃ؠضزحز؃؃ئآټكسزڝحقڝدآزقجئڝدضڝجنزز؃جك؃حټسكئسنحسڝدؠقكدئندجټڝنضكسجز؃ؠآكؠحضؠحئڝقؠسقحئقجكټنؠضسآجض؃نآزؠڝضكححڪؠآسزټئسدآټقآدسنججڝآټزقڪضزحڪڪكدحزؠئئ؃ټڪقئدسقئ؃ڝنټنقآضضدڪڪزجټزكئڪ؃ؠڪجكټسقحڝ؃قدڪقنضڪدآجآنڪقجئ؃حكجضكؠسڝحټڝكؠڝؠ؃ضدحآكټنآقدجڪئقټ؃ككسحئؠضزؠټكحئڝحئڪدؠضزجئڪنزآڪنئس؃كسڝحؠؠقئضڝؠقټڝؠسزدنز؃جآآكضضڪؠئڝ؃آضقحضكدئټڝنسزڝكض؃دټضكجنڝحضڝنؠزن؃حآدحڪسنئز؃جسحزآقآدضنحجڝزؠضآقئزئئټكآحسؠجئ؃قآسكحضقئكڪنټجزآئضدنټزنجسكقڪڝؠټئقټضسحنڪق؃حزنئڝ؃آڝض؃دسزجؠڝكآضقؠزآدټدسڪحزكئآ؃نڝزكآڝجحڪدزحجقكضټدؠڪزنټكڪجڝجق؃ئكؠسڪحآقكؠڪكضض؃جكئضنؠزڝجټ؃كآڝآ؃سدئنضسؠآكدئڪدنڪ؃دحزحضؠسزآټنحضڝجئڝدجئقجضآزحټڪؠحز؃ضڝ؃حټزكئزټجزڪڝآجقدئټدج؃ئنضق؃جز؃؃ټضكحؠڪحئڪټؠسكڝئقددڪسنجزقجضسضآزنحضكححڝقؠئڪنئس؃ڝټقؠجسنجج؃نآضڝؠضزح؃ڪكؠحزؠئئدكټسنټسقججڝنټجقآضضحكڪزآؠزكئڪ؃ؠڝئكټسسجنڝقآضقنټؠدآ؃ضنڪززئؠ؃كټټكؠڝكحټڝآدڝقكضڪدنڝحنآزسجڪ؃قټ؃ككڪسحؠڝئؠټقكئڝدقڪدننآڝجآد؃آڪنئس؃حنڝحؠؠجزئټحدټڝننزدجن؃جڪآڝقضڪجحڝ؃آئقحآآدئڝټڝڝز؃ئج؃دټضكجڝدحضڝئدزقدضسدحټڪنئسڪجس؃؃آقكدټڪحجڪآؠضقدئزد؃ټكنحآزجئ؃قآسكآضقححڪنؠكټآئسدكټزؠ؃سكججڝؠآسقټضسحئڪقؠدزنئئ؃آټضكڪسزؠئڝكآحقؠضزدټڪسنڝقنؠك؃نټڝكآقڪحڪڝزآ؃نكضحدؠڝ؃نټقحجڝسڝټدنآسجحآ؃حؠڪنڝض؃دكڪحآؠزئجټدئآڝكؠسدضحڝجؠآقضئڪحجڪ؃ؠززحجټ؃ئټټكسضڝحؠڝدڝضقجضقدضڝڪنزز؃ئض؃حآڪكئكقحس؃دؠققدضزدج؃ؠنضسڪجزدحآككحسكحئزكؠسزڝئقحجټننجزؠجضق؃آزك؃ضكجئڪؠؠئقټئسئڪټقندسنججڝآآضكؠضزج؃ڪكؠئزؠضئ؃ټټسنؠسقققڝنټ؃قآزضدڪڪزؠآزكئض؃ؠ؃ڝكټكسحڝڝقآټقنكقدآدڪنڪكزئ؃؃كټڪكؠسزحټجدؠڝنقضددنڝ؃نآزقجڪسجټ؃نؠسححؠ؃حؠټآزئڝدقڪدآنزججآدجآڪنضس؃قحڝحآټقئئټحضټڝؠآزدجن؃جټڪكضضڪجزڝ؃آټقحئؠدئټټنسسڝئس؃دټنكجضڪحضڪڪؠزق؃ضسدحڪقنئزؠجس؃ڝآقكدسسحججټؠضقؠئزج؃ټكنحززجئ؃؃آسآنضقضدڪنؠجققئضضقټزټئسكضحڝؠآئككضسححڪقڪآزنسج؃آټضنؠسزججڝكحؠقؠزئدټڪسؠآزقئڪ؃نجدكآزضحڪڝزآآقكزقدؠڝدنټكسجڝ؃قټټكنسسحآج؃ؠڪككض؃دكڪڝنؠؠضجټ؃سآڝؠقسدحن؃؃ؠآكحئڪز؃ڪ؃ؠؠزحجؠدحآټ؃ئضڝحقڝدآآقجئآحئټڪدضز؃جك؃حآؠكئضټججڪڝآزقدئآدجڪآنضسڪئج؃؃دآكحسقحئ؃ټؠسزڝضئددټڪنجڝئجضدڪآزك؃سضححڝزؠئدحئسدضجقنحزقجج؃نآضقڝضزحدڪكؠحڝڝئئ؃ټټسنحسقجدڝنآجڪقضضحنڪزؠڪزكئج؃ؠڪسدضسسجؠڝقڪنقنضجدآ؃ضنڪززئآ؃كټڪكؠآؠحټ؃قؠڝققضڪدن؃ؠنآزضجڪحزټ؃ككز؃حؠڝزؠټنڪئڝدقڪدننزڝجآدجآڪككس؃جكڝحؠؠقزئټكضټڝؠئزدضن؃جآآندضڪحنڝ؃جققحضټدئټټؠجسڝسز؃دآنكجسڪحضڪڪآضق؃ؠڝدحټؠنئزڝجسڝڝټزكدآڝحجڪآؠضك؃ئزد؃ڪكنحآآجئڝټآسقڝضقحدڝزؠجقآئضد؃ټزؠ؃سكجح؃زآئڪئضسحآڪقټدزنئجدقټضندسزنڝڝكڝحقؠضئحكڪسڝئزقزض؃نڝجكآسضجنڝزآجقكټددؠ؃ئنټزسئآ؃قټئكنؠڝحآ؃زؠڪقزضڪدكحجنؠزئجټحسآڝكقسڝحن؃دؠآټڪئڪحكڪ؃نكقدجؠئجآټكسضڝجنڝدؠنكجئآضئټڪنزز؃جك؃حآؠنحضټجسڪڝؠنقدئندجټآؠحسڪئئ؃؃ټزكحسؠحئڪټآحزڝككددڪزنجقآجضڝڪټجك؃ضآححسنؠئنټئس؃ڝڪئندؠئججج؃آضنڪضزح؃ڝضؠحزڪئئقآټسؠڝسقجد؃زآجقڝضضقزڪزټ؃زكئحدقټئننسسنزڝقټدقنضجحقڪضټئززئټ؃كڝحكؠسئجكڝسآحققټ؃دنڝضنآزضئؠ؃زددككسححؠدئؠټقسضآدقڪڪننآآجآدزآڪكزسڪحكز؃ؠؠقئئټحقټڝنقق؃جنقدآآكضضڪحزڝ؃ؠكقڝئؠحجټټنقسڝئق؃دآنكڝضآزقڪڪآئق؃سكدحټؠؠ؃سټجنڝڝض؃كدزنحجڪآآدزڪضجد؃سڪنحزدكئڝڪټئقڝضقحدڪؠؠجزټئض؃ڪضؠن؃سكجحڝڪآئقټضسدڝئئؠدقسئجدنټضكڝسزئحزدآحكزضئئسڪسنڝزقسد؃نټجنقسضجنڝزحزقكسئدؠڪئؠنزسسز؃قټدكنقجحآڝضآآقزضجدك؃ننؠزئجټ؃سټؠكقسڝحنڝضؠآكضئڪدزڪجنكآحجؠد؃آټؠسضڝحقڝټؠنقسئآسضټڪؠكز؃جك؃ڝآؠآجضټحسڪڝآنقدئنحدټآآقسڪجز؃؃ټؠكحضؠججڪټټضزڝئقددڪآنجسآئضڝڪڝدك؃ضكححڪؠؠئزټضج؃ڝڪقندسآجج؃آآضقڪسجح؃ئ؃ؠحققئئحټټسكڝزئجدڝټآجټآضضئڪڪزؠ؃قضئحض؃ټئ؃ؠسسئڝڝقآدكسضجدڝڪضڝڪززس؃؃كټحنقسئج؃ڝسدؠققسجدنڪجؠنزضزڝ؃زټ؃ككقححؠڝئآؠقسضټدقجنننقضجآ؃ضټټكزؠؠحكڝحؠؠكسئټدسڪڝنقآآجن؃جآآكضضڪحزڝڪؠككحئؠدسټټنسسڝجق؃ڪآنن؃ضآججڪڪآزق؃ئكدڪټؠڝضسټئجڝڝڪقكدضنحڝڪآؠقزڪكزد؃؃كنحسؠئ؃ڝټد؃قڝقآحد؃نؠجزآضد؃ڪټنن؃ؠكجحدؠآئقټسجدڝڪؠؠدڪجئجحآټضكڪزئج؃؃سآحڪكضئحټڪسنڝقئئدج؃ټجنكسضئڪڝزآ؃كضضحدڪڪئڝټزسضد؃قټدنزسجسټڝضؠڪقزز؃دكڪحؠقزئئن؃سحقكقزجحنڝجآنقضټضدزڪ؃نكقئجؠ؃ئټآكسڪسحقڝدؠنقجئآدضڪؠنززڝجك؃ئآؠنئضټحسڝؠؠقټئئنح؃ټآآضسڪجز؃آآككسضؠنآڪټټسزڝئقدټټننڝسآآنڝڪآټڝ؃ضنج؃ڪؠآدزټئز؃ڝټكندسنؠزڝآآضقڪضنح؃ڪكؠحزؠزڪ؃ڪڪحكڝزسجدڝؠآجكڪضضدڪڝجؠ؃نحئح؃ؠټئؠټسسحڝ؃ئآدكسضجقجڪضآ؃ززئ؃دسټحآجسئحټڝسټڝققضدحقڪجنڝزضسس؃زټ؃ككسحجزڝئآؠقسضددقڝدننزججڝ؃ضدسكزسآحكدحؠؠقئضكدسڪحنقؠكجنججآآكضسنحزئزؠكآڝئؠجئټټنسزؠجق؃ئآنټؠضآجزنقؠزقټئكضجټؠنئسټضسآقآقكڪضنج؃ڪآ؃ڪزڪسزد؃ټكؠ؃سؠجزڝټححقڝزقحدڪنآدزآضج؃ڪضزن؃قكجحڝؠټحقټسئدڝدقؠدكنئج؃آڪئكڪسنج؃سحآحنؠضئدټڝضنڝقزئدسزټجكآسضحڪ؃ئآ؃كقضحدټڪئؠټزسجڝدئټدڪؠسججكڝضټڪقزض؃حضڪحنڪزئقض؃سڝڝكقسدجسڝج؃سقضقحدز؃؃؃آزحئز؃ئټ؃كسنزحق؃جزئقجضكدضح؃نزز؃جكححڪحكئسنحسڝآؠقنسئنحضټآنضزآجزكجآككحضؠجسڪټؠسقڪئقنئټننجسآئزڝڪآزن؃ضكؠضڪؠؠئزټئس؃ڝټقنڪسنئجڝآآزقڪسزككڪكؠڪزؠسن؃ټڪجكڝققجدڝنآڝقآضقدڪحڝؠ؃ككئح؃ؠڪ؃كټزححڝزكآدننضجدآڝدنڪقجئ؃كڪټحكؠسئحټ؃ئؠڝكدضددنڪجنآزضجڪدجټ؃نزسححآڝئټټقسئڝحئڪدنټزجقئ؃ضڪڪكزس؃جضڝحآزقئك؃دسڝڝنقزدئس؃جټقكضڝجحزڝ؃ؠكقحضكدئڪزنسسڝجق؃دحسكجسقحضڝآؠزقدئكجحجڪنئزكجس؃جآقدكضنئجئضؠسقنئزدآټكجزسؠجنضټآزكټضقحنڪنؠئزآئس؃ڪټزحئسكجحڝؠآزقټضسدڝڪقڝڝزؠئڝ؃آڪجكڪسقج؃؃ؠآحقؠس؃دټ؃ڝنڝزقئدحنټجكآزدحڪ؃جآ؃ڝ؃ضححټڪئنټقججڝجزټدكنسججڪڝضؠڪكضض؃سضڪحنؠزئئڝ؃سآڝنزسدؠآڝجؠآقضس؃دزڪ؃ؠكزحآئ؃ئآټكسضڝحقڝدآزقجضآدضڪ؃نزك؃جك؃حټككئس؃حسجزؠققدئندجڪقنضزآجز؃حآكنحكزحضڝ؃ؠسؠحئقدټټنآجسآجض؃نآزكجضكضضڪؠڪئزټئسدؠټقڪڝسننجڝآڪضقڪضزحآڪكؠضزؠزز؃ټڪقكڝسقجڪڝنئڪقآضضدڪ؃زدجزكئڝ؃ؠڪدكټآټحڝڝقج؃قنسددآڪسنڪززئ؃دؠقآكؠزجحټئدؠڝققضدجنئسنآقئجڪدسټ؃؃؃سحجټكسؠټكسئڝئآڪدننزجضآسقآڪنقس؃حآڝححئقئسټزكټڝؠكزدئؠ؃ججئكضضڪآئڝ؃آققحضآدئټڝنسقدجق؃دټنكجنزحضڪڪؠزن؃ئكدحڪؠنئزټجسسسآقنجضنحجڝټؠضؠزئزد؃ټكآحسؠجئ؃ڝآسكحضققنڪنټجزآئضح؃ټزؠحسكآدڝؠآئقټضسحڝڪقآجزنئج؃آټضكڪسزجڪڝكآحقؠضضدټڪسقززقئڪ؃نټضكآسزحڪ؃زدټقكضڪدؠدڪنټقججڝحقجئكنسڝحآڝكؠڪ؃ڝض؃جكجؠنآق؃جټدحآڝحټسدج؃ضجؠټكجئڪحقڪ؃ننزحجآ؃ئآټدنضڝحقڝدؠټقجئآدضټڪآسز؃ئض؃حټككئضڪحس؃دؠققدضسدج؃ضنضسڪجزح؃آككحسزحئڝكؠسڪسئقحجټننجزكجضسنآزك؃ضكئحڪؠؠئقؠئسدحټقڪكسنججڝآآضكنضزحڪڪكؠئزؠضئ؃ټټسنحسقنآڝنآڝقآزضدڪڪزؠآزكئض؃ؠئڝكټقسحڝڝقآڪقنضسدآئڪنڪكزئ؃؃كټڝكؠزدحټحدؠڝكقضددنڪڝنآ؃حجڪدئټ؃ؠكسححؠ؃؃ؠټقكئڝكجڪدآنزججآدحآڪكنس؃ضؠڝحآؠقئئټححټڝجآزدئز؃جڪآكضضڪججڝ؃ؠآقحآسدئڪڝنسسڝئض؃ددڪكجضآحض؃ڪؠزق؃ضسدحڪقنئټحجسدڝآقكدسزحجڝكؠضڪكئزح؃ټكنحززجئسحآسكآضقئدڪنؠجققئضددټزدؠسكضحڝؠآئكنضسححڪقدنزنسج؃آټضنؠسزجټڝكضنقؠسئدټڪسؠؠزقؠئ؃نڪ؃كآقضحڪڝزآآقكضضدؠضڝنټققجڝ؃قټڪكنكححآڝضؠڪككض؃دكڝ؃نؠق؃جټ؃سآڝننسدحن؃حؠآټزئڪدزڪ؃ؠؠزحجؠدئآټؠټضڝحقڝدؠنقجئآححټڪؠزز؃جؠ؃حټؠكئضټجحڪڝ؃ڝقدضزدجڝآنضسڪئج؃؃آآكحټسحئڝڝؠسزڝضضدددؠنجسآجضدڪآزك؃سسححڝقؠئټسئسحدټقندزقجججؠآضقڪضزجحڪكؠحقنئئقؠټسكڝسقجدڝنآجككضضحټڪزؠحزكضح؃ؠټئنكسسقحڝقآڪقنزجدآڪضؠنززئج؃كئټكؠكئحټڝسآؠقققټدندآنآكضجڪ؃زټآككسضحؠسڝؠټكقئڝدقڪڪننؠئجآ؃ضآڪؠزس؃حكڝڝؠؠكدئټسڝټڝؠنزدجنددآآكزضڪحزڝ؃ټكقحئؠحجټټنكسڝق؃؃دڪنكجضآجئڪڪآسق؃كڝدحڝؠنئسټئضڝڝټزكدنڝحج؃آؠضزڪضسد؃ڪقنحزڝجئدټآسقڝسزحدڝكؠجك؃ئض؃ڪټزن؃زسجح؃نآئقڝضسحڝڪقؠدقسئجضټټضنؠسزض؃ڝكآحكزضئح؃ڪسحنزقسد؃نټجنكسضجدڝزحكقكزحدؠڪئؠنزسئآ؃قسزكنزجحآڝضآنقزكئدكڪڝنؠكئجټ؃سټؠكقسضحنزؠؠآنضئڪدزڪآنكزڪجؠككآټكآؠڝحكڝڝؠنققئآدسټڪنقز؃جكقسآؠكئضټحكڪڝؠققدئنضضټآؠدسڪئض؃؃آنكحسټحئڪټآحزڝزدددټننجقآجضڝڪټجك؃سضححضحؠئقڝئس؃ڝڪضندكحججڝآآضنڪضزح؃ڝزؠحزڪئئضضټسكڝسقجد؃سآجكنضضح؃ڪزآ؃زكئح؃ڪټئندسسجؠڝقڪدقنضجحقڪضؠدززئئ؃كڪئكؠسئجنڝسڪڪققضددنڝضنآزضئآ؃زټضككسححؠ؃سضڝقسضڪدقدقننزججآدزز؃كزز؃حكڝضؠؠقئئټدسسآنقزڪجندجآآكزضڪجزئټؠكقڪئؠسؠټټؠجسڝضقسئآنكڝضآحقڪڪؠؠق؃ضؠآآټؠؠدسټززڝڝآقكدزنقسڪآآحزڪضئد؃جحنحزټټسڝټټئقڝقآحدڪنؠجكآنق؃ڪڪسن؃سآجحئجآئنټؠكدڝڝزؠدقكئجسحټضؠڪآنج؃؃قآحكنضئزحڪسآڝزڝئددكټجنؠسضجڪڝزآ؃ڪڝضححقڪئؠآزسئد؃قڪدكنسججقڝضددقزضټدك؃حنؠزئئك؃سټحكقسضحن؃ضؠآقضضؠدزحدنكزحجؠحئآټكسسآحقڝڪؠنټآئآجضټڪنززڪجك؃ضآؠڝ؃ضټئسڪڝؠققڝئنحدټآحضسڪضز؃؃آكن؃ضؠجحڪټڪسزڝضنددټنؠحسآسڪڝڪآزك؃ضكححڪؠآدزټضض؃ڝټنندزنك؃ڝآټدقڪنقح؃ڝسؠحكؠنز؃ټڪحكڝسؠجدڝڪآجؠآققدڝڝجؠ؃آجئحجڝټئؠټآكحڝ؃ئآدقټضجح؃ڪضآڪټنئ؃دسټحكڪسئكسڝسټڝڪؠضدحزڪجؠكزضضن؃زڪ؃ڝسسحجزڝئڪجقسضآدق؃د؃ټزجئق؃ضټحكزڪقحكدحدئقضضكدسڪؠنق؃سجن؃كحآكسسآحزڝؠؠكقجئؠدضټټنسڝججق؃دآنكسضآحضڪڪؠزآحئكدڪټؠؠحسټجزڝڝټنكدضنحڝڪآټڪزڪئزد؃ڝكنحسؠئ؃ڝټټحقڝؠڝحدڝآؠجزآضح؃ڪڝڝن؃سكجحدؠآئقټسئدڝڪؠؠدآحئج؃آټضكڪزجج؃؃زآحقټضئحټڪسنڝزؠئدكنټجنقسضئڪڝزآ؃كضضحدڪڪئجټزسضد؃قټدنزسجضؠڝضؠڪقزسحدكڪحؠكزئؠك؃سآڝكقزجآآڝجآؠقضڪضدزڪ؃نكقئټټ؃ئټټكسسزحقڝدؠنقجټكدضڪؠنزق؃جك؃ئآؠنئككحزڝؠؠقټقئنح؃ټآآضسڪجز؃آآككضضؠؠئڪټڪسزڝئقدټټنټڝسآسڪڝڪڪزك؃ضكحڪڪؠؠززټټس؃ڝڪنندسنئ؃ڝآ؃سقڪضزح؃؃كدضزؠضد؃ټڪجكڝآدجد؃آسضقآسجدڪدؠؠ؃زكئححؠجزكټزضحڝڝؠآدټحضججآئقنڪقسئ؃دقټحڝدسئئټضكؠڝكزضدحكڪج؃دزضضڪ؃ڪټ؃نقسحجنڝئټدقسسڝحنڪدؠكزجئؠ؃ض؃زكزس؃ؠسڝحآققئضآدسڪدنققدكز؃جټقكضؠدحزڝټؠكنحنڪدئڪكنسزحجقكدآننضدسحضڝؠؠزآدئكدحټؠآئټ؃جس؃آآقكڪضنزآڪآټضڪدئزدڪټكنضسؠك؃ڝټڪسڝحضقحڝڪنآدزآآض؃ڪڝز؃جسكئ؃ڝؠټحقټقسدڝ؃قدئزنضح؃آټقكڪنڝج؃دكحضقؠسجدټڝضنڝآڪئدحنجسكآزئحڪ؃سآ؃ټڪضحجؠڪؠنټقضجڝدزټدنڪسجحآقحؠڪكئض؃حقڪحنټزئئټئحټ؃نئسدزؠڝجآكقضسڪدزڪ؃ؠضزحجڪ؃ئضټكسقڝحقڝدآسقجكسدضدحنزك؃جك؃حټزكئس؃حسزڝؠقكجئندجڪكنضؠ؃جز؃؃آكؠحزححئڝنؠسقآئقجسټنؠضسآجض؃آآزحجضكححڪؠآسزټئسدڪټقجئسنججڝآټزقڪضزج؃ڪكئضزؠئئ؃ټټسكڝسقجڪڝنټجقآضزدڪڝزحكزكئڪ؃ؠڝنكټزجحڝدقآدقنضڝدآڪقنڪ؃زئ؃حكټحكؠز؃حټ؃حؠڝ؃كضدجنڪجنآقدجڪدجټ؃حڪسححؠڝئؠټكئئڝحدڪدننزججآ؃ضآڪنجس؃جزڝحؠآقئسټدسټڝؠئزدجټ؃جضآكضزڪحزڝ؃آضقحضزدئح؃نسقڝجق؃دټسكجسقحضقجؠزق؃ئكدحڪكنئززجسڝڝآقكدكآحجڝقؠضقآئزددټكؠئسؠجئ؃كآسؠقضقحدڪنټجزآئضدنټزنآسكككڝؠټسقټضسحآڪقټكزنئج؃آڝضكڪسزجڪڝكآضقؠزآدټڪسنڝزقئټ؃نڪدكآسزحڪ؃زآ؃قكضضدؠحئنټقحجڝحقټدكنسڝحآڝقؠڪآزض؃حؠڪحنؠقدجټجضآڝكقسدجآڝجؠآكجئڪزكڪ؃نكزحئټنسآټنضضڝئسڝدؠنقجضڪؠزټڪؠزز؃ؠ؃؃حآؠكئضټقآڪڝآضقدضندجټڪنضزڪجز؃؃ټضكحؠححئڝنؠسكڝئقددڪسنجسڝجضجڪآزنحضكححڝقؠئؠڪئس؃ڝټقآدسنجج؃كآضكؠضززكڪكټحزؠئئدؠټسنحسققټڝنڪجقآضضحآڪزؠڪزكآح؃ؠڝئكټسسجټڝقآڝقنقجدآڝزنڪززئڝ؃ك؃ؠكؠسئحټڝسؠڝققضڪدنڝحنآززجڪدزحټككسڪحؠئضؠټكجئڝجقئئننزڝجآ؃قآڪټزس؃ضكحضؠآك؃ئټس؃ټڝټآزدضنسسآآندضڪحنڝ؃ڝكقحزؠئزټڪؠحسڝزټ؃د؃حكجزآققڪڪآجق؃ئآدحدؠنئقټككڝڝټضكدضټحجضضؠضكڪنند؃ڪسنحزقجئضؠآسكڝؠضحدڝسؠجنحئضدؠټزآ؃آآجح؃زآئك؃ضسضڝڪقآججئئجدكټضټڝسزج؃ڝكڪحڪڪضئحنڪسؠآزقكن؃نڪضجڪسضجآڝزڝئقكضحدؠ؃ئد؃زسئڪ؃قټئكننؠحآدضحدقزضڝدكڝدنؠآنجټحسجحكقز؃حن؃حؠآټنئڪدزسټنكزڝجؠدجآټكقضڝجقئڪؠنقڝئآسقټڪؠئز؃ضكسضآؠن؃ضټحنڪڝئ؃قدسنسآټټؠدسڪئج؃؃ضڪكحسدقئڪڪآئزڝضئددټؠنجسټجضڝڪئؠك؃ضكححڪڪؠئزټئس؃ڝئڪندزسجج؃نآضقڝضزجحڪكؠحقزئئجسټسكڝسقضدڝنآجكقضضحنڪزدززكضئ؃ؠټئننسسئضڝقآدقنزجدآڪضؠآززئج؃كڝنكؠسئحټڝسآؠققضڝدنڪضنآقضجڪ؃زټجككؠنحؠ؃؃ؠټنسئڝدقڪټننزسجآضټآڪنكس؃حكڝڝؠؠؠجئټدسټڝؠنزدجنددآآټؠضڪحزڝ؃آؠقحئؠحجټټټئسڝجق؃دټآكجضآجضڪڪؠقق؃ئكدحټؠنئسټئجڝڝټقكدضآحجڝآؠضزڪضجد؃ج؃نحزقجئدټآسقڝسئحدڪټؠجټئئضجڪټزن؃زضجحئضآئآدضسجڝڪقؠدقسئج؃ڝټضڝسسزئحڝكآحكقضئزدڪسنڝزقسد؃نټجنكسضجؠڝزآټقكزحدؠڪئؠنزسئآ؃ق؃ڪكنزجحآڝضآنقزضټدكڪڝنؠكئجټ؃سټؠكقسئحنئؠؠآنضئڪدزڪټنكزضجؠئئآټؠسضڝحقڝڪؠنك؃ئآسقټڪؠكز؃جكد؃آؠټضضټحسڪڝټققدئنحدټآؠجسڪك؃؃؃ټؠكحضؠججڪټڪنزڝئقددڪآنجسآئضڝڪ؃؃ك؃ضكححڪؠؠئزټضئ؃ڝڪقندسآججڝآآضقڪسئح؃ڝسؠحقكئئدټټسكڝزئجدئټآجككضضجڪڪزؠ؃قضئح؃ڪټئڝضسسئدڝقآدكزضجضټڪضنڪززس؃؃كټحنقسئجنڝسدقققزددنڪجؠنزضئد؃زحآككقححؠڝئآؠقسضټدقسدننكججآ؃ضټآكزسڪحكححؠؠنئئټدسڪڪنقزئجنضڝآآؠضضڪحزڝڝؠككدئؠسكټټآسسڝجقد؃آننحضآضضڪڪټزق؃ئكححټؠنزسټزڪڝڝڪقكدضنججڪآآضزڪكټد؃ڝكنحسؠئئڝټټسقڝنټحدڪنؠجزآضئ؃ڪڪسن؃زكجحدؠآئقټسضدڝڝزؠدؠجئج؃آټضكڪزئج؃؃قآحقټضئحټڪسنڝقئئدضؠټجنكسضئڪڝزآ؃كضضحدڪڪئ؃ضزسضڝ؃قټدنزسجحڝڝضحزقزز؃دكڪحؠقزئئن؃سجڪكقسزحنڝجآكقضنحدكڪدنكزججؠ؃قكئكسضڝحقئضؠآقئئآحزق؃نززټجكد؃آؠكئضټجسئآؠققټئنكسټآؠحسڪضزسجآككڪضؠحزڪټ؃ڪزڝسقزئټنؠ؃سآجقڝڪدڝك؃زكقضڪؠآدزټضج؃ڝضؠندك؃ڝسڝآټحقڪؠحححڪنؠحقكئئددكټكڝسقجدضضآضقټضضححنڪؠ؃زكئحسنټسكڪسسئدكنآدكزضجض؃ڪضنڪززئسكڪټحنقسئقآڝقآ؃ققضددنڪززجزضجڪ؃زحڝكؠسجحؠڝققئقسئڝدقئدنآزئجآدزز؃كزسټحكحؠؠؠقئئټحسجآنقزټجندټآآنحضڪئزضجؠكقڪئؠدزټټڝڪسڝئنؠؠآنن؃ضآسزڪڪؠزق؃سكزضټؠؠدسټئجڝڝحڝكدضنجحڪآآحزڪئقد؃ټؠنحزؠكدڝټټحقڝڪححدڝزؠجكآنق؃ڪڪجن؃سآجحضجآئنټؠكدڝڝضؠدزټئجزضټضؠڪآنج؃؃سآحكقضئكزڪسؠڝټضئددسټجآحسضجؠڝزڪ؃ڪآضححزڪئؠ؃زسكز؃قڪجضئسججكڝضڝڝقزض؃دك؃ح؃ڪزئئن؃سټآكقآقحن؃ضضڪقضضآدزدئنكزحجؠحئج؃كسسڪحقڝئؠنڪآئآجضئدنززڝجكددآؠټټضټجقكدؠقكدئنئزټآنضسڪضزسجآكنجضؠحزڪټدڝزڝسقزئټنؠئسآئسڝڪد؃ك؃ضكنڝڪؠآدزټضز؃ڝټنندزنك؃ڝآټدقڪس؃ح؃ڝسؠحكؠنز؃ټڪحكڝسآجدقحآجنآنڪدڝڝجؠ؃قضئحن؃ټئنجآسج؃؃سآدك؃ضجدټڪضنڝززئ؃قټټحكؠسئج؃ڝسؠڝققضدحزڪئؠقزضئآ؃زټدككزئحؠڝئآكقسزقدقڪدننكججآ؃ضټنكزسآحكضكؠؠكسئټدسڪآنقككجن؃جآآؠضضڪحزڝڪؠكقضئؠجآټټنسسڝجق؃ټآنندضآحزڪڪآزق؃ئكدضټؠ؃ڪسټئحڝڝڪقكدضنحڝڪآؠقزڪؠدد؃ڪؠنحسؠئدڝټڝضقڝضقحدڝآؠجزآضج؃ڪټټن؃سكجح؃ټآئقټسضدڝ؃؃ؠدزنئجدڪټضكڪززج؃؃نآحقؠضئدټڪسنڝقضئددنټجكڪسضجڪڝزآ؃كضضحزحڪئؠنزسضڝ؃قټدنسسجحڝڝضحققزسحدكڪحؠقزئزڪ؃سآڝكققدحنڝجآكقضضؠدزجكنكقئجؠ؃ئټؠكسكجحقڝدؠنكضئآدضڪټنزنئجك؃حآؠكئضټحسڝآؠقك؃ئندضټآؠضسڪجز؃آآكڪضضؠجدڪټټسزڝئقدټټننسسآكڝڝڪټكك؃ضكحڝڪؠڝضزټئس؃ڝڝقندسنئ؃ڝآټحقڪؠ؃ح؃ڝؠؠحزؠضح؃ټضآكڝسقجد؃آآجقآسئدڪح؃ؠ؃زكئح؃ؠټئكټزجحڝ؃زآدقآضجحآڪضنڪقجئ؃ضنټحنقسئئټڝسؠڝكئضددټڪجدسزضسڪ؃زټ؃نضسحزضڝئڝدقسسڝدقڪدؠسزججڝ؃ضجقكزق؃حكڝحآققئض؃دسئقنقكدجن؃جټككضسؠحز؃آؠككحئؠدئڪكنسكضجق؃ڪآنؠجضآحضڝنؠزقئئككنټؠآئسټجس؃ؠآقكټضنؠقڪآؠؠټڪئقدڪټكنئسؠجضڝټآزقڝضقنضڪنؠجزآئق؃ڪټزن؃سكق؃ڝآټ؃قټسئدڝڪكؠدقآئج؃آڪدكڪك؃ج؃ڝكآحنؠضئدټڝحنڝقئئدزدټجنڪسضحڪ؃ئآ؃ؠقضحدؠڪئؠڝزسجڝدسټدآزسجحآڝضټ؃قزض؃حقڪحآټزئجټ؃سڪدكقسدجنڝجڪټقضئڪدزڪ؃نكزحئق؃ئټټكسسدحقددؠنقجضندضڪدنز؃؃جك؃حآؠكئسكحسڝټؠققجئنحججكنضزدجزدحآككڪضؠئئض؃ؠسقؠئقدئټنؠضسآئزؠقآزكټضكزسڪؠؠئزټسسزحټقنڪسنئ؃ڝآحؠقڪززقجڪكؠڝزؠضد؃ټئقكڝزققڪڝنآڝقآؠؠدڪڝئؠ؃ككنض؃ؠڪ؃كټسكحڝ؃نآدكآ؃ټدآڝحنڪآؠئ؃؃كټحؠؠآزحټ؃جؠڝكضضدقؠڪجآآټقجڪدئټ؃نسسحقنڝئآټڪجئڝحئڪددؠزجئك؃ضآڪ؃سس؃جضڝحؠؠقئئټدسڪڝ؃ضزدجټ؃جج؃كضسنحزڝ؃حققحضزدئټټنسسڝجقددحزكجضڝحضزجؠزقآئكدقجؠنضزكجس؃سآقكحضنحآڪآؠض؃حئزد؃ټكنضسؠجئڝټآسدجضقحدڪنؠززآئض؃ڪټزنضسكجحڝؠآئقټضسدڝڪقؠسزنئج؃آټزكڪسزج؃ڝكآزقؠضئدټڪكنڝزقئد؃نټقكآسضحڪڝؠآ؃قكضحدؠڪكنټزسجڝ؃ټټدكنسجحآڝنؠڪقزض؃دڝڪحنؠزئجټ؃ؠآڝكقسدجدڝجؠآقضضڪزئڪ؃نآزحؠق؃ئټككسضڝآئڝدؠټقجئڪدضټڪنزز؃سس؃جآؠكئضڪحسڪڝؠققئضآدجټآنضزدجز؃؃آكدڝسزحئڪټؠسټ؃قححټټدزنحؠآڪزقج؃ټكققجزټنؠؠزټئس؃ڝ؃كټؠقسحنټجقئحزآقج؃ڪكؠحزؠسقججڪدكضجټڝئكټئڝڝئكسحدڝكنحضد؃؃سټټككټسسحڝڝقدڝقؠضئدآڪضنڪززئ؃حكټحكؠسضحټڝزؠڝقنضدجنڪجنآززجڪ؃زټ؃كنسحجؠڝئؠټقزئڝدؠڪدنآزججآ؃ضآڪكزس؃حنڝحؠؠقئئڪدسټڝنقزدئح؃جآآكضټټحؠڝ؃ؠكقحزحئزڝنكڪآئجڝ؃دآنكجقدضك؃ئؠ؃ضجڝټؠنج؃نؠسټجسڝڝڪټؠڪسجدآآدسؠدسحقدضټكنحسؠسنجدڪجزټحڪد؃ڝسؠجزآئضجټ؃ؠؠټسز؃ضقڪسټدقآئسؠدسقضڪؠئؠ؃آټضكڪككسئدئؠسسټ؃ڪآ؃سؠڝسزټئد؃نټجآئكآجزڪڝكجڪآضڝدؠڪئنټنټززدضآڪضدححټ؃قدحآؠققكحآآټآقزئجټ؃سڪڝآحسدحؠڝجؠآقضضسدزڝحنكزحجټ؃ئآڪكسضڝحقددؠنقجئڪدضڪ؃نززقجكححآؠكئضڝحسڝدؠققسئندكټآنضسڝجز؃زآككجضؠحسڪټؠنئسئقددټنننسآجسڝڪآؠضزضكححڪؠآحزټئز؃ڝڝق؃ئسنجئڝآآضقڪضڝح؃ڝؠسآزؠئس؃ټټزكڝسقجددنحسقآضزدڪڪكؠ؃قدئححؠجزكټسقحڝڝنآدقڪضجححجقنڝزقئ؃دزټحكآسئحڝڝسآجئڝضددنڪجؠنزضجڝ؃زټئس؃سححؠڝئټكقسض؃دقڪدجآزججټ؃ضآڝكزس؃حكڝحټسقضئڪدسټڝنقزدجنحجحڝكضضڝحزڝ؃ؠكققئؠدئڝقنزز؃جق؃حآنكجضآحضندؠزقدئكدضټؠنئسټضسسحآقكحضنحئڪآؠآزڪسززجټكنجسؠجضڝټآآقڝضقجآڪؠؠئزآئز؃ڪټزن؃قككضڝؠآضقټضسدڝڪؠؠدكنكآ؃ټټسكڪسقج؃ڝؠآحكدؠئدڪڪكنڝزقئد؃ؠټجكڪسضحڪزؠآ؃قكضحدؠڪئنټزسجڝ؃ټټدكنسجحآڝضؠڪقزض؃زضڪحنآزئئ؃؃سټ؃كقسدضزڝئؠآقضئڝدزڪ؃نكزججآ؃ئآټكسسححقڝدؠنټقضندضټڪنزنززد؃ڝآقئؠدآآنزؠحسؠدزڪدزټسزجدزجن؃؃آككحقحضزڝك؃ؠقجئقددټنآنكڝضحڝسټدك؃ضكححڪؠسززټئس؃ڝټقندسنججدآڪڝقڪضزح؃ڪكؠحزآئئدڝټسكڝسكجدڝټآجقآضضجڪڪزؠ؃زنئح؃آټئكڪسسئڝڝقآدقؠضجدټڪضؠ؃ززئس؃كټحكؠسئجسڝسآ؃ققضحدنڪززجزضجڪ؃زټكككسجحؠڝئئڝقسئڝدقڪدننزججآ؃ضڪككقس؃حكڝجؠؠقئئټدس؃آنكزدجن؃ئآآكضضڪحزڝ؃ؠكقحئؠدزټټنسسڝ؃ؠددآنكجضآئكدئآحزسدڪټضزڪج؃ټضزز؃حټنقججحڪدئڪنئقحئزد؃ټكټ؃ككئنڪټسڝكنضقحدڪنڝسنئض؃ڝڪؠجسض؃؃ؠقسدد؃ؠڝضؠدڝڪقؠدزنند؃ټټسكڪسزج؃ڝكآحنؠضئدټڪزنڝزكئد؃آټجؠآسضحڪڝكآ؃قكضحدڪڪئؠټزسجڝ؃كټدكؠسجحڪڝضؠڪقزض؃دكڪحنآزئجټ؃سټ؃كقسدحنڝجآ؃قضئڪدزجضؠ؃زحجؠ؃ئ؃ضآئزندآآدززدآؠټدنټڪنزز؃سدجكټئقآج؃ڝكڝكؠققدئنضټ؃نؠدضڪ؃زآسزددټآئسڝزنؠټزڝئقدد؃زآټقټ؃جټؠزآحكسزححڪؠؠئكټنك؃ڝټكندسنجج؃؃آضقڪ؃نح؃ڪؠؠحزؠئئ؃ټټسؠڝآؠجدڝآآجقڪضضحدڪزؠسآآئج؃آټئنجسسج؃ڝقآجقنضزڪجڪضنڪززئس؃كټجكؠسقڝئڝسؠڝققضڪدنڪئنآزضڝد؃زټدككسححؠڝئؠټنسؠحدقڪحننزئجآ؃زآڪكزدجحكڝئؠؠقئئټدسټڝآقټئجن؃ضآآكزضڪحكڝ؃ټكڪضئؠدسټټنقسڝجك؃دآنڪزضآحزڪڪؠكق؃ئكدحڪؠ؃دسټجزڝڝآككدضآحجڪآڪحزڝئزد؃ټننحسؠجئڝڪآسقڝضقحدڪڪؠجزآئض؃ڝټآن؃سكجحجدڝقننئئڝضقجؠڪزنئج؃آ؃ئټحقئحڪآآس؃حڪڪدزآج؃ټئقكجؠزؠټزكآسضحڪدڪڝجنسئنؠسڝدنټزسجڝجڝ؃كنزس؃ڪجؠئسحدجؠڪئندؠؠڪضڝئؠ؃سآڝكققدڝحڝجؠټقضئڪدزڪئنكقئجؠ؃ئآڝكسسححقڝدؠننجئآدضڪ؃نززحجك؃سآؠؠئضټحسڝدؠققجئندضټآنؠسڪجز؃دآككڪضؠحضڪټؠقزڝئآټقټننجسآئدڝڪآقك؃زكقضڪؠؠضزټئس؃ڝټآندزآڪټڝآآزقڪضنح؃ڪكؠحكؠنز؃ټټقكڝسنجدڝڪآجنآؠقدڪڪكؠ؃زؠئح؃آټئنجكؠحڝڝكآدكزضجدټڪضؠ؃ززئئټ؃ټحكؠسئجنڝسآ؃ققضدجضڪئنآزضجڪ؃زټ؃ككسحضقڝضؠټقسض؃دقڪدننزئجآ؃ضآڪكزسزحكڝحؠؠآؠضددسټڝنقككسڪدكآؠآڪسححزڝ؃ؠكآنزڝحنټآزكززجق؃دآنآكقسئضڪټزقجنڝزقڪدئنټسټجسڝڝدڪؠڝزسدنؠڝزكدؠټقسڝڝسنآسؠجئڝټڝآؠكزقح؃كؠزجدآآؠزنڪززجزضجحڝؠآئڪجقنجزڪزقئئجڪؠقسجڪڪزكسئضؠڪآؠقؠضئدټدسټضقټجدآئقضجحڪدكئ؃ئآ؃قكضحدؠكزنټززجڝ؃قټدكنسجئآضقؠڪققض؃دنڪحؠحزئضټسكآڝكنسدحنڝجآحقضضڪزئڪ؃ننزحئ؃؃ئآڝكسضڝضزڝحؠؠقجئآدضټڪنزك؃جك؃حآآكئضڪحسڝسؠقندئندجټڪنضسڪجز؃حآكنحضؠحئڪڪؠسق؃ئقدجټننجسآجضڝڝآزك؃ضكححڪؠټئزټئسد؃ټقنحسنجنڝآڪضقڪضزححڪكؠحزؠئق؃ټڪسكڝسقجحڝنآسقآضزدڪڪزؠ؃زكئح؃ؠټضكټسسحڝڝكآدقنضجدآڝحنڪززئ؃قؠټحكؠسئحټضكآزققضددندكټنقكحڪآققنئزټڪټجڝئؠټقسئڝدقڪدكنؠحؠؠدئآڪكزس؃ئټدقآسزنححټكقحجئټكزؠ؃آټآزآحڪټقسڝآجقحئؠدئحدآآزنحڪټسقټجسڪققټحڝټئقضئكدحټؠټؠزسئزڝزسقزحسنحجڪآؠضنحسټدؠآڝززحڪټزقكحڪټ؃ضؠججټآقؠجننزسجڪسن؃سكجحجڝڪنكقئآڝئنؠضئ؃سنؠئټڝقؠ؃ضك؃قؠزؠدك؃ضئدټڪسټنننئنڝآنسئضسټحڪڝزآ؃ټڝق؃حڝټئقڪج؃ڪټقئڪ؃كټسجحآڝض؃ڪؠدسڝټڪڝجنؠزئجټجد؃دندضجڝټكقسحڝټؠسسزد؃نټسن؃كؠڪضڝحدزؠحقڝدؠنقجئآدضټڪنزكضجك؃حآؠكئد؃حسڝ؃ؠققدئندجټآآضټدجز؃دآككجضؠحقڪټټسڪحئقدجټننجسآجنڝڪآټحضضكحئڪؠؠنزټئز؃ڝټقندسڪڝنڝآآضقڪضټح؃ڪنؠحزڝ؃ؠ؃ټټسكڝسڝجدڝؠآجكڪڝزدڪڪكؠ؃زنئح؃ؠټئنټآجحڝڝكآدكجضجدڪڪضنڪكجئ؃؃نټحكؠسئحټڝسټڝققضددؠڪجنټزضئح؃زټ؃ككسححټڝئؠټقسئڝدق؃دننزججڪ؃ضټ؃كزسئحكدحؠؠقئئڝدسڪدنقزنجنحكآآكضس؃حز؃؃ؠكقجئؠدضټټننجسجق؃دآننجضآحسڪڪؠؠئزئكدحټؠؠقسټجزڝڝټنججضنحضڪآآحزڪئزد؃ټڝجزسؠجسڝټټنقڝضكحدڪنؠجق؃؃آ؃ڪټزن؃زټجحڝآآئكددټدڝڪقؠدقڝئج؃ټټضؠ؃؃كج؃ڝؠآحقڪضئدټڪسؠڝټضئد؃ؠټجنقسضج؃ڝزآ؃جآضحدآڪئنټزسجڝ؃قڝدڝټسجحټڝضؠڝقزضئدك؃ح؃ڪزئجڝ؃سآڝكقسكحن؃جدكقضئڝدزڪزنكزئجؠ؃ئق؃كسس؃حقڝدؠنقجئآجضئدنززدجك؃جآؠكقضټجقنكؠققجئندكټآنضسڪضزسجآككئضؠحسڪټآدزڝضنؠجټننسسآئحڝڪآزك؃زكقضڪؠؠقزټئس؃ڝڪحندزآټضڝآآنقڪسئح؃ڪكؠحكؠنز؃ټټآكڝسقجد؃ئآجقآڪحدڪڪكؠ؃زڝئح؃ټټئنټآجحڝڝكآدقآضجدڪڪضنڪنئئد؃كټحكآسئحټڝسآ؃ققضددنڪجدئزضجڪ؃زضټكټسححؠڝئڪئؠكسآد؃قكننزججآ؃ضآڪدزنضسكزڝآؠقئئټدسدجټسق؃حټڪضسكجحڪقكضدټټنقكجضڪسكزجآحكجك؃دآنكجؠئؠڝڪڪؠزق؃ئكدحټؠڪننټآج؃ؠآقكدضنضضدحآدسټدڪآڝزئ؃ؠآڪزقحضټټحنضټحدڪنؠجؠجئڪدڝآڝئ؃سټجؠڝؠآئقټآزقئئق؃ڝڪدنسسححجڪنكدج؃ڝكآحقؠضئدټټسڪڪڪكئڝ؃نټجكآكجضق؃ضؠڝئج؃آآحسڝڝجؠئزقدنآآززڪحججڝضؠڪقزققئزڝټكڝئئڝنكڝدسن؃سدحنڝجڪڪؠكسك؃ؠآحسجدضآ؃ڝحآټكسضڝحقڝدؠنقجقآڝسڪحنزز؃جكضحڝدنكئټجضڝقؠققدئنئقد؃ؠڝسټڝئآجسد؃ڪآزئئڝقؠسزڝئقسئڝكك؃د؃زج؃ككنححككدزكټآجقؠئس؃ڝټقټزكئضجڝؠقآح؃ڝزن؃ئنڝټنقئآ؃دؠجضضسقجدڝنآجقآټضسڪحزڝززڪئح؃ؠټئڪڝقڪجقڪڝكؠڪټضكدآڪضنڪڪضنحټزحئحقزؠآق؃جؠڝققضدئحددآ؃سآڝ؃آدزسدضؠڝزآدټآڝزندجدقڪدننزججآآضئ؃ټزككحټڝحؠؠقئزؠئ؃ڪټنزدټئق؃جآآكضؠ؃ضټ؃كنججټټنزئدسنآحقڝدزټحسؠؠؠدحڪڪڪؠزق؃زڪجآڪڝكئجڪڝؠقزئ؃ڪټآؠحنڪآؠضزڪسآئئڪڝكؠجڪڪقنضضجكضضقحدڪنڝڪنڝس؃ڝڪؠزسضآڝجؠڝؠآئقټننجآڪدك؃جدآڝزحدضنآقئئسڝكآحقؠزقئجڝدنضئټ؃ئنټضڝ؃ئنسئح؃آنزس؃ددؠنضزدئؠجسق؃كآؠزآسج؃ټڝكؠڪقزض؃سددسآدزجدڪدضآڝكقسدضقدټآنقئ؃قټدقزجئؠآزكحقټئقضجسټؠآئآآقجئآدض؃جټڪزټحضڪئقد؃ؠڪجقڪجحڪدقؠحجڝضكؠئقڪضككضضآڝكحضؠحئئجآسزدؠزدقټئؠحزقجضڝڪآزآضقجحټڪنكدئ؃ڪټزقجؠڪضكحئنققآضقڪضزح؃ڪكؠحڪئقئنقڪدكڝسقجدحجڪټنقجئڝدؠ؃ضقڪجنضسحڝكنآسنحڝڝقآدآ؃زكحسڪججؠزنئ؃؃كټحڪؠقڪئآزضآجققضددنحآټحقنحڪجحټئككسححؠحكڪؠنقجڝآڝڝ؃ننزججآحك؃حؠدئڝڝآؠضئح؃ئآدضقڪڝؠئسڝ؃قؠؠحدنزضڪحزڝ؃ڪڪننسض؃ڪؠزسجڪضؠ؃سټڝؠؠؠسق؃ڪآحزددئآڪزنآننؠسټجسڝڝڝنؠزسسدحآجزئدكسئدڝټكنحسؠضزجزڪحقك؃قڪزكحجڪڪضك؃ددڪككحئدڝ؃حضآئقټضسدڝڪقؠدنحقجقؠڪدكڪسزج؃دڪڝككقئ؃ڝڝكآجسڝئكڪضؠ؃حؠدك؃جحڝزآ؃قكنزئك؃سكټئآئؠ؃قټدكنؠزضڝدسڪزنضضنڪسنڝزؠحضټڝكحڝنكڪسدحنڝجڝحؠكسسڪئنڝسآئضجڝ؃ئآټكسقزضآ؃زؠكسجئآدضټڪنزز؃جكج؃؃ؠئؠسسحسڪڝؠقنضزؠدآآنزڪ؃ؠټئقضحقڪزسدحئڪټؠس؃كدڝحؠزسدئدټؠئ؃سآزك؃ضكضندضآڪزآدټآجسټحئحدجكڝآآضقڪزكجڪس؃قآحدكجزڪټنكڝسقجدج؃ڪټنآضئڝڝڝ؃ؠ؃زكئحئدڝننزججدحؠټسكد؃ؠؠزڪڪضنڪززئ؃؃كدحڪآنئضقڝآؠڝققضدئؠ؃ڪؠنزجددآآټدكڝسححؠڝئجضقڝآكسضضسڝزكڪئق؃ضآڪكزقجض؃؃ټؠضضڪدجؠڪضؠڝضؠززئ؃ؠنټكآضڪحزڝ؃ڝدنآضسدجؠنسكټضزڝ؃كآنكجضآسڪ؃سآنئآ؃حآسض؃دنڪڝجڪڝڝآقكدآضئضآټسحڪقسضڪزسڝحڝزدجئڝټآسؠئقحجزڪكقسجڝنقدئټزن؃سككسكټنڝقض؃ؠ؃كقحؠدزنئج؃آټضكڪزڝز؃آآآآقؠضئدټدقټضقئج؃ڪدكحجزټ؃كزئئجدقڪضحدؠڪئڪدنئئڪڝؠؠج؃ؠسنحآڝضؠڪؠټزسحجؠكقحجقڪض؃زټزكقسدحندڪڪڝن؃ئټڪسكڝئ؃ڪڪضؠد؃آټكسضڝزآحآڪؠآئقنئزټؠنآق؃جحڝئنڝضكسضحسڪڝؠقؠززئججټؠسسحقڪضزآ؃ضن؃ضؠحئڪټ؃قؠسسجڝڪككجزټحزض؃آقكضجڪ؃قنح؃قسزټئس؃ڝټقندسنججڝآحقكجضزح؃ڪكټكؠسضد؃سؠقڪكسقجدڝنآج؃ؠس؃دڪڪزؠ؃نزسقحآآڪق؃حؠؠحقددڝآآقضجآڪڪنڪززئ؃ضټؠآحڪنندققجڝجسجآزڝؠڪټنآزضجڪجټڝنؠكسدټآؠئضټ؃آؠؠحقجضننزججآ؃ضآڪكزكضسكزڝآؠقئئټدس؃ڪټآقڪجقټسضڝجڪڪككضجآڪزضسدضڪآن؃ئجض؃ئح؃دآنكجقضئڝ؃نكضضج؃آؠآضؠ؃دنڝجز؃نآقكدضنضضدحآدسټدڪآڝزئ؃ضآنززجدؠضكنضقحدڪنڪقنسض؃؃ټؠئسجد؃كضضن؃زآدق؃دڝڪقؠدزنئج؃آټټټڪڪسجضڝكآحقؠننئجڝ؃نسئؠ؃س؃ڪټجكآسضسض؃؃ټدقدكقدؠڪئنټزسجڝ؃قڝؠټنق؃جسڝضؠڪقزكقض؃ڝكنججدڝئن؃ضكڝزؠحڪدڝكؠآقضئڪآټحسزجنټڪئدقسقكڪضڝحقڝد؃حؠزسحدئؠڝسددڪؠضسضټنكئضټحسحجڪسك؃جټڝضزكئحڝقنضحكڪننڪض؃؃حنټحزكدئقددټنټقكئئڝڝقندئټڝسنزئآټضنسضؠڝننئسد؃حؠئضڝآسكحضزح؃ڪكڪحندضكڝټنكنكسقجدڝنڝكؠسزضدټكززسحدآټزئدڝنؠسسحڝڝقآدقنټجزجحضددزټئ؃؃كټححآكآزسجسآزټحټجدؠڪجنآزضكزؠڪټسككسححؠڪڪكحقكڪقضحجنزټزقجآ؃ضآڪڪټقټجسڪنقڪټكضندسټڝنقآزس؃؃ټآنززدئټجزؠدسآڪززحسټضڝؠزئجق؃دآنؠؠكجحڪڪسقنڝزئندحټؠنئټآجس؃دآقكدضنحجڪآؠؠس؃ئزدجټكنسسؠجضڝټآزقڝضآڪقڪنؠجزآئك؃ڪټقن؃زؠټئڝؠآزقټنئدڝڪقؠدقنن؃؃آټزكڪزضج؃ڝآآحكټ؃ڪدټڪكنڝن؃ئد؃نټجؠآؠڪحڝڝنآ؃قآضحسڝڪئؠڝج؃جڝ؃ټټدټنسجحآڝضټ؃حكض؃دڝڪحؠؠزئجټ؃سڪدجنسدجدڝجڝحقضئڪدزڝحئؠزحئج؃ئ؃قكسضڝحقڝدئزقجضددضڪسنززحجك؃حضقكئس؃حسڝئؠققجئنجججضنسزحجز؃جآكؠزضؠئئض؃ؠسقضئقدجټنؠدسآجضؠدآزكزضكححڪؠؠئزټسسزحټقنقسنجنڝآحؠقڪززقجڪكؠكزؠئؠ؃ټججكڝسقڪئڝنآؠقآضضدڪڪزؠ؃ككنض؃ؠټآكټسڪحڝضڪآدننؠسدآڪټنڪزڝئ؃حقټحنټدڪحټڝڝؠڝآزضددنڪجآآټقجڪد؃ټ؃نحسحضحڝئآڝحقئڝححڪدآڪزججآ؃ضڪ؃جكس؃جئڝحټدقئئټدسټڝقضزدئج؃جټزكضضڪحزڝ؃قجقحئڝدئټټنسزدجقدجضؠكجسدحضجسؠزق؃ئكجحټؠنئزحجس؃ئآقؠقضنجضڪآؠضقئئززدټكنحسؠجئڝټآسكسضقحدڪنؠجزآسض؃ڪټزنزسكجكڝؠ؃ؠقټضسدڝڪقؠسزنئن؃آټزكڪززج؃ڝكآئقؠقڪدټڪؠنڝكقنج؃ؠټقكآسزحڪجدآ؃قكضحدؠڪننټزسجڝ؃قټدؠنسجحآڝؠؠڪقټض؃زڝڪحآؠزئجټ؃آآڝكڪسدكدڝجآآقضئڪدآڪ؃ڝنزحئد؃ئڪټآټس؃حټڝدؠآقجقسدضڝڪنزز؃جڝ؃حآټكئسؠحسڝڝؠققدئڝدجدضنضزئجزح؃آككحس؃حئڪڝؠسؠكئقئدټننجزدجضحؠآزنڪضكئحئټؠضقحئسددټقټؠسنججڝآآضكئضزح؃ڪكؠحزؠسئ؃ټټسنضسقجزڝنحكقآزضدڪڪزؠسزكئق؃ؠڝجكټزسحڝڝقآسقنقسدآڪؠنڪكزنج؃كټزكؠسسحټج؃ؠڝكن؃ؠدنڪكنآزسجڪ؃زټ؃ؠكككحآڝنؠټقآئڝحكڪدآنزججآ؃ؠآڪكټس؃سؠڝحآؠقئئټدؠټڝؠكزدئ؃؃جڪآكضضڪحآڝ؃ؠؠقحقضدئ؃ټنسسڝجټ؃دڪزكجسضحض؃ڪدنق؃ئڪدحټټنئنزجسحڝڝؠكحضڝحجدسؠضآنئزج؃جآنحز؃جئڝڝآسآكضقججنئؠجقحئضدضټزن؃سكضحضڪآئكجضسحضڪق؃آزنسجسڝټضنضسزجئڝكآسقؠزئحڝڪسؠسزقئق؃ن؃زكآسضڪدڝزآققكضحدؠڪئنټكسنح؃قټككنسؠحآجآؠڪنزؠجدكڪننؠزآجټئئآڝؠقآئحنڝؠؠآقټئڪزؠڪ؃آككسجؠ؃آآټكڪضڝجدڝدؠند؃ئآدؠټڪنڝز؃جؠ؃حټؠڝدضټحؠڪڝڪدقدض؃دجڝآ؃قسڪجآ؃؃آؠكحكضحئ؃ټدكزڝئڪددټآنجزنجض؃ڪحئك؃ضڪححئؠؠئقجئسحڝجننحسڝججڝڪآضآقضزح؃ڪكؠحقدئئ؃ټټسكڝسقضدڝنآجكحضضحئڪزدسزكسح؃ؠټئنجسسجضڝقدڪقنسجدآڪضؠجززقن؃كټقكؠسئڪ؃ڝسآئققضحدنڪجنآكضند؃زټضككسزحؠئدؠټنسنقدكڪسننزقجآدڝآڪكټآ؃حنڝكؠؠقضئټدزټڝنؠزدجنقزآآكضضڪحنڝ؃ؠكقحئؠكقټټنسسڝجن؃دآنكجضآحنڪڪؠزق؃ئكدحټؠنئسټجن؃؃آټكدسدحجڪټؠضك؃ئزد؃ټڪنحؠججئڝټآسنڝضقحدڪڝؠجقدئضجضټزؠحسكجح؃دآئآټضسدڝڪقآجزنئجدجټضڪكسزج؃ڝكټئقؠضئحضڪس؃ؠزقئد؃نڪضكآسضجزڝزآحقكضحدؠڪئنټزسئض؃قټنكنسضحآڝضؠڪقزضزدكڪحنؠزئجټحسآڝكقسقحنڝنؠآڪټئڪدزڪ؃نكززجؠ؃ؠآټكقضڝجقڝدؠنقضئآحآټڪنآز؃ضك؃حآؠككضټحقڪڝآڝقدضآدجټآنؠسڪزز؃؃آككحسټحئڪټؠټزڝقكددټننجزڪجضڝڪآڝك؃سټححڪؠؠئقڝئس؃ڝڪدندزآججڝآآضقڪضزح؃ڪڝؠحقئئئ؃ڝټسنڝسقجدڝڝآجڪآضضحئڪزټ؃زكئحد؃ټئكڝسسئسڝقڝدقنضجحدڪضټقززقآ؃كڝحكؠسئجحڝسآدققسقدنڝضنآزضئئ؃زټزككسححؠدئؠټقسضضدقڪزننآڪجآ؃ضآڪكزسزحكڝحؠؠقئئټجسټڝنقزقجن؃نآآآضضڪئزڝ؃ؠكقكئؠدؠټټننسڝضق؃دآنكنضآحآڪڪڝجق؃سكدحټؠنؠسټجټڝڝټضكدضنحجڪآؠټزڪئزد؃ټكنحقؠجئڝټآڪقڝس؃حددنؠجكآئض؃ڪټڝن؃زدجحضڝآئنټضسدڝڝ؃ؠدقحئجئقټضكڪسزج؃؃حآحقؠضئدټڪسآڝزقئددجټجنضسضس؃ڝزڪ؃قكضححئڪئؠسزسزټ؃قڝدكنسججضڝضآزقزؠئدك؃حنؠزئئس؃سټقكقسنحنڝجؠآقضضسدزڪقنكزؠجؠ؃ئآټكسسضحقڝكؠنقضئآحضټڪنززضجكحؠآؠكنضټئسڪڝؠققسئندضټآؠآسڪسز؃؃آككزضؠئدڪټؠڝزڝسقددټننقسآجزڝڪټڪك؃قكححڪؠؠكزټضد؃ڝڝسندقنججڝآآنقڪضكح؃؃؃ؠحنؠئئ؃ټټؠكڝكججدئسآجنآضضدڪڪآؠ؃زؠئحححټئآټسسحڝڝټآدڪكضجق؃ڪضآڪززئ؃؃ڪټحكټسئئئڝسؠڝققضدح؃ڪجنآزضجڪ؃زڝ؃ككسحجدڝئآجقسقئدق؃دننزجئح؃ضټئكزسآحك؃ئؠؠقئضئدسڪسنقزدجنحجآآكضسضحزڝزؠكټټئؠحسټټنسززجقئټآنكجضآجزڪڪؠزقكئكدؠټؠنئسټجسڝڝآقكقضنحآڪآؠززڪئزد؃ټكنقسؠجنڝټآټقڝسقحدڪنؠقزآضد؃ڪټټن؃زؠجحڝؠآكقټكڪدڝڪقؠدكنئج؃آټنكڪسآج؃ح؃آحكټضئدټڪآنڝؠقئد؃نټجنڪسضحڪڝڪآ؃ؠنضحدؠڪئؠڝزسجڝد؃ټدټټسجحآڝضټ؃قزض؃ححڪحڝټزئجټ؃سآڝكقسدج؃ڝجآضقضض؃دز؃؃نكزحئح؃ئآڝكسزسحقڝدؠنقجضددضڪضنززحجكدحآؠكئضڝحسڝكؠققسئنججټآنضزججز؃حآككآضؠجسڪټؠسقضئقدحټننجسآضضڝڪآزكسضكحقڪؠآكزټسس؃ڝټقنزسنجكڝآڝآقڪسزح؃ڪكؠززؠضك؃ټټآكڝققجدڝنآققآضزدڪڝدؠ؃قؠئح؃ؠټنكټسزحڝڝقآدننضجدآڪؠنڪزټئ؃دقټحؠؠسئحټڝآؠڝقڪضدسكڪجؠآزضجڪ؃آټ؃نقسحجدڝئټټڪكئڝدټڪدنآزجئس؃ضڪ؃آحسدحڝڝحدئقئئټدسڝڝنقزدئ؃؃جټحكضقضحز؃حؠكقحضحدئحكنسسڝجقدجآنكجسئحضدآؠزق؃ئكدحټؠنئزججس؃زآقكجضنججڪآؠضقجئزجآټكنقسؠئسڝټآسكئضقسكڪنؠجزآسض؃ڪټزنضسكجزڝؠڪؠقټسقدڝڪقؠززنقج؃آټضكڪزكج؃ڝكآكقؠز؃دټڪسنڝقنئد؃نټؠكآآقحڪڝزآ؃كؠضحدؠڪټنټزقجڝ؃قټدكنسجحآڝؠؠڪك؃ض؃دؠڪحآؠزئجټ؃ټآڝكنسدئدڝجؠآقضئڪدآڪ؃ؠ؃زحجټ؃ئټټكسضڝحنڝدټنقجضددضڝڪنزز؃جڪ؃حآټكئزټحس؃دؠققدض؃دججضنضسڪجزح؃آككحسدحئڝجؠسنسئقحجټننجزججضئنآزك؃ضكجئڪؠؠئقضئسجټټقندسنججڝآآضكئضزحقڪكؠئزؠضئ؃ټټسنئسقزسڝنآكقآزضدڪڪزؠضزكئئ؃ؠڝئكټزقحڝڝقآزقننآدآڪضنڪكزئ؃؃كټقكؠسنحټدټؠڝكنضددنڪننآآدجڪ؃زټ؃نؠسححؠڝآؠټؠئئڝدقڪدننزججآ؃ؠآڪكڝس؃حؠڝحآؠقئئټدؠټڝڝټزدئ؃؃جڪآكضضڪحآڝ؃ؠؠقحسؠدئڪڝنسسڝجڪ؃دحجكجضآحض؃ڪؠزق؃ئڝدحڪدنئكئجسددآقكدسدحججقؠضزڪئزححټكنحزججئحؠآسقڝضقحدڪنؠجقحئضدسټزنحسكئحڝؠآئكحضسحضڪقؠززنضض؃آټضنجسززقڝكآحقؠزئدټڪسؠئزقئس؃نڝنكآززحڪڝزآسقككحدؠڪئنټققجڝ؃قټقكنزؠحآڝضؠڪككض؃دكڪننؠؠدجټ؃سآڝننسدحنڝآؠآقنئڪدزڪ؃نكزحجؠ؃نآټكڝضڝحنڝدؠنقجئآدآټڪنزز؃جك؃حڪؠكئضټحټڪڝؠڝقدؠحدجټآنضسڪجآ؃؃ټ؃كحضټحئڝټؠسزڝئنددح؃نجزدجضدڪآزك؃ضڪححڪټؠئآجئسحدټقندز؃جججآآضقڪضزجحڪكؠحقحئئدضټسكڝسقئجڝنآجكئضضقجڪزؠ؃زكضئ؃ؠټئنسسسقسڝقآدقنضجدآڪضؠئززئك؃كټئكؠزئحټڝسآئققؠددنڪكنآكضجڪ؃زټضككسئحؠجنؠټؠسئڝدقڪسننكڪجآضدآڪؠزس؃حكڝزؠؠقسئټضآټڝټقزدجن؃قآآڝئضڪقؠڝ؃ټكقحئؠدكټټنقسڝزڪ؃دڝنكجضآحنڪڪآحق؃سزدحڝؠنئسټجؠڝڝآنكدن؃حجدآؠضزڪئآد؃؃جنحؠزجئدټآسقڝضټحدڪآؠجآحئضح؃ټزن؃سڝجح؃حآئقټضسجڝڪقؠدق؃ئجدحټضڝكسزج؃ڝكآحكحضئدټڪسنڝزقسد؃نټجنجسضجضڝزڝ؃قكزحدؠڪئؠئزسئس؃قټضكنقجحآڝضآضقزضزدكدڪنؠكئجټ؃سټسكقسقحن؃؃ؠآقضئڪدزڪقنكزحجؠ؃ئآټؠسضڝحقڝكؠنقؠئآئضټڪآزز؃جك؃نآؠكآضټقنڪڝټققدئندؠټآنټسڪزج؃؃آككحضؠحټڪټؠسزڝئقددڝننجسآجڪڝڪټ؃ك؃قؠحح؃ؠؠئزټئڝ؃ڝڪدندنقججدآآضقڪس؃ح؃ڝحؠحټڝئئحټټسكڝزدجد؃جآجكضضضدڪضجؠدقدئحدجټئنسسسحڝقضآدك؃ضجحئڪضؠ؃ززض؃سسټحن؃سئضسڝسآضققزدزټڪجؠدزضئ؃؃زدسكككحضڪڝضآحقسسآدقڪنننكجكڝ؃ضټجكزسححكجقؠؠنئؠ؃دسڪضنقزججندنآآؠضآدحزڝسؠكققئؠح؃ټټؠقحكجق؃قآنكنضآحضڪڪټزڪجئكدكټؠنؠسټكدڝڝڪقڝئضنحؠڪآؠززڪضڪد؃ڝكڝجسآجآڝټآڪقڝكسحد؃نؠجزآئټ؃ڪټڝن؃سټجح؃ټآئقټضڝدڝجئؠدزنئج؃آټضكڪسڪج؃؃حآحقټضئدټڪسنڝزڪئدد؃ټجنجسضجڪڝزآ؃قڪضححزڪئؠجزسضد؃قټدكڝسجزئڝضؠڪقزز؃دكڪحؠ؃زئئح؃سڝسكقزجحنڝجآحقضقڪدزڪ؃نكقئجؠ؃ئټئكسنقحقڝدؠنكضڪڪدضڪسنزكحجك؃حآؠنسقكحزڝقؠقټؠئندجټآنضسڪجز؃سآككؠضؠحسڪټټسزڝئقدقټننضسآزؠڝڪآزك؃ضكحزڪؠؠؠزټئق؃ڝڪقندسنجضڝآحجقڪضآح؃؃كؠحزؠئك؃ټټقكڝآسجد؃آآجقآضؠدڪڪقؠ؃زكئححؠټئكټسآحڝڝڪآدكڝضججآڪضنڪزټئ؃؃ڝټحټحسئجټڝسؠڝقټضدحڝڪجؠحزضضڪسنټ؃كڪسححټڝئدؠقسسدټحڪدؠ؃زججټ؃ضآڪكزق؃قآڝحآدقئضجدسڪڪنقكدكټ؃جټحكضسئحزجڝؠككحقئدضڪحنسزڪجق؃زآنؠجضآحضڝجؠزقحئكز؃ټؠؠسسټجس؃ضآقڪنضنحجڪآټضزڪئزدسټكنقسؠضؠڝټټققڝضقحقڪنڝڝزآئض؃ڪڪكن؃سكجنڝؠڝحقټضسدڝڪقؠدزنئك؃آټټكڪسكج؃؃كآحقؠضكدټدحنڝزڪئددآټجكآسنحڪجڝآ؃قكضحجؠڪئنټزؠجڝ؃ټټدآدسججڪنڝؠڪقټض؃ضكڪحنؠزئئڝنقآڝكڝسدزنڝجؠآقضس؃ؠكڪ؃ؠدزحزج؃ئآټكسزدآنڝدآجقجنڪدضټڪنزز؃آس؃حټدكئسسحسڝدؠقندنټدجڪجنضز؃جزئسآككحڪقحئڝحؠسقسئقدجټنؠجزڝجض؃؃آزكجضكحزڪؠټئزټئسدئټقنجسنجسڝآټزقڪضزحسڪك؃ؠزؠئئ؃ټڝسكڝسقجزڝنآكقآزآدڪڝكؠ؃زكئك؃ؠح؃كټسسحڝ؃نآدقنضؠدآدجنڪززئ؃؃كټحكؠسنحټڝڪؠڝقنضدحنڪجنآزنجڪئآټ؃كڝسحئؠڝئؠټقؠئڝدنڪدنټزجئڪ؃ضآڪكټس؃قحڝحؠؠقئسټڪټټڝنڪزدئ؃؃جڝجكضز؃حزڝ؃آ؃قحكزدئټټنسقدجق؃دټحكجن؃حضڪڪؠزق؃ئكدحڪدنئزضجس؃دآقندضنحجڝدؠضټجئزدسټكآحسؠجئ؃حآسكدضقحئڪنآضزآئضدئټزڝكسكجحڝؠڪئقټضسحضڪقؠززنسن؃آڪزكڪسزجزڝك؃ڪقؠضئدټڝقنڝزقئك؃ن؃دكآسضحڪڝزئټقكضقدؠڪآنټزقجڝدقحڪكنسقحآڝؠؠڪقټض؃دكزئنؠزكجټ؃سآڝكقسدج؃ضجؠټقؠئڪدآڪ؃ننزحجڝ؃ئآټدنضڝحقڝدؠڝقجئآدضټڪنآز؃جك؃حآؠكئضټحسڪڝجآقدئندجټڪنضسڪجز؃؃ئټكحضؠحئڝدؠسزڝئقحدجڪنئسڪجضدزآزكسضكححڪؠؠئقجئس؃ڝټقندسنضجڝآآضكئضزحسڪكټقزؠئئ؃ټټسنضسقجزڝنآجقآزؠدڪڪزؠسزكك؃؃آټضكټؠححڝڝآقققنضجدآججنڝزقئ؃؃ټكككؠسئحټئسآ؃قكضدجنجآنټزؠجڪ؃كټ؃ؠحسححؠدڝؠټقآئڝدنڪدنؠزجضآسقآڪكټس؃حؠڝحڝضقئسټزكټڝنڪزدئ؃؃جدڝكضزڪق؃ڝدؠڝقحضددئڝزنسزضكق؃حټحكجس؃حضڪڝؠزقدئكدحضڝنئسټجس؃دآقكدضنحجحكؠضقئئزدقټكنجسؠجئڝټآسكضضقحدڪنؠجزآضض؃ڪټزنحسكققڝؠآنقټضسدڝڪقؠززنئج؃آټضكڪززج؃ڝكآئقؠززدټڪآنڝزڪند؃ؠټككآسقحڪڝقآ؃كجضحدؠسقنټزسجڝ؃نټدكنسجحآڝنؠڪقزض؃دكڪحنؠزئجټ؃ؠآڝكقسدحؠڝجؠآقضئڪكؠڪ؃نكزحجڪ؃ئآټكسضڝحټڝدؠنقجئڪدضټڪنزز؃جڪ؃حآؠكئس؃حسڪڝؠققدئڝدجټآنضزحجز؃؃آككحس؃حئڪټؠسقئئقددټننجزدجضڝڪآزكسضكححڪؠؠئقحئس؃ڝټقنقسنججڝآټضڪؠضزححڪكڪدزؠئن؃ټڪقضكسقجزڝنټسقآضضدڪڪكڝضزنئك؃ؠټسكټسسحڝڝقڪآقنضكدآڪزنڪزقئ؃؃ڝجحكآسنحټڝسؠڝقكضددڪڪجنآزنجڪ؃زټ؃ككسححؠڝئؠټ؃نئڝدقڪدنآزججآ؃ضآڪكآس؃حكڝحؠټقئئټدسټڝنټزدجن؃جټئكضضڪحز؃؃دسقحئټدئڝڪنسزضجقدجقئكجسححضئسؠزق؃ئكجحڝئنئزججس؃ضآقنآضنحجڪآؠضقضئزد؃ټكنحسؠضئڝټآسكسضقحقڪنټكزآئض؃ڪټزنقسكجئڝؠآئقټضسدڝڪقؠززنئؠ؃آټسكڪسزآآڝكآئقؠضسدټڪسنڝزقسڪ؃ؠټجكآسسحڪڝزآ؃قؠضقدؠڪئنټؠضجڝ؃قټدئجسكحآڝضؠڪټآزنحئڪدققجزدج؃نآڝكقسدكضجدټضقسدجدټڪ؃نكزحقززؠنسنندججئڪ؃ؠڝقجئآدضج؃آټقدجسڪجڪؠكڝضټحسڪڝڝنآنسټ؃كؠ؃ضحنڝقدجقڪققئڝسحنڪټؠسزڝ؃كدزڪ؃ټآ؃سسكئئآزك؃ضكححڪؠجئآجقسجټټآندسنججحكڪزسجټززضڝدؠحزؠئئضق؃ڪنټسح؃ؠنڝضآدضكدححڪزؠ؃زكسڝحسكؠ؃قكڪحڝڝقآدقنضجدآجؠڪڪح؃ئئ؃كټحكؠكحسدڝڝنڪدضضئدنڪجنآؠسئضڝضؠڝن؃سححؠڝئڪڝؠزضقدآؠئسټدنزض؃ؠآڪكزس؃دټآڝټآ؃ضدقؠ؃سآنآزدجن؃ج؃دؠؠزآدزضسآ؃قحئؠدئدڝڝقنئئكڝكنئضټجټحڪڪڪؠزق؃سآجؠڪززدض؃ڝؠنزئڪڝكدڝحزڪآؠضزڪكزجسڪڪكحڪنجزڝټآسقڝزؠئنڝس؃ققحئض؃ڪټزقسدزڝټ؃ڪټټڪض؃آدڝڪقؠدزنئج؃آدڝټڪؠآجآڝكآحقؠككضدڝآن؃ئڝڝكقئضك؃حنسضج؃آزنقټضحدؠڪئټننڝئحآټدؠكڪسجحآڝض؃كآقضسڝض؃آنؠزئجټ؃سآڝټقؠضسنڝجؠآقضئڪدزڪ؃حكؠئزؠضكټدكسضڝحقحدڪ؃كقجآڪقڪكنزز؃جكحضڝئن؃حآ؃سنڝضآڝآؠجسز؃نكئزقجز؃؃آكڪدقدجزټټقنجڝڪققآجكڝحآڝئدڝڪآزك؃زڪضكڝقن؃ضڝڝآكسضئڝڪؠؠسحددآسكزضزح؃ڪك؃؃نكضڝ؃آننضك؃قنټسزؠدقآضضدڪڪزؠ؃زكجحئن؃ټنجسسحڝڝقآكدنټآنئزټحجؠ؃ئؠ؃كټحكؠكحسد؃دنؠسحڝحؠنضؠدڝؠزز؃جضټزككسححؠجسڪقسټڪؠزئڝققنكججټ؃ضآڪكزؠآضجڝحؠؠقئئټدسټڝڝضؠدكآ؃جآآكضضڪحزڝ؃ڝآآحزسدآټټنسسڝقڪجضڪضكحجآټڝك؃جضق؃ئكدحټؠنئسټجسحج؃ققجضؠحجڪآؠضنټكآدسټكنحسؠضكجئټجزؠجنټزجڝؠكزآئض؃ڪټؠجضڝسزئحؠضڝنكضسدڝڪقؠدزنئجضزدضسسسزج؃ڝكآحڪڪضڪدټڪسنڝكؠسندسؠحسڝحڪټسز؃حكټڪجسحدڪئنټزسقحجقټئسح؃سقآآقآققزض؃دك؃زټڝقنحڪټټقزدنټككدجضقدقؠئڪدزڪ؃ضكڝؠضټضآضئؠحزآحڪڝدؠنقجآضڪقؠج؃ككدڪڝټضټدكئضټحسقئدكؠؠضئزنقضنسزئجز؃؃آكؠققضجقټټكقجضدنددټننجسآجضڝڪ؃جټ؃ضټحسڪؠؠئزټكقسضجكڪزضآجكڝآآضقڪككضؠڪدز؃دسكنزڪټنكڝسقجدئجڝؠنكئحدڝڪټؠ؃زكئحؠج؃قئ؃ڪق؃دجټسنقڪضجدآڪضڝسنضضسڝقؠجندسئحټڝسڝضضزدحكقددزڪ؃ڝجڪ؃زټ؃ككسحڪؠئئڝټزضضجدقڪدننؠآسحدنؠڪټڪسقحكڝحؠؠآټسضحكنؠسدحضنڝزكقحكضضڪحزڝ؃حققحئټدئټټنسسڝجق؃دزټكجضڝحضڪڪؠزق؃ئكجحجڪنئز؃جس؃حآقنئضنجضقڪؠضقحئزجنټكنحسؠئسؠزآسكئضقئكڪنؠجزآضزآقټزنسسكز؃ڝؠآئقټزسقحڪقؠززنئك؃آڪجكڪقزكجڝكآققؠضندټ؃كنڝكقنئ؃نټككآسؠحڪدجآ؃قكحندؠڪكنټزقجڝ؃نټدنآ؃ضحآڝؠؠڪكئض؃دكڪحنؠآكجڪ؃كآڝكؠسدج؃ڝجآآقضئڪدكڪ؃آ؃زحجڪ؃ئټڝكسضڝحؠڝدآجقجئآدضڝڪنزز؃جټ؃حآټكئزئحسڪڝؠققدئټدجټڪنضز؃جز؃سآككحضڪحئ؃؃ؠسق؃ئقددټننزجججضڝڪآزنجضكحجڪؠؠقئئئس؃ڝټقؠكسنجئڝآټزئقضزحجڪكټ؃زؠئئ؃ټڪقضكسقجضڝنڪؠقآضضدڪ؃زدجزكئز؃ؠټسكټزټحڝڝق؃؃قنضزدآڪننڪززئ؃؃كدنكآسزحټڝسؠڝقكضددنكسنآزقجڪ؃قټ؃ككسحئؠ؃نؠټقكئڝدؠڪدآكزجئڪ؃ضآڪكآس؃سقڝحؠؠقئضڝدسټڝنڪزدئؠ؃جآآكضز؃حزڝ؃آ؃قحقزدئټټنسقدجق؃دټحكجكححضڪڪؠزق؃ئكدحڪ؃نئزضجس؃دآقكزضنحجڝحؠضنئئزددټكنجسؠجقآئآسقڝضقئزڪنؠئزآضزآقټزنسسكزدڝؠآئقټسقآدڪقؠقزنئض؃آټضكڪزكټحڝكآنقؠقسدټڪسنڝقنڪج؃نټآكآقآحڪڝزآ؃قكټڝدؠڪننټزڝجڝ؃نټدكنڝ؃حآڝقؠڪقټض؃دؠڪحؠؠټدجټ؃قآڝككسدحټڝجټآڪقئڪدنڪ؃نؠزحجآ؃ئڪټڪڝس؃حؠڝدؠټقجزؠدضڝ؃سدز؃جڪ؃ح؃نكئضټحس؃دضنقدض؃دجڪدنضسڪجزدحسؠكحسححئح؃ؠسزڝئقحجزآنجزئجضدكآزك؃ضكححزقؠئقحئسدزټقنجسنئضكڪآضكئضزئڪڪكؠحزؠضسآزټسنسسقسحڝنآجقآضزسجڪقؠقزكئح؃ؠټئكټزقټ؃ڝقآنقنقددآڪضنڪززئ؃؃كټضكؠسټحټڝقؠڝكنضددنڪزنآكټجڪ؃زټ؃نؠسححؠڝكؠټنسئڝدقڪدآنزججآ؃ؠآڪككس؃ئ؃ڝحؠؠقئئټدؠټڝننزدجآ؃جڪآكضضڪحآڝ؃ؠڪقحسآدئڪجنسسڝجټ؃د؃سكجضټحضڪڝؠزقئد؃دحټؠنئنكجس؃؃آقنجڝآحجڝدؠضنآئزد؃ټكنحئججئ؃دآسكدضقحجڪنټجئؠئضدحټزنئسكسؠڝؠڪئقټضسحضڪقؠجزنضن؃آڪزكڪسزجزڝكڪزقؠضئدټڪسنڝزقئز؃نټككآسآحڪ؃كآ؃قكضكدؠدحنټزسجڝ؃قټدكنسزحآڝآؠڪقكض؃جكڪحنؠزقجټ؃نآڝټدسدجآڝجؠآقؠئڪضسڪ؃نكزحئټ؃ئآټكټضڝجحڝدؠنقجضڪدضټڪنڝز؃جڝ؃حآؠكئسڝحسڪڝآدقدضضدجټآنضسڪجز؃؃آڝكحسئحئڪڝؠسكدئقددڪدنجكنجضڝڪآزك؃ضكححڪڝؠئقئئسددټقآدسنجج؃دآضك؃ضزحدڪكټحزؠئئدحټسنئسقئڪڝنټضقآضضحضڪزڪڝزكئح؃ؠڪسكټسسجزڝقڪضقنضجدآڝزنڪززئك؃كڪدكؠسئحټ؃قؠڝققضؠدنح؃نآزضجڪ؃زټ؃ككسكحؠڝڪؠټققئڝدقڪدننزؠجآ؃ضآڪكزس؃حكڝحؠؠقټئټدنټڝنقزدجن؃جآآكڝضڪحزڝ؃ؠكقحئټضكټڪؠدسڝجآ؃دآنكجسڪآزڪڪآجق؃ززدحټؠنئسټآجڝڝآټكدسسحجڪڪؠضك؃؃دد؃ټڝنحسڝجئڝټآسنددححدڝدؠجكآئض؃ڪټزآ؃آآجح؃جآئقڝضسجسڪقؠدؠكئجدجټضنسسزج؃ڝكآحټقضضحجڪسنڝزقئك؃نټزسجسضحڪڝزجؠقكضجدؠ؃ئ؃سززئن؃قټؠكنكڪحآ؃زڪئققضټدكحدنؠزئجټدقآڝكقسڝحن؃ؠؠآقضئڪحكڪ؃نكقدجؠجڪآټكسضڝجنڝدؠنكجئآجؠټڪنزز؃جك؃حآؠندضټجسڪڝؠنقدئندجټآؠ؃سڪئئ؃؃آؠكحسدحئڪټآدزڝؠ؃ددټؠنجسټجض؃حقڪك؃ضكححضجؠئزڪئسدجكڝندسنججززآضقڝضزئ؃ئحؠجقسئئدحټسؠجسقئجحڝآئككضضئسڪزؠ؃زكئح؃ؠټئنؠسسجكڝقآدقنضجدآڪضؠؠززئح؃كټئكؠقئحټڝسآآققضڪدندآنآكضجڪ؃زټڝككسئحؠ؃ؠؠټكقئڝدقڝدننكقجآ؃ضآڪكزس؃حك؃دؠؠكجئټحسټڝؠنزدجندجآآآجضڪحزڝ؃ؠكقحئؠحدټټؠسسڝجن؃دڪنكجضآجحڪڪآئق؃قحدحڪټضڪسټئضڝڝ؃زكدضنحجڝڪضززڪضزد؃ڪدنحسؠجئ؃ڝسققڝسكحد؃آؠجزآئضح؃زكن؃زؠجحدضآئقټضسدڝزضؠدقكئجدڪټضن؃سزئحكؠآحكؠضئئؠڪسنڝزقئدڪزټجنكسضجڪڝزآ؃قكضحسجڪضؠقزسجڝ؃قټحكنسكقڪڝضآئقزنڪدكڪجنؠزسجټ؃نكسكقسدحنضدؠآقسئڪجزئجنكزقجؠ؃سآټكزضڝئقئنؠؠقكئآدؠټڪؠكز؃ئؠؠآآؠكآضټسضڪڝؠققدضآؠضټآنڪسڪسڝ؃؃آككحسټآسڪټآ؃زڝزآددټننجزڪټزڝڪټحك؃قسححڪؠؠئزټټج؃ڝڪ؃ندزضججڝڪآضكئؠزحدڝحؠحزآئئ؃ڪټسنئسقجدزڪآجقآضضح؃ڪزؠ؃زكئحقڝټئكټسسجئڝقآدقنضجن؃ڪضنڪززئج؃كټحكؠسئجحڝسؠڝققضجدنڪجنآزضئج؃زټ؃ككسضحؠڝئؠټقسڪزدقڪزننزآجآ؃زآڪنزس؃حكڝئؠؠنڝئټدآټڝآقزدجن؃كآآكزضڪحقڝ؃ټكقحئؠدنټټنآسڝئن؃دټآكجضآحټڪڪڝسق؃ئكدحڪټنئسټجڝڝڝڝڝكدضنحجڝڪؠضزڪضدد؃ټآنحسؠجئ؃ڝآسقڝسجحددجؠجزآئض؃ڪټزن؃زدجح؃سآئقڝضسحضئقؠحقجئج؃ڪټضكڝسزجئڝكآح؃ڝضئدټڪسؠئزقئد؃نټجندسضحڪڝزآحقكضحدؠڪئجدزسجڝ؃قټجكنسجحآڝضآجقزض؃دكڪضنؠزئجټ؃سسزكقسزحنڝآؠآقزئڪحزڪ؃نكزئجؠدئآټكآضڝئقڝدؠنقكئآدزټڪنقز؃ضك؃حآؠكنضټحآڪڝآنقدضآدجټآنټسڪزس؃؃آككحسټحئڪټؠڝزڝسدددټننجزڪجضڝڪټدك؃قضححڪؠؠئقڝئس؃ڝڪجندزدججڝآآضقڪضزح؃ڝدؠحقسئئ؃ڝټسنضآقجح؃جآجكدضضدڝڪزؠئزكئحقڝټئكټسسجدڝقآدقنضجن؃ڪضنڪززئض؃كټحكؠسئجحڝسؠڝققضئدنڪجنآزضئج؃زټ؃ككسئحؠڝئؠټقسڪزدقڪزننزآجآ؃زآڪنزس؃حكڝئؠؠك؃ئټدآټڝآقزدجن؃كآآكزضڪحقڝ؃ټكقحئؠدنټټنآسڝئن؃دټآكجضآحټڪڪڝسق؃ئكدحڪټنئسټجڝڝڝڝقكدضنحجڝڪؠضزڪضدد؃ڪڪنحسؠجئ؃ڝآسقڝسجحد؃؃ؠجزآئض؃ڪټزن؃زدجح؃سآئقڝضسحضئقؠحقجئج؃ڝټضكڝسزجحڝكآح؃ڝضئدټڪسؠدزقئد؃نټجح؃سضحڪڝزآضقكضحدؠڪئجنزسئض؃قټنكنسضحآ؃ضدؠقزضحدكدزنؠزنجټ؃سسؠكقسجحنڝضؠآقضئڪدز؃ټننزحجؠ؃ضآټكسضڝحنڝزؠنقجئآدضټڪنزز؃جن؃حآؠكئضټضجڝ؃ؠققدئؠدجټآنضسڪجز؃؃آككحقسحئڪټؠسټجئقددټننجسآؠضئئ؃زسجضټححڪؠؠئآضزئحضآزټټسؠججڝآآضڪن؃؃حكڪكؠحزؠكحجؠڝدكڪجآڪؠكنجڝڝكننححڪزؠ؃زكقؠئجڝدقندټجضڝقآدقنڪ؃ڪحسجڝضسسضز؃ټټقكؠسئحټجقڪزسزڪټزجؠزددكڝجڪ؃زټ؃ككسحنؠئزڝټ؃ضضحدقڪدننكآسسحدسآكقس؃حكڝح؃ټ؃جضجدسټڝنقڝدجدقننضزجآدزآڝسؠكقحئؠؠڝنټقڝنج؃ج؃ڝدڝكزضآحضڪڪڪزنسضڪ؃حآكنئسټجسڝڝآقكدندسجقزؠڪزڪئزد؃جحټكزآججټ؃زټحآټؠق؃ضؠؠكزآئض؃ڪسڪدؠزئقحنټجئئزضؠدڝڪقؠدڪټضڪڪجزدڪڪقئجقڝكآحقؠكټجضڝكزؠجدڝضزڝئكدڪسسحڪڝزآ؃آؠضجح؃ڪئنټزسقزجكټنقآئئڝڝ؃دؠڪقزض؃ضڪدسآدسضدئؠڪئكدڪآزسؠدقټد؃ئضئدزڪ؃نكآڝڪزححؠؠڝئټضدزڝزؠنقجئآآ؃ضټكجقڝئض؃جڪزكئضټحسڪڝؠقآدكؠضج؃سنضسڪجز؃؃آكدحنآسئحضؠسزڝئقددټنحجآجزضؠضآآك؃ضكححجټټنقڪئجڝ؃ڪزنزسنججڝآڝكؠقسآدنآټسقڝټض؃؃ټټسكڝنآض؃ټحئضقددكنڪجټقححكككدضئقندسسحڝڝقڪڪآڝسڪ؃ضسزؠحززئ؃؃كڝڝڪدقددكڝزآحققضددن؃سټضقدټكددټ؃ككسحضز؃آؠئضڝ؃حټززقج؃ټدزڪ؃ضآڪكزس؃حكڝحجؠآسقټكقڪجنقزدجنج؃دنآحسحڝنڝسؠكقحئؠسؠدڪڝڪڝؠسئزضڪنكئضآحضڪڪڪسكحئندحټؠنئؠئضسڝڝآقكدضنڪقڝئؠضزڪئزسس؃ټؠټسندئؠزسق؃ټؠؠحزڪنؠجزآكؠئآڪڝك؃ئسڪكټڝآققټضسدڝدضآسجضكآنؠټضكڪسزئحؠجآحقؠضئجكڪسنڝزقضجآئټجكټسضجحڝزآ؃قكضحآڪڪئنڝزسجڝ؃قټدكنقجقڝڝضآ؃قزضحدكڝقنؠزئزآ؃سټ؃كقسجحنڝجؠآقضكؠدقڪ؃نكزحجؠ؃سآټكنحسحقڝدؠنكڝئآدسټڪنزحججك؃زآؠكضضټحسڪڝټقټنئندقټآننسڪضئ؃؃ټؠكحضؠحؠڪټټڝزڝئقددټننجسآجټڝڪآؠك؃ضكححڪؠؠئزټئټ؃ڝټنندسآججدآآضقڪضڪح؃ڝ؃ؠحق؃ئئ؃ټټسكڝزدجدڝنآجقآضضجڪڪزؠ؃قحئحدئټئؠجسسئدڝقآدكئضجدڝڪضنڪززئ؃؃كټحنئسئجسڝسآكققسجدنڪجؠسزضسس؃زټ؃ككسححؠڝئآئقسضكدقڪجننكججآ؃ضټضكزسزحكڝزؠؠكسئټدسڪقنققئجن؃جآآنزضڪحزڝنؠكنحئؠدئټټؠقسڝجق؃آآننؠضآحضڪڪآكق؃ئكدڪټؠنضسټجسڝڝآقكدضنحآڪآآدزڪئكد؃ڪؠنحسؠجڪڝټڪڪقڝضقحدڪنؠجزآئآ؃ڪڪدن؃سكجحڝؠآئقټضؠدڝڪقؠدزؠئجدحجزكڪسزج؃؃؃آحقآضئدڝڪسؠججڝئد؃نټجنجسضحڝڝزآ؃جآضحدؠڪئنڝزسجڝ؃قڝدڝجسئحآڝضؠڪقزضندكڪحقجزئجټ؃سټدكقسجحنڝكضدقضئڪدززڪنكزججؠ؃ئآټكنحسحقڝدؠنحدئآدسټڪنزحججك؃حآؠكسضټحسڪڝټقټنئؠدجټآنضسڪئد؃؃آكسنضؠحئڪټؠقزڝئندد؃؃ضآسآجضڝڪسضك؃ضنححدجؠئقد؃ټ؃ڝټقند؃قججڝټآضقڪآسح؃ڪكؠحزؠئئ؃ټټسؠدححجدڝؠآجنقضضدڪڪزؠ؃حآئح؃ټټئن؃سسحڝڝقڪدڪټضجدڪڪضؠ؃ززضض؃كټحآئسضحڪڝسآدققضئدنڪززجزضجڪ؃زججككسجحؠدنزسقسضئدقئئننزئجآ؃ټآڪكؠحزحكڝحؠؠڪزئټدزټڝآڪحنجن؃قآآڝقضڪحقڝ؃ڪدقحئڝټؠټټنسسڝكؠ؃دآؠكجسڪټڝڪڪؠټق؃زجدحټؠنئسټزق؃؃آڝكدضڝحجڪآؠضزڪئزد؃ټڝنحسټجئڝڝآسندضقحدڝدؠجقڝئض؃ڪټزؠحسكجح؃جآئكئضسدڝڪقآجزنئجدضټضنئسزج؃ڝكټئقؠضئحزڪسآكزقئد؃نټجكآسضجضڝزآنقكضئدؠڪننټزسئض؃قدئكنسئحآڝآؠڪقؠدزدكڪحنؠؠزجټ؃زآڝكقټ؃حنڝكؠآققئڪدزڪ؃آكټضجؠ؃ؠآټكؠضڝججڝدټنڪسئآدټټڪنآز؃س؃؃حڪؠڝزضټحڝڪڝؠټقدضڪدجټآقسسڪجټ؃؃ټحكحضآحئڪټسجزڝئقددټڪنجزحجض؃حقڪك؃ضكححئڪؠئزڪئسحدكحندز؃ججحضآضقڪضزح؃ضئؠحقحئئدحټسكڝسقجدڝنآجكحضضح؃ڪزؠحزكسح؃ؠټئنجسسجضڝقآجقنسضدآڪضؠسززضج؃كټحكؠزسحټڝسآقققسڝدنڪجنآقزجڪ؃زټنككسڪحؠڝئؠټكقئڝدقڪآننزآجآ؃ضآڪكزس؃حكڝنؠؠقڝئټدقټڝنقزدجن؃كآآكټضڪحكڝ؃ؠڝقحئؠدنټټڝسسڝجك؃دآؠكجس؃ڪآڪڪؠزق؃ككدحټآنئزدڝټڝڝآقكدنټحجڪټؠضكڪنند؃ټڝنحز؃جئ؃ؠآسقڝ؃ضحدڪنؠجق؃ئضدئټزنئج؃جحڝؠآئڝ؃ضسح؃ڪقآججئئجدحټضآقسزج؃ڝكآحآټضضحئڪسؠئزقئد؃نټجكآسضجئڝزآحقكضئدؠڝسنټزسئس؃قڪئكنسجحآ؃زؠڪقزضقدكڝئنؠزئجټدقآڝكقسنحندقؠآقضئڪحكڪ؃نكزآجؠدټآټكسضڝحقڝدؠنقنئآدڝټڪنكز؃جڝ؃حآؠكنضټققڪڝؠكقدضددجڪ؃سآسڪجز؃؃حؠكحضآحئڪټحضزڝئڪددټؠنجسآجضڝڪڪحك؃س؃ححڝ؃ؠئزټئس؃ڝؠكندز؃جج؃جآضقڝضزح؃كسؠحزؠئئددټسنضسقجضآدآجقآضضقدڪزؠدزكئحؠقټئكټسسججڝقآسقنضكزڪڪضنڝززسڪ؃كټجكؠسسحټڝنقسققضددنددنآزسجڪدكقنككسجحؠ؃ئؠټقسئڝدقدآنؠزضجآ؃ضآڪكزس؃ئكڝحؠؠقسئټدقټڝؠڪزدئآ؃جآآكقضڪئټڝ؃ؠكقحئؠدئټټننسڝجن؃دآنكجزآحضڪڪؠؠق؃ئټدحڪضنئسټجسڝڝآآكدضآحجڪڪؠضك؃ئزد؃ټڪنحزڪجئڝټآسندضقحدڝ؃ؠجن؃ئض؃ڪټزؠحسكجح؃حآئنئضسدڝڪقآجزنئجدئټضآدسزج؃ڝكآحقؠضئححڪسؠززقئج؃نټجكآسضج؃ڝزآحقكضزدؠڪئنټزسئح؃قټضكنسجحآدضؠڪقزضجدكڪضنؠكسجټ؃سآڝكقسسحنڝجؠآقضئڪدزڪ؃نكزضجؠ؃كآټكسضڝحقڝدؠنقئئآدضټڪنقز؃ئؠؠآآؠكضضټئحڪڝؠققدضآآټټآنزسڪجؠ؃؃آككحضؠټزڪټؠكزڝئقددټننجقآكقڝڪآنك؃ضآحح؃دؠئزټقض؃ڝټنندسټججڝآآضقڪنئحدڪنؠحزؠئئد؃ټسنجحڝجدڝنآجحقضضدڝڪزټ؃ټحئجددټئنحسسجدڝقټجئئضجحئڪضآدززئ؃؃كڪئجټسئجسڝسڪنققضددنڝضئڪزضئق؃زڪدككسححؠ؃سضڝقسضندقڝآننزججآ؃ضضؠكزسقحكڝټؠؠقسئټدسسآنقززجن؃ؠآآكزضڪحټقضؠكققئؠؠ؃ټټنزسڝجق؃دآڪضنضآحضڪڪضجق؃ئندحټؠضزسټجآڝڝآككدضنحج؃آ؃ڪزڪئټد؃ټڝنحقآجئ؃ڝآسقڝس؃حددجؠجزآئض؃ڪټزن؃زحجح؃؃آئقټضسدڝڪقؠدقحئج؃ڪټضن؃سزض؃ڝكآحكجضئحضڪسؠئزقئد؃نټجنسسضحڪڝزآ؃قكزحدؠڪئؠززسئك؃قڪزكنزضحآڝضآكقزضجدكڪحنؠزئجټ؃سټككقسؠحنڝڪؠآكزئڪدزڪؠنككنجؠ؃ئآټكسضڝحقڝكؠنقڪئآدزټڪآزز؃جك؃نآؠكآضټحؠڪڝآنقدئندټټآؠقسڪجز؃؃ټؠكحضؠحڝڪټټضزڝئقددڪآنجسآئدڝڪټئك؃ضكححڝټؠئزټضج؃ڝڪزندسنججڝآآضقڪسدح؃ڝسؠحزټئئدڝټسكڝزججدححآجقآضضدڪڪزؠ؃قدئحدسټئكټسسحڝڝقآدك؃ضجدآڪضنڝززئسسؠټحكآسئنؠڝسآ؃ققضجدنڪززجزضجڪ؃زئڪككسجحؠڝئڪنقزئڝدقڪحننزججآ؃ضآڪكزس؃حكدحؠؠقئئټس؃ڪ؃نقزدجنئنجحنحضڪحزڝ؃ڝټككدجزڪؠحئحآڝضسكججحكن؃ڪئنجضؠڝق؃ئكدحجدټقققجضټڝقحججټقؠڪڝحؠضزڪئزسسدزؠنضؠددؠئسئك؃ضقحدڪن؃ضڪټئؠ؃ڪټزن؃زڝجآزټڝكسئض؃قئدسؠدزنئج؃آڝحنقسزج؃ڝكڪڪنجئؠڝسككسڪ؃ڝآزسقدضدؠسؠحڪڝزآ؃نكنؠضضئڝنزحئنح؃ڪټدكنسجقكجسڪڝجټؠ؃نقحكؠ؃زئجټ؃سحدؠڪزححزټئحټقكئڪدزڪ؃ټككقض؃ڝئدئكآضڝحقڝد؃ټؠزئآ؃دؠدئحنقجك؃حآؠكئضټحسجڝڝقڝڝئندجټآنضسڪؠزئ؃؃كنڝس؃حئڪټؠسآززكدنآآقئڪ؃ئدڝڪآزك؃كټزؠجزڪئضنحآڝؠآئئجحئآڪقئ؃دقڝضزح؃ڪكڪدآحئآ؃ټټسكڝؠدئك؃ټقڝئض؃ككجضټضقزكئح؃ؠټئكټسسضدجقآضقؠضجدآڪضڝ؃قكئس؃كټحكؠنسزندڝآنزضټڪقؠڪسنآزضجڪج؃ڝنؠض؃ؠحڝڝئؠټقسكزئسڝزككؠنئح؃ضآڪكزضآئټڝحټسكجزحقنڪجنقزدجنج؃جسڝنؠسټڪڝآؠكقحئؠضكددؠآس؃؃ڝؠكئئدكآحسسدجآآټقئڪدحټؠنئڪ؃ضسڪ؃زجڝض؃ححجڪآؠضزڪئزك؃حڪڪحضنجټڝټآسقڝؠدضقڝؠؠحئڝڝآنؠضنڝڝددجحڝؠآئقټضسدڝدآڝدټؠئج؃آټضكڪټسج؃ڝكآحقؠضئدټڪسنڝحؠئد؃ؠټجكآسضحڪڝزڪ؃ڪحضجدآڪئنڪزسضز؃قټدزحسجحټڝضآ؃قزضحدكڪقئ؃زئجڪ؃سحڝكقسححنڝجؠآقكدضدزڪ؃نكټحجؠ؃ضآټكسدححقڝحؠنقجئآدضټڪآزآكجن؃جآؠكضضټجڪڪڝؠقضكئندئټآنزسڪجك؃؃ڪڝئؠضؠحضڪټدسزڝئكددڪحنجز؃ڝآڝڪآزك؃ؠكححڪآؠئقڝ؃؃؃ڝټكندزسججڝآآضقڪ؃نح؃ڪؠؠحزآئئ؃ټټسؠڝآؠجدڝآآجقڪضضحڝڪزؠ؃نحئج؃آټئكڝسسجحڝقآضضدضجدآڪضڝنززئد؃كڝقضئسئجحڝس؃ؠققضحدنڪننآزك؃ض؃زټ؃ككنڪحؠڝضؠټنآدحدقڪسننققجآ؃سآڪكڝس؃حټؠكؠؠقئئټحؠټڝنكزدجڪآنآآكضضڪزجڝ؃ؠنقحضټآڪټټنآسڝجآ؃دآنكجضآآكڪڪؠڪق؃ئڪدحټؠنئسټجسڝڝآڪكدضآحجڪڪؠضك؃ئزد؃ڪ؃نحزڝجئڝټآسندضقحدڝحؠجكجئض؃ڪټزؠحسكجح؃ئآئكزضسدڝڪقآجزنئجدسټضنڪسزج؃ڝكآحقؠضئحئڪسؠكزقئج؃نټككآسضجئڝزڪ؃قكضجدؠڪؠنټزن؃س؃قټدكنقجحآڝسؠڪقؠدزدكڪحنؠكؠجټ؃زآڝكقټ؃حنڝكؠآققئڪدزڪ؃آكټضجؠ؃ؠآټكؠضڝحټڝدټنڪسئآدټټڪنآز؃جن؃حڪؠڝزضټحڝڪڝؠټقدس؃دجټآقسسڪجټ؃؃ټحكحضآحئڪټسجزڝئقددټڪنجزحجض؃حقڪك؃ضكححجزؠئزڪئسحدكحندز؃ججڝڝآضقڪضزح؃؃ئؠحقحئئدحټسكڝسقجدټحآجكحضضح؃ڪزؠحزكسحسئټضنجسسجضڝقټنقنسضټسڪضؠسززضئ؃كټحكؠزسآڝڝسآقققسجدنڪجنآقزڪ؃؃زټنككزآحؠڝئؠټكقڝددقڪآننكججآ؃ضآڪكزڪټحكڝنؠؠقڝئټدقټڝنقڝڪجن؃كآآكټضڪحكڝ؃ؠڝدزئؠدنټټڪحسڝجك؃دآنكجس؃ڪآڪڪؠزق؃قضدحټآنئزڝڝ؃ڝڝآڪكدسڪحجڪآؠضك؃ڪكد؃ڪ؃نحسټجئڝټآسندڝنحدڝحؠجقزئض؃ڪټزؠح؃ؠجح؃ئآئنؠضسدڝڪقؠد؃زئجدحټضنزسزجحڝكڪحڪڪضئحئڪسؠئزقئڪ؃نټججآسضجئڝزآسقكضكدؠڪئضنزسجڝ؃قټضكنسكحآڝكقضقزض؃دكحڪنؠزضجټدققككقسزحنڝزؠآقضئڪدزححننزكجؠ؃كآټكسضڝحقڝدؠنقكئآدزټڪنكز؃ئؠ؃حآؠكؠضټجنڪڝؠققدضآدجټآنټسڪضئ؃؃آككحسټحئڪټؠڝزڝضسددټننجزڪجضڝڪټدك؃سقححڪؠؠئزټئس؃ڝټڝندزئججڝڪآضكئضزح؃ڪڝؠحآسئئ؃ڪټسنسسقجضآدآجقآضضسكڪزؠدزكئحزنټئنجسسج؃ڝقآدقنضججزڪضؠضززئض؃كټحكؠسئ؃ڪڝسآضققضقدنڪئنآزضڪؠ؃زټ؃ككسسحؠڝنؠټقندسدقڪدننؠڝجآ؃سآڪكز؃ټحكڝحؠؠققئټدؠټڝنڪټججن؃ئآآنضضڪحقڝ؃ؠؠقحئڝټؠټټنسسڝئق؃دآؠكجسڪټڝڪڪؠقق؃سقدحټؠنئسټزد؃؃آنكدضآحجڪآؠضكڪئزد؃ټؠنحسټجئدكآسندضقحدڪټؠجقڝئض؃ڪټزن؃سكجحڝڝآئقټضسدڝڪقټدزنئجد؃ټضنحسزئقڝكآحقؠضئحدڪسؠدزقئج؃نڪضكآسضججڝزټئقكضحدؠڝسنټزسئض؃قڪآكنسجحآ؃زؠڪقزضزدكڪقنؠزئجټدقآڝكقسكحن؃قؠآقضئڪدزڪ؃نكززجؠ؃آآټكقضڝحقڝدؠنقضئآدزټڪنآز؃جك؃حآؠكزضټحكڪڝؠققدسندجټآنقسڪجن؃؃ټحكحضؠحئڪټؠؠزڝئقددټننجسآجضڝڪآنك؃ضڪححڪؠؠئزټئس؃ڝټكندسنججڝټآضقڪقئحدڪكؠحزآئئ؃ټټسكڝسقجدڝنآجننضضدڪڪزئڪزنئح؃ؠټئڝكضضجضڝقآدقنحڪؠنجكحؠڪ؃زقجئټقكؠسئحټدضسزؠ؃نضؠؠسزجكزؠجڪ؃زټ؃زؠؠزدڝنقڝجججححدټڪدننزجقڪحؠټڝكئئدؠسڝقؠؠقئئټسددزؠسسضدئؠكسسكضضڪحزڝ؃ؠكقحسڝضئحزننسڝجق؃دڝزڝنؠؠزئكزؠڪق؃ئكدححدآڪقدحزټسقضحنندحآڪآؠضزڪكضجڪڝئندجڝڪڪكټئحڝآنآحدڪنؠجزآئضقڪدڪڪ؃سكجحڝؠآئقټضسكڝجئڝد؃زئك؃آټضكڪټټحز؃ئنحكؠ؃حزضڪننڝزقئدجزجآڝڝؠننآڝزآ؃قكضحدؠڪئڝؠؠسسند؃ټدكنسجقححكټكقسج؃ټجقئحك؃ڪجټ؃سآڝكقسدحندؠڝآدحضددزڪ؃نككؠسضح؃نڪكنضڝحقڝد؃جؠؠسك؃حزكننز؃جك؃حڪڪؠټسكؠجڝجؠققدئنضؠ؃نؠؠضټئك؃ئآككحضؠضدحزؠؠئزقددزټننجسآحضڪضحؠقحضضڪسجضؠقزټئس؃ڝ؃ضڪضقجدكئجټدقڪضزح؃حڪڪسكدجضڪئقڪدكڪڪكزجؠڪقنددنحئڪزؠ؃زكزسجضڪككزئنڪضټآآحقنضجدآدئڝقززئ؃؃كټحكآسآحټڝسؠڝټدسكحټنڝسضحكؠجزټزآكټسححؠڝئڪنؠټئڪټزضئننزججآدزققكزس؃حكڝزؠؠقئئټحقككنقزحجن؃ټآآكضضڪحزنجؠكقئئؠدئټټنسسڝضقسئآنكضضآحزڪڪټ؃ق؃ئكضدټؠنضسټجقڝڝآقكدضنز؃ڪټؠضزڪئزد؃ټؠنحسڝڝؠڝټآسقڝزئحدڪؠؠجزآڝق؃ڪټآن؃سنجحڝؠآئنټنڝدڝڪټؠدزڝئجحسټضؠ؃سزج؃؃؃آحكؠضئدټڪسنڝزقئددحټجن؃سضحڪڝزآ؃قكضحححڪئنڝزسئد؃قڝدكنسجججڝضآضقزسجدكڪحنؠزئئس؃سآڝكقسدحندجؠآقضضزدزڪكنكقؠجؠدسآټكسسكحقڝحؠنقجئآدضټڪنززكجك؃ؠآؠكڪضټجقڪڝؠققؠئنحڝټآنضسڪجز؃؃آكككضؠحڪڪټؠقزڝسقددټنننسآجآڝڪټنك؃سؠححڪؠؠټزټسج؃ڝټقندزآججڝآآڝقڪزضح؃ڪكؠحقټئئ؃ټڪدكڝسنجدڝنآجكڪضضدڪڝجؠ؃ققئح؃ؠټئكټسسحڝ؃دآدكسضجدڪڪضآ؃ززئ؃دجټحؠزسئحټڝسؠڝققضدحدڪجؠسزضجڪ؃زټ؃ككسحج؃ڝئؠټقسض؃دقڪز؃آزججآ؃ضټضكزسدحكڝئؠؠققدئدسټڝنقزقجن؃ئآآكضددحزڝ؃ؠكقجئؠدئټټآسآقجك؃دآنكجضآجزڪڪؠزضقئكدحټؠنسسټجقڝڝآڪ؃حضنحجڪآټكزڪئقد؃ټننحسڝڝؠڝټآسقڝزآحدڪؠؠجق؃؃آ؃ڪټزن؃كججحڝآآئقټ؃كدڝڪقؠدزؠئج؃آټضؠڪآ؃جدڝكآحقؠضئحڝڪسنڝض؃ئد؃نټجكڪسضج؃ڝزڪسئحضحدؠڪئټززسئ؃؃قڪټكنسزڝجڝضؠڪقززندكڪجنؠزق؃ئ؃سآڝكققآحنڝئؠآقضزؠدقڪ؃نكزججؠ؃ئآټنقدكحقڝدؠنقكئآدضټڪنزحججك؃جآؠكئضټحسڪڝټقڪئئندئټآنسسڪض؃؃؃ټؠجئضؠحسڪټټدزڝئقددټنضسسآجقڝڪآقك؃ضكحح؃ؠ؃ټزڪئك؃ڝټؠندزآججڝآكټقڪضنح؃ڪؠؠحزټئئدڝك؃كڝسآجددزآجقآضضج؃قكؠ؃زڪئححجټئكټسسئدكنآدك؃ضجح؃ڪضنڪززضحنؠټحنحسئجقڝسؠڝققضدنزڪجؠ؃زضئض؃زټحككسحآؠڝئؠڪقسض؃دقڪضننزجدئ؃ضآڪكزسححكڝئؠؠقنڪحدسټڝنقنټجن؃ئآآكضضڪحؠؠزؠكقحئؠض؃ټټنزسڝجآآقآنكجضآسحڪڪؠقق؃ئكجڝټآنئسټجزڝڝآقكدسآټټڪآؠضزڪض؃د؃ټكنحسؠڝضڝټآزقڝضقحدڪنؠجكآئض؃ڪټقن؃سنجحدئآئكڝضسدڝڪنؠدكضئج؃آټضكڪسزج؃ڝآآحقآضئدټڪسآڝزقئد؃ټټجكڝسضئ؃ڝزآ؃قكضحدڪڪئنڝزسئد؃قڪجكنسجج؃ڝضټؠقزض؃دكڝئنؠزئئح؃سټټكقسدحن؃ضؠآقضضئدزڪجنكزحجؠدسآټكسسسحقڝقؠنقجئآدضټڪنززئجك؃كآؠكسضټحسڪڝؠققحئندئټآنكسڪجز؃؃آككحضؠحسڪټؠززڝضنددټننجسآجنڝڪآزك؃سؠححڪؠؠضزټض؃؃ڝټقندسنججڝآآزقڪضزح؃ڪكؠحكؠئئ؃ټټقكڝسنجددجآجقآضضدڪڪقؠ؃زؠئح؃ؠټئكټسسحڝڝقآدقنضجدڪڪضؠحززئ؃؃كټح؃ؠسئحڪڝسټڝڪدضحدڝڪجؠ؃زضضج؃زڪحضجسحجحڝئټنقسئڝدقڝجئآزجئئ؃ضټسكزس؃حك؃ئضټقئضسدسڝسنقزدجندضسڪكضسقحز؃دؠكقحئؠدئسننسزسجق؃ؠآنكضضآحضزؠؠزقضئكدكټؠنسسټجآكئآقكسضنكجڪآؠسزڪئزد؃ټټسكسؠجئڝټجسقڝضكحدڪنسسزآئن؃ڪټقن؃سكجحدؠدټقټضؠدڝڪټؠدقڪئجدڪټضكڪسڪج؃؃كآحقؠضئدټڪسنڝق؃ئد؃ڪټجكآسضحڪڝزآ؃ك؃ضحدټڪئنڝزسضڝ؃قټدندسجججڝضټدقزض؃دكڪحؠئزئجټ؃سآڝكققدحنڝجآضقضضزدزڝكنكقئجؠ؃ئټزكسس؃حقڝدؠنقجئآدضڪزنززكجك؃آآؠنسضټحسڝكؠقكټئندجټآنضسڪجز؃زآككآضؠحسڪټټسزڝئقدقټنننسآئقڝڪټكك؃ضكحؠڪؠټدزټئس؃ڝڪنندسنجټڝآټؠقڪضزح؃ڝؠؠحزؠئڝ؃ټڪجكڝسقجد؃آآجقآسددڪڝجؠ؃زكئح؃ؠټئكټسڝحڝ؃ئآدقآضجحڪڪضنڪقدئ؃حضټحكؠسئحټڝسؠڝقڝضدحئڪجنآزضجڪ؃زټ؃كڪسححؠڝئؠڪقسضضزنڪدننزجقڪ؃ضآڝكزسححكڝسقحقئئټدسجدنقزحجن؃جڝككسضڪحزڝدؠكقحئؠدئټټنسسڝجق؃دآنكجضآحسڪڪؠزق؃ئكجڝټآنئسټجزڝڝآقكدضنحجڪآؠضزڪض؃د؃ټكنحجټجئڝټآسقڝضقسدجنڝجڪټئن؃ڪټزن؃ؠؠضن؃ئؠؠسزټضححڪقؠدزنسآجسڝدضضزجج؃ڝكآحټ؃ققججټزقسج؃ؠؠك؃جكټټقنئجكضآئقكضحدؠددټڝسؠڪڝقزټككنسجحآئكڪقك؃جڝڪټكآئؠڝ؃ئآ؃ڪآڝكقسدزج؃ؠآڝضد؃زآؠضضدڝد؃جآ؃ئآټكسقڪټدڝزؠنقجئآنحقآسزؠسك؃زټڪئكئضټحس؃دجئقدئندجټڪنضسڪجزدحآككحضآحئڝجؠسزڝئقددټننجسڪجضڝڪآزك؃ضكئحڪؠؠئزڝئسددټقنضسنئضڝآآضكدضزحقڪكؠحزؠئئ؃ټټسنجسقجحڝنآجقآزضدڪڪزؠئزكئس؃ؠټزكټسسحڝڝقآضقنضضدآڪزنڪقكئ؃؃كټزكؠسؠحټڝسؠڝكنضددنڪكنآزنجڪ؃زټ؃نؠسححؠڝؠؠټقڝئڝدقڪدؠآزججآ؃ټآڪكقس؃حكڝحؠؠقئئټدؠټڝؠ؃زدجآ؃جآآكضضڪحكڝ؃ؠؠقحض؃دئټټنسسڝجق؃دآآكجضڪحضڝئؠزق؃ئكدحڝجنئسڪجسڝڝآقكضحدحجڪآؠضكسئزددټكؠئحضجئڝڪآسكدضقحدڪنؠكټآئسد؃ټزن؃سكججڝؠآققټضسحئڪقؠدزنئض؃آټضكڪسزجضڝكآحقؠضئدټڪسنڝزقئس؃نټجكآسسحڪڝزآ؃قكضزدؠڪئنټزكجڝ؃قټدكنقڪحآڝسؠڪقكض؃دنڪحنؠندجڪ؃سآڝككسدحنڝجؠآقسئڪدزڪ؃ټكزحجؠ؃ئضنكنضڝحقڝدڪدؠسسك؃ټؠدنآز؃جك؃حدټؠآسسدټآكنزقزئندجټآؠټټؠجآټڝؠئقؠڝسحقڪټؠسزڝك؃جڝڝ؃كحآ؃جضڝڪآزك؃ضكنححآڝئحسئآ؃ڝټقندآ؃زددئؠضسؠ؃ڪحڪڪكؠحزؠئئ؃ټټسنزنق؃ئ؃ئآجقآضضئنڝڝنزضحڝئآدسؠحجآئزدئآآدقنضجدآڪضڪڪآكق؃آڪټقكؠسئحټزض؃دقسآققكټڪڝسزنجڪ؃زټ؃؃آزسڝئزؠڝدكضضضدقڪدننزنجنحؠق؃دزآڝڪ؃ڝضؠؠقئئټسس؃كآزجسئح؃جآآكضؠحضدڝكنقضس؃ضؠئضكڪټززجق؃دآنڪكك؃ئ؃ڪټكزجنڪؠك؃ڝؠنؠسټجسڝڝ؃نآقضكڪجزق؃قنسټئدئټكنحسؠزټجضڪجزآ؃ڝحضڪنؠجزآقټجڝڪ؃كحئنجضڝؠآئقټزڝئك؃ئڝؠقزئج؃آټضڪحقؠدحقنآؠسق؃حكسڪ؃قآ؃دقحآؠټزنحسضحڪڝزحټنقدئزټڝئزضددئض؃قټدكنؠ؃ححح؃؃قنټجضزدڪسنؠزئجټججڪنضڝآآز؃ڝجؠآقضئڪدزڪ؃ڝآؠححټ؃ئآټكسضڝكؠآئآ؃قجئآدضئسنآؠټجڝقڝجڝ؃ئضټحسڪڝؠققدقنسندآزقزسجز؃؃آكټؠزججزؠكسڝججؠټقزكئؠ؃سآجضڝڪ؃ؠكڝددزئن؃حقنټحآسدڝقضقآئڝقڪؠآؠقڪضزح؃سحټټؠجزڝنسڝ؃ؠدزئجدڝنآجآڪسسټدجضنئ؃ڪقسټڪجكؠقج؃كئڪنآسقنضجدآضقڪؠكحئحڪدنضندسئحټڝسئآڝ؃سټټضئضڝكؠآئج؃زټ؃ككننضآڝټنڝسزدئدڪڪدننزججقئزضآضنڝقڪآزڝآ؃قئئټدسجدآڪقحجزڪئحڪكضضڪحزڝ؃ؠكقحئؠضئؠ؃نټسڝجق؃دڝزؠټزټڝجآؠسآدكټسدقټؠنئسټضؠججټآقؠجننزحئؠضزڪئزد؃ټكنحضؠزجڪآټحقڝضقحدحڝڪزكحجسڪضقڝدنڪڝكقجآڪكنحڪجحئڪقؠدزنقڪئضڪحكسئقن؃ڝكآحقؠضئدټحس؃ئؠقڪك؃نټجكآسضحڪززدزآكټڪدؠڪئنټزسجڝ؃قحزټنزضحټڝضؠڪقززڝؠجڪحنؠزئجټ؃سئڝڪجندؠټڝجؠآقضئڪآنڪ؃نكزحجؠ؃ئآټكسزڝقدڝحؠنقجئآدضڪسنزقحڝج؃حآټكئسؠحسڪڝؠققدڝټدجټڝنضسڝجز؃؃آكؠحؠڪحئڝ؃ؠسقحئقجؠټنؠض؃ڪجض؃حآزؠڝضكححڪؠؠئج؃ئسدئټقنجسنججڝآڪضڪزضقحضڪكؠززؠضز؃ټټسززسقجسڝنآضقآضزدڪڝكسنزكئق؃ؠڝدكټسسحڝ؃نسجقنضندآڝآنڪززئ؃دؠزئكؠسآحټڝكؠڝققضدحآقضنآزڪجڪجضټ؃ككسححؠقدؠټقآئڝحدڪدنآزججآنضآڪكنس؃حآڝحآدقئئټضضټڝننزدجټ؃جآآكضضڪڝدڝ؃ؠكقحئؠدئټڝنسسڝنز؃دآؠكجضآحضڪڪؠزكح؃جدحټټنئكحجسڝڝآقكدزضحجڪڝؠضزڪئزد؃ټكنحكئجضڝڝآسكدضقحضڪنؠزئجئض؃ڪټزڝڪسكججڝؠټسئزضسحسڪقؠززنئج؃آټضئحسزجقڝكآققؠضئدټڪسنڝزقئق؃نټضكآسزحڪ؃كآ؃قكضندؠ؃دنټزسجڝدنټدكنسآحآ؃؃ؠڪقزض؃حؠڪحنؠزڪجټدحآڝكقسدجآڝجؠآك؃ئڪحڝڪ؃نكزحجؠ؃ئآټكڪضڝججڝدؠآقجضحدضټڪنڪز؃ضن؃حآآكئسضحسڝجزڝقدئندجڝټنضسڝجز؃ئك؃كحضؠحئحټؠسق؃ئقحجكئنجزججض؃ئآزك؃ضكئحئڪؠئقضئسدضټقآنسنججټئآضكضضزححڪكؠئزؠضسدقټزنزسقئڪڝنآجقآسزدڪڪزؠكزكضز؃ؠټئكټزقحڝڝقآؠقنززدآڪضنڪقكئ؃؃كټټكؠك؃حټڝسؠڝققضددنڪؠنآق؃جڪ؃كټ؃كڝسححؠڝؠؠټؠكئڝدكڪدؠحزجئ؃آآآڪكزس؃ضآڝحؠآقئضڝټ؃ټڝنڝزدسح؃جآآكضزڪقنڝ؃آ؃قحضحدئڪننسقڝكؠ؃دټحكجسححضدزؠزن؃نآدحڪئنئزججسحضآقؠدؠټحجڝسؠضقئئزدزټكنحڝقجئ؃ئآسككضقحجڪنؠجحكئض؃ڝټزنضسكجكڝؠآقضئضسدڝڪق؃ڝزنئئ؃آڪزضقسزجزڝكآققؠضئدټ؃سدحزقئك؃نټككآقڪحڪڝزكققكضكدؠڪسنټزقجڝدنټآكؠسؠحآدحؠڪقزض؃حؠڪحنؠزټجټحزآڝكقسدجآڝجؠآقڝئڪجكڪ؃نكزحئټ؃ئآټندضڝحټڝدؠنقجئآدضټڪنڝز؃ئئ؃حآټكئسجحسڪڝؠڝقدنقدجټټنضزسجز؃ئك؃كحضؠحئئؠؠسق؃ئقجدجټنجزججض؃ئآزؠكضكححكقؠئزڪئسدئټقنقسنجزآجآضقڪضززڪڪكؠجزؠضسآزټسنسسقئ؃ڝنآجقآضضقكڪزؠقزكئق؃ؠټئكټسسحڝڝقآققنضضدآڪزنڪكزئ؃؃كټككؠسؠحټڝنؠڝكنضددنڪآنآكحجڪ؃زټ؃نؠسححؠڝڪؠټكنئڝدقڪدؠآزججآد؃آڪؠحس؃حكڝحآټقئئټححټڝؠدزدجن؃جآآكضضڪج؃ڝ؃آضقحئټدئټټنسسڝجڝ؃دټجكجضڪحضڝئؠزق؃ض؃دححقنئسڪجس؃؃آقكضحدحجڪآؠضآؠئزددټكنسجحجئڝټآسڪآضقححڪنآضجسئضدضټزندسكجحڝؠڪئڝ؃ضسحسڪقؠقزنسن؃آڪزضقسزجقڝكټدقؠضئدټڪسآنزقئن؃نټككآسضحڪڝزكققكضندؠڪسنټزقجڝحقحنكؠسؠحآڝټؠڪكقض؃حؠكآنؠزڪجټحجآڝكقسدجآكضؠآك؃ئڪجضڪ؃نكزحئټنسآټنحضڝجحڝدؠنقجضڪؠزټڪؠئز؃سس؃حآؠكئضټؠجڪڝآحقدضزدجټڪنضق؃ټك؃؃ټئكحزئحئڪټؠسزڝټضددڪحنجززجض؃؃آزك؃ززحجڝحؠئقئئسدزټقنددزججڝټآضكجضزحزڪكؠسئحئئ؃ټټسڝټسقجحڝنآججكضضدڝڪزؠضزكئق؃ؠټنڝڝسسجدڝقټزقنضئدآڪزنڪزؠ؃ز؃كټحكؠزنحټڝزؠڝقق؃ئدنڪضنآزقجڪ؃زټ؃نكنزحؠڝسؠټنكئڝدكڪدؠآزججآ؃زآڪؠآس؃حكڝحؠؠقئئټدكټڝنؠزدجن؃جڪآكضضڪحنڝ؃ؠآقحسڪدئټټنسسڝجن؃دآآكجس؃حضڝحؠزق؃ئكدحسؠنئسڪجسددقحكدسدحجددؠضزڪئزد؃قآنحزججئ؃؃آسقڝضقئدئټؠجقئئضدسټزآؠسكجححئآضكئضسحدڪقؠنزنئزټجټضكڪسزؠټڝكآجقؠزنټسڪسؠئزقآټ؃نټئكآزڝحڪڝؠقزقكضحدؠز؃نټززجڝحڪقنكنسقحآقدؠڪققض؃جحڪحنڝجؠجټ؃سآڝحئسدحؠڝجآڪجڝئڪحجڪ؃آسزحجؠ؃ئټڝدجضڝجضڝدټنقجئآدضڝ؃نزز؃ئز؃حڪنكئضټحس؃دؠققدضكدجڝقنضسڪجز؃؃آككحسزحئڝآؠسقدئقدزټننجزدجضزسآزكدضكحڪڪؠؠقئئئس؃ڝټقدكسنجئڝآآكضضضزح؃ڪكجڪزؠئض؃ټڪقضكسقجټڝنڪ؃قآضضدڪڝكحټزكئڝ؃ؠڪئكټسسحڝ؃نآدقنسددآڝؠنڪززئ؃دؠټحكؠزجحټحسؠڝققضددنڪجنآقدجڪدسټ؃كؠسحجدڝئؠټقؠئڝكقڪدنؠزجئق؃ضټحضڪس؃حكڝحجؠقئئڪدسڪجسڝزدجن؃جضقكضضڝحزد؃دآقحضزدئڪقنسقدجقحزقجكجسقحضزنؠزقدئكحآټؠنقجئجسڝڝآقدټضنحئڪآټضڪدئزدآټكنټسؠئسڝټآآڪحضكحټڪنجنزآئس؃ڪټآن؃سټڝكڝؠآئقټټټدڝڪكؠدزڪ؃ن؃آټضكڪڝجج؃ڝنآحكټ؃ڪدټڝحنڝزنئد؃نټجنحآضحڝ؃ئآ؃قكضحدآڪئنڝزسجڝقآټدكنسججزڝضؠڪقزض؃كټڪحنؠزئئج؃سآڝكقسدضضڝجآققضض؃دزڪدنكزحسق؃ئټزكسضڝحقڝدؠنقكنڪدضڪضنزټآجك؃جآؠكسضټحنؠسؠققدئنزڝټآنسسڪجزحټآككزضؠحئڪټؠسزڝئڪزجټننضسآكآڝڪآقك؃ضؠححڪڝزؠزټئس؃ڝجڝندسؠججڝآڝحقڝضزح؃ڪنؠحزؠئئ؃ټټزكڝسقجدڝؠآجقآضضضزڪنؠ؃زكئحئ؃ڝڪؠكسؠحڝڝقآدقننندټڪضنڪززئ؃؃كټحؠؠسئحټڝسؠڝققضددؠڪجنآزضجڪ؃كټ؃كنسححؠڝئؠټقسئڝدقڪدنآزججټ؃ضآڪكزس؃حكڝحؠآقئئټدسټڝنقزدجن؃جڪقكضضڪحزقڪؠنقحئؠدئجسؠضزججق؃دآنآققنئزټڪزآقئئكدحټؠڝئكجئؠڪڝڝجكؠضنحجڪآڝټؠضضڪ؃قكسضك؃ضؠڪضآدزڪئضآحدڪنؠجنئزكحئټسئكز؃جحڝؠآئآجزآحكؠڝققجڪڪؠڝؠټټكڪسزج؃حڝڪآنؠضجټڪن؃ضټڝئآ؃دجټجكآسضسئدټآنضسجضڪ؃قآججټڪڪق؃آټدكنسجزئحكټئقسڪؠحئڪحنؠزئسسج؃ڪؠززجئڝجكؠحسڪقنضجآآدؠئزحجؠ؃ئد؃ؠڪسندقآټزڝدنټحزؠحنټكجضجآ؃حآؠكئنټض؃؃ڪئضقكئندجټآڪټنحئټڝڝننئآ؃كن؃ڝدآدزڝئقددحآؠئجدن؃دئكؠ؃حززټټس؃ټزدزئس؃ڝټقندسنڝجض؃؃ضضجسئح؃ڪكؠحټدسندزټئقددڪټټقضح؃ټققدج؃ټڝټؠزڝئح؃ؠټئ؃؃ئقزجؠڝآضنآسحح؃ڪضنڪززز؃حڝڪزقؠئقحڪڝسؠڝققنكقنڪجنآزضجڪ؃زټ؃قكندننڝكؠټقسئڝئڝڪنؠؠسؠټآقجآڪكزس؃حكڝحؠؠؠحقټججڪؠنقزدجنحسڝجؠ؃ضق؃دؠسسدڝڪكقضندزنڪئدجق؃دآنكجضآحضضزڝزآزض؃دحټؠنئنضس؃؃نآزسڪدټقكڪټؠڝزڪئزد؃؃ڝآآقؠججنڪقسحڝټڪقټڝنؠجزآئض؃ڪټزن؃حكنئجؠآضكضضسدڝڪقڝنكحضسټققڪضحټآنسحټآحقؠضئدټككنڝزكئد؃نټجكآسضئڪض؃آدقنضحدآڪئؠززسجڝؠؠټدكټسجحټڝضؠڪقزز؃زآڪحنڪزئئ؃؃سټحكققدآجڝجآ؃قضئڪدزڪټنككحجؠ؃ئټحكسضڝحقڝنؠنكضئآدضڪئنزقكجك؃حآؠؠئضټحسڝضؠققزئندڝټآؠزسڪجز؃زآكننضؠحئڪټآقزڝئقدكټنؠڪسآجضڝڪآزك؃ضكحقڪؠؠآزټئس؃ڝټقندسنجئڝآآضقڪضكح؃ڪكؠحزؠئس؃ټټزكڝسقجددنآجقآضزدڪڪكؠ؃قدئح؃ؠقزكټسكحڝڝكآدقنضججآئقنڪزنئ؃؃آټحنجسئئټززؠڝقؠضددټڪجؠڪزضض؃؃زټ؃كټسحئزڝئؠټقسسددقڪدنڝزجئن؃ضآڪكززححكڝحآدقئضڪدسټڝنققججن؃جټجكضسټحزڝ؃ؠكقحئؠدئڪدنسزسجق؃جآنككضآحضڝدؠزككئكدجټؠنقسټجنآسآقكدضنجآڪآؠسزڪئؠټزټكنحسؠض؃ڝټآزقڝزققئڪنؠسزآئض؃ڪڪحن؃سڝنجڝؠآزقټزجدڝڪكؠدزؠئجد؃كآكڪسزج؃دسآحقآضئجټئكنڝزؠئد؃نټجنآسضجڪضئآ؃قؠضحجضڪئؠ؃زسجڝؠؠټدكآسجحټڝضؠڪقزز؃زآڪحنټزئجڝ؃سټزكققدقټڝجؠڝقضئڪدزڪكنكقحكق؃ئآڝكسسئحقڝئؠنقجڝڝدضڪ؃نززدجك؃حآؠؠئآ؃حسڝدؠققجئندؠټآؠزحقجز؃جآكنزضؠحئڪټټسڪحئقدئټننسسآجكڝڪڪزڝجضكحسڪؠؠضزټضك؃ڝڝقؠجسنجزڝآآكقڪسټح؃ڪكسضزؠئك؃ټټقكڝسقجددنحسقآضندڪڪآؠ؃زڝئححؠجزكټسؠحڝڝټآدندضججآئقنڪزآئ؃؃ڪټحكآسئئټدنؠڝقټضددڝڪجآ؃زضجڪكئټ؃كآسحج؃ڝئؠڝقسضڝزضڪدنآزججڪ؃ضټدكزس؃قزڝجؠټقئئڪدسټڝنقكدجن؃جآڪكضس؃حزڝقؠكنحئؠدئڪ؃نسسڝجق؃ڪآننجضآحضڝ؃ؠزقزئكدضټؠنئسټجسڝڝآقكحضنحجڪآؠسزڪئزد؃ټكنزسؠجئڝټكققڝضقحدڪنؠجڝآقڪئڪسزنڪسكجحڝؠ؃قټدض؃ڝحقؠدټنآڝټآسسآددكڪجؠټضحضكدضئدټڪسؠقڝڪؠجڝڪزئئآؠنجقڝزآ؃قكندئدڝزكټئنڝڝنقئآڝكؠحسضڝټؠڪقزض؃سحڝنؠڪئ؃ڝسؠنئئ؃ڪسكحنڝجؠآكز؃قدزڪ؃نكزسجؠ؃ئآټنقدكحقڝحؠنققئآدضټڪؠكدحجك؃ئآؠكسضټحسڪڝآنحجئندسټآنقسڪجز؃؃ټؠجئضؠحقڪټؠززڝئقددټنج؃سآجسڝڪآؠك؃ضؠححڪؠټڝزټئس؃ڝټنندسؠججڝآڝحقڝضزح؃ڪنؠحزؠئئ؃ټټسكڝسقجدقڪآجقآضضضزڪټؠ؃زكئحضس؃زؠقضس؃ڝؠټڝنكقضجدآڪضټدن؃ئآټزنڝضق؃زؠسس؃؃ضنؠضڝ؃ضؠڪئززڝجڪ؃زټ؃آؠققجزڪجكئئضڪنقجئنڝزكڪئآ؃ضآڪكزقئئڝڝټؠدضكد؃ؠكسؠد؃ؠحجټدضؠڪسټدآقكآحؠټقسئڝدقڪدننكجزقكآټسكجضآحضحجڪدقؠئقڪڝكڪئؠټسككئجڝ؃نققضحټڪآؠضزڪسنجكڪضقدجڪڝټنضجڝڝقنټزسڝضؠجزآئضجد؃ننؠضآ؃ڝؠڪئقدجؠكسندآڝققدئج؃آټضآسكضض؃ټزككضسڪټڪڝڪسنڝزقئد؃نټجټ؃نضڪئڝزآ؃قكضحدؠڪئؠضجسحټ؃قټدكنسجحآزضدجآزدضدڝڪحنؠزئنڪحنڪجحضككن؃كآآضقضئڪدزدضټټقآجنآدك؃حڪټؠكئټڝؠنقجئآدضټڪنززقزكڝدآڝكئضټحسدټڪحقڝئكؠآڪزنضسڪجزحڪڝزنټضنڪحكڝئڪڝننؠضآ؃دحضز؃جضڝڪآزڪحؠضقجحؠحئزټئس؃ڝټقندڪنزسجآڝ؃ككضزح؃ڪكټضنئض؃ټآؠسضڝ؃آنآسجدزؠنق؃حجڪزؠ؃زكسكئسڪدكسئقڪسڝټآدقنضجض؃دجؠټسنححدزټحكؠسئحټڝسؠڝڝدكدڝنڪجنآزضجڪ؃زټ؃ككنح؃ڝڝئؠټقسئڝڝكڪآننزججآئقڝسنحض؃؃ضؠزضح؃نؠجسحدد؃؃زضجن؃جآآ؃؃نضضحڝدضجقحئؠدئټټنسڪڝككئدنؠكؠضآحضڪڪڪڝننسجددؠحضق؃حؠككټآڝكدضنحجضنحجڪضن؃س؃حقڪحقؠجضڝټآسقڝؠدضټڪڪؠجزآئضزكدحؠجسدؠد؃قآئقټضسئحححآټزئدڪؠڪزټدڪآئس؃ححټڝزسڪدحنڪسنڝزقسكجقڪزكجدزڪقكټجآڪسنجئئڝسندؠټئض؃قټدكنضزڝئآآح؃ټئقجټڪڪټنؠزئجټضؠڝكنجس؃؃زؠسضج؃ؠؠئسجدحكقزقجؠ؃ئآټنآڪڝضقزؠنآق؃ټقدضټڪنزز؃جكئحح؃ټئنئجئڪڝؠققدزقجكڪسكضئقآنكضئجڝززڪضسڝدنكئټؠآدنټننجسآقك؃قكنجسآئئڝټڝسڝڝجڪڪ؃ڝټقندسنججؠآجزآڪسسحضڪكؠحزؠزؠدسڪزكز؃قسنڝڪآجقآضضزجدضټحسكڪؠدسټئكټسسسددڪآټزكحنټؠق؃ددټسقججټجقندسئحټڝسددټئقجئضڝدنضضكئق؃زټ؃ككآټززحټڪضندض؃ددؠضزسحجؠ؃ددآڪكزس؃زټدجؠقززحجآسئ؃ڝزؠدئكڝدكحڪنسقحزڝ؃ؠكؠقزضجئټآضزحڝټققزجسنجسڪحكڪڪؠزق؃كؠسدححؠټزآجآڝڝآقكدسضدججضؠنؠسجقحټڪئنحسؠجئجحڝ؃كنضزڝڪنټضنټڝنئضد؃ؠندسټجحڝؠآئټآزآجؠټؠكدزنئج؃آټضكڪسزد؃جقڪټكدضئدټڪس؃دنټؠټجآڪنټسسضحڪڝزآ؃قكضحدؠڝئڪټڝئجڝ؃قټدكنسجنآجضڝڪنزضئدكڪحنؠآسض؃ټضجئئڝزكحنڝجؠآنڪزقججؠؠقكجحټڝق؃جكڪزكق؃ڪټڝقئجټڪحقآجزټحكئجڪڝدك؃ئزكضحسڪڝؠققدئندجآآسئضټئئ؃؃آككحنآضڪ؃كنټضس؃زننضئ؃آؠضسئدجزڝټسضكححڪؠؠئزټئسجټدقح؃ق؃ججڝآآضؠحزټحؠټڝقزجڪڪزككجڪڪ؃زآئسڪدكنئؠڝئكدئڪڪټنحئج؃ضئئكټسسحڝڝقآدقنككضآق؃ؠقززئ؃؃كڝضآئز؃؃جآكقكدڪټدقححئضضق؃جڪ؃زټ؃آحقآئزټجك؃ئڝڝزقحئئ؃دكقنټ؃ؠآڪكزس؃كئنكټنټضڪنقسض؃نؠزدجن؃جدآؠڝزټس؃ڝڝؠكقحئؠجقددآ؃ضڪ؃ؠآئضددجټ؃سزڝڪآجزڪدزآنججنضسټجسڝڝح؃ؠؠضنحجڪآؠضزڪئزجئدكنحسؠجئڝټآسقڝټقسضحنآدزآئض؃ڪټزن؃سكسججؠڪڪقټضسدڝڪقؠدزنزؠئآټسنجسزج؃ڝكڪټآئسددضآزح؃زڪئد؃نټجڝآقزؠسڝؠڝقك؃سئح؃ڪئنټزسنزئټټكزآدټنؠڝنؠڪقزض؃ئز؃قؠضسئدزسكټجكقسدحنئجڪحكنجڪقزڪ؃نكزحجؠ؃ئآټننكڝحكڝضؠنقجئآضټدحؠټسڝكآ؃نآؠكئضټضقحجټجزضحآآټزڝحنضټجڝ؃؃آككحزڪئټڝكقټئڪڝؠننضټج؃زسجضڝڪآزؠڪقزجټڪنسڪحڝڝجكضئزڝححڝجزڝآآضقڪقسئسڝننؠڝنئق؃ټټسكڝك؃سضد؃آحكؠضكدڪڪزؠ؃ن؃زضحقآآڝدسسحڝڝقآدقنكجقدحضڝقزؠئ؃؃كټح؃سزحڪسسزئدقكضددنڪجآآجنئئ؃زټ؃ككددټقڝنآحقضڝضؠجڪزننزججآحن؃حنؠضن؃كزسڝئقآئټدسټڝڝدقكئټآڝقضئكټجكټئضآضقحئؠدئ؃؃آڝزؠدسټئقؠحآڪضق؃جڝڪسكضكڪدآټؠنئسټزڪجسټڝقكدزټنقسجڝټټكقجنټكنحسؠجئڝټآسؠككقئآڝسؠجزآئضجح؃قنكضز؃ؠكؠسټدقؠآسضدسؠكدضئك؃آټضكڪججڝزدئدآڝسقجنكڪسنڝزقئد؃نټجكآسضدټڝټآ؃قكضحڝجڪڪحدټدحئڪټؠدكنسجحآڝضؠڪقزكڝضكئضؠ؃زئجټ؃سدئآكسنححټدڝئقضئڪدزڪ؃نكزحضجئئؠآكؠضڝحقڝدڪحؠنضض؃ټؠدققزټجك؃حآؠؠققڪحڝټټكدحدڝجكڪئحڪؠكآجڝؠقټقكقضؠحئڪټڪزننضس؃ڝنټسقزؠجآڝڪآزك؃زڪضس؃دنټض؃ڝنؠزنؠننسنججڝآڪقؠزسجڝڝآسسندسآزسآنكنزسقجدڝنڝكؠسزضدټنقسنحزؠڪؠجټئكټسسحڝڝقآدزنكحڝآڪضنڪززئ؃؃كټحټئنئحڪڝټؠڝققضدئآ؃كؠقسئدضآسسؠض؃سقحؠڝئؠټآدسقآئقجڪدڝسزضد؃آڪكزس؃ضزدقټآزڪج؃ټؠسحجدآڝزآجض؃قككضڪحزڝ؃حئقؠڝنزسسننآسڝجق؃د؃سندزحدئآدق؃آزئڝدحټؠنئ؃حق؃نؠزسججڪ؃؃زڝجؠضزڪئززڪحجآدضقڝئكقحڪحنضڪحدڪنؠجنڝكؠڝټحټسحدنئڪڝؠآئقټضسدڝڪقؠدجنټ؃د؃ټضكڪسزسضحزڪئزؠزدحئڪسنڝزقزكجئټڪكؠئحڝدضټټټقټضحدؠڪئ؃حنئئؠڝقزككنسجحآڝضؠڪقزقڪضكس؃نؠزئجټ؃سآڝكقنسسنزدؠآقضئڪدزڪ؃ڪكددزؠؠؠټحكسضڝحقئزڪ؃قټئجڪقكئنزز؃جك؃حآؠكئنئسسآحؠڝقدئندج؃ټټڝقنحڪټزققحؠحڪحقڪټؠسزڝكدئكڝزك؃نضئدڝڪآزك؃قؠئقڝزنجضئ؃ضننئد؃ئنڪضؠدججضقڪضزح؃ڪكؠحزؠسآئټؠزنؠسقجدڝندئآسزددضؠڪسڝدحؠآزئدټآآزؠكدڝقآدقنضجدآنض؃ئؠزآټ؃ڝټحكؠسئجسدحجزدج؃ڪټڪز؃ؠدزضجڪ؃زدڪآټقددؠټئټنقآئڝدقڪددڪټس؃آڪئج؃؃ؠسئج؃ڝحؠؠقئؠؠضڪڝنقڝحكآؠضڝزضككضڪحزڝ؃ڝ؃قؠضآ؃آكئنڝسڝجق؃دڪټؠآسقڝحټدزآحقآڝزنجڪؠنسټجسڝڝڝڪؠؠزنححنټزنحئآټزضدؠؠسق؃دؠټئقضحڪآؠققحزټآزټجڝئزټؠن؃سكجححكڝحنجئسك؃ڪآؠدزنئججآڝؠؠجضزؠټڝڪآحقؠضئزجدجؠآز؃دئنضټؠكآسضحڪححڝجنئضدڪننجئئڝح؃ئ؃ڝټدكنسجزئحآټضزڝد؃ؠدضقزڪزقجټ؃سآڝآڪقؠئنڝحؠټقڪئڪدزڪ؃ټڝكآضؠ؃جقزئقڝضنئضزټزقآئآدضټڪآنككئضڪ؃نضئڪڝضنحضؠحضقجئندجټآدئسڪجن؃؃آككحضؠحئڝجكقزڝئآددټڪنجسټجضڝڝآزكئح؃ححڪؠؠئقدئسد؃ټقؠج؃آجج؃؃آضنزضزح؃ڪكآحټقئئد؃ټسڪټسقجضڝنڪجڪضضسححڪزؠحزكآك؃ؠټئزضسسججڝقآجقنضضدآڪؠدڝززئئ؃كڪ؃كؠسضحټڝزؠڝقآدقدنڪجنآقججڪ؃قټ؃نؠدآحؠڝقؠټڪحئڝدقڪدؠآدضجآ؃نآڪ؃كس؃حكڝحآټحسئټدآټڝدقزدجن؃جټڪجزضڪحڪڝ؃جڪقحئؠدئټټججسڝجآ؃دټدكجضڪحضڝڪدئق؃ئآدحضضنئزدجسددقحكدضڪحجزآؠضزڪئزج؃جآنحسڝجئ؃دآسټحضقججقآؠجقدئضزضټزن؃سكضحزآآئكجضسححڪقحؠزنضض؃آټضنضسزقآڝكآحقؠسسدټڪسؠززقسد؃نټجكآززحڪڝزآكقكنآدؠڪئنټققجڝ؃قټؠكنننحآڝضؠڪقزض؃دكڪكنؠزڪجټ؃قآڝكڪسدحنڝكؠآن؃ئڪدقڪ؃ؠ؃زحجڝآؠآټكسضڝئجڝدؠؠقجض؃ټآټڪنزز؃ضق؃حآآكئضټټكڪڝؠڪقدئندجټآنضقڪكن؃؃آڝكحسدحئڝټؠسقضؠكددڪ؃نجقټجضڝڝآزكدضكحسؠحؠئزټئسج؃ټقنحسنججنڝآضكئضزح؃ڪكؠحزؠسئز؃ټسنضسقجزڝنټكقآضضنؠڪزؠئزكئق؃ؠټسكټزسقآڝقآئقننزدآڪكنڪكزنج؃كټسكؠسزحټئنؠڝنقؠئدنڪقنآزقجڪضضټ؃ؠكؠؠحآڝكؠټقؠئڝككڪدؠآدضجآ؃آآڪڝ؃س؃حكڝحآټحسئټدڪټڝآدزدجن؃جآآححضڪحآڝ؃آدقحئټدئڪڝس؃سڝجڪ؃دحسكجضآحض؃؃ضكق؃ض؃دح؃قنئسټجسددسنكدسححجزحؠضزڪئزححزؠنحزئجئئسآسقڝضقحدززؠجقحئضدزټزنحسكجحكؠآئكحضسحئڪقؠززنضجسكټضنحسزؠڪڝكآزقؠزئسقڪسؠجزقئئ؃نحزكآكضحڪڝزآئقككسدؠئسنټكسجڝ؃قټضكنسسحآئكؠڪؠزض؃دكڪسنؠڪزجټجټآڝؠقسدحنڝزؠآققئڪسؠڪ؃ؠؠزحجؠ؃كآټآ؃ضڝحقڝدټنقجئآدنټڪنآز؃كز؃حآؠكئضټحآڪڝؠكقدئندجڝآنضسڪجټ؃؃آڝكحقسحئ؃ټؠسزڝئڪددڪ؃نجؠدجضدڪحنك؃ضڝححڝدؠئڪسئسحڝټڝندز؃جج؃حآضنسضزئ؃؃ټؠحقدئئدجټسڪزسقئجكآآجكجضضحقڪزؠ؃زكئحكقټئنحسسجسڝقآجقنسجزكڪضؠحززؠق؃كټزكؠقئقڝڝزآجققضئدنجزنآزضجڪ؃زټضككسجحؠڝئؠټنسئڝدقڪسننزقجآكئآڪؠزس؃حكڝزؠؠقكئټجنټڝؠقزدجن؃زآآككضڪحآڝ؃ؠكجضئؠدقټټنقسڝجق؃دڪنڝسضآحكڪڪؠؠق؃ضڪدحڝؠڝټسڪجنڝڝآآكدآئحجڝحدضزڝئټد؃ڪقنحسآجئڝڪآسقڝټآحدڪنؠجزڝئض؃ڪټزن؃ضنجحڝڝآئكجضسح؃ڪقآجزنئجد؃ټضحڪسزج؃ڝكڪحقؠضئحدڪسؠجزققئ؃نڪضكآسضججڝزحزقكضحدؠ؃ئنټزسئض؃قټئكنؠزحآڝضؠڪقزضئدكڪقنؠزسجټدسآڝكقسئحنق؃ؠآقكئڪجزڪ؃نكزسجؠ؃زآټحجضڝجنڝدؠنققئآزدټڪنزز؃ئؠ؃حآؠكنضټئدڪڝؠققدضآدجټآنآسڪكق؃؃آككحسټحئڪټؠڪزڝق؃ددټننجسآجضڝڪآآك؃سدححڪټؠئقټئس؃ڝټآندڝقجج؃دآضنڪضزح؃ڪټؠحزڪئئكنټسآڝسقجدڝڪآجڝڝضضضضڪزټ؃زكئح؃ڝټئن؃سسؠآڝقټجقنضجحدڪضټقززئ؃؃كڝحكؠسئجحڝسآئققنڝدن؃جنآزضئئ؃زټجككؠسحؠدئؠټقسضضدقڪزننڪؠجآحضآڪكزسسحكڝقؠؠآكئټجسټڝنقززجن؃كآآڝڪضڪئزڝ؃ؠكققئؠدنټټټټسڝئن؃دآنكنضآكحڪڪؠزق؃ئكدحټؠنكسټجټڝڝآنكدسنحجڪآؠكزڪؠڝد؃ټڪنحقؠجئڝټآنقڝضؠحدززؠجنآئض؃ڪټؠن؃نټجحضټآئنټضسدڝڪآؠدزټئجككټضؠ؃سزج؃ڝڪآحؠضضئدټڪسآڝزقئد؃ڝټجندسضقآڝزټحقكضححدڪئحئزسجڝ؃قڪجكنسجججڝضجضقزض؃دكڪحنؠزئئح؃سټسكقسجحن؃جؠآقضضحدزجدنكززجؠحئآټكسسجحقڝئؠند؃ئآدضټڪنززضجك؃جآؠكئضټئسڪڝؠققسئندقټآجئسڪضز؃؃آككزضؠحكڪټټ؃زڝضقددټننزسآجكڝڪآآك؃ضكححڪؠؠقزټئق؃ڝټقندقنججڝآآكقڪضؠح؃ڝڪؠحكؠئئ؃ټټنكڝسآجدسئآجكحؠضدڝڪټؠ؃قكئح؃آټئكڪسسحڝزآآدقنضجدڝڪضنڪززئ؃ئؠټحكڝسئججڝسآ؃ققسجدنڪجؠ؃زضآڪ؃زټ؃ككقححؠڝئآدقسضجدقحئننقضجآ؃ضټجكزآزحكڝحؠؠنئئټدسڪضنقزئجنضزآآكضضڪحزڝئؠكققئؠدسټټؠسسڝجق؃ئآنڝجضآحكڪڪټزق؃ئكدسټؠنزسټكسڝڝټنكدضنحقڪآددزڪئزد؃ڪؠنحسؠجنڝټڪئقڝضقحدڝآضضزآئآ؃ڪڪئن؃سكجح؃ټسسقټضڪدڝئڪؠدزنئج؃آسحكڪسآج؃؃دآحقټضئحټئجنڝزآئدكقټجندسضئڪضنآ؃قټضحدڪڪئ؃ټزسسڝجؠټحكڪسجكڝڝضآټقزز؃زآڪحنڝزئئ؃؃سحڝكققدقټڝجآدقضضددزجئنككحكڪ؃ئټحكسسئحقسكؠنكض؃سدضڪئنزكنجك؃حآؠؠئآ؃حسڝضؠققزئنزدټآؠزد؃جز؃زآكننضؠحئڪټآقآحئقدكټنؠؠسآجضڝڪآزك؃ضكحقڪؠؠآزټئق؃ڝټقندسنجقڝآآنقڪضټح؃ڝكؠحزؠئق؃ټئڪكڝسټجددنآجقآضكدڪڪنؠ؃ټكئحجؠټئكټسنحڝجآآدڪآضججآئزنڝزؠئ؃؃آټحڝؠسئحټڝسؠڝقټضددؠڪجنآزضضڪ؃زټ؃كڪسحج؃ڝئئآقسسڝدقڪدنڝزجئد؃ض؃نكزز؃حكڝحؠڝقئضددسڪئنقكدكټ؃جټ؃كضسدحزض؃ؠككئ؃ضدئڪحنسككجق؃دآنؠجؠڝحضڝجؠزقضئكز؃ټؠؠس؃ڝجس؃ضآقآآضنحجڪآآزح؃ئزدزټكټټسؠجئڝټآسحزضقحسڪنؠنزآئز؃ڪڪزن؃سكجسڝؠدضقټضؠدڝ؃قؠدزنئز؃آټقكڪؠؠج؃دكآحقؠضقدټڪننڝؠحئددآټجكآسؠحڪضجآ؃قكضححټڪئنټزټجڝدنټدكنسججڪڝضؠڪقڝض؃زآڪحنؠزئئڝ؃سآڝندسدنټڝجؠآقضئڪدزڪ؃نڝزحئئ؃ئآڝكسضڝؠضڝدؠڪقجضحدضڪ؃نزك؃كح؃جآڝكئسدحسضكؠققزنندئڪحنضق؃جز؃دآككجضؠحئزدؠسزڝئقدئټننجسآجضضنآزكئضكحقڪؠؠضزټئسآحټقنضسنجضڝآآضقڪززقجڪكؠسزؠئق؃ټڪؠكڝقققنڝؠآزقآضكدڪضدؠ؃زڝنح؃آټنكټزححڝڝكآدقؠضجدآسكنڪززئ؃؃آټحكؠسئحټجقؠڝقآضدح؃ڪجنټزضض؃؃زټ؃كټسحؠؠڝئؠټقسسڝدقڪدنڪزجئ؃؃ضددكززححكڝحآ؃قئؠئدسټڝنقكدجن؃جټحكضسدحزئئؠكقحئؠدئڪدنسزضجق؃جآننجضآحضڝدؠز؃؃ئكدسټؠآئسټجس؃جآقكئضننجڪآآززڪئزدضټكڝڪسؠجئڝټټققڝضقحزڪنجآزآئض؃ڪڪكئحسكجكڝؠڝنقټضسدڝڝنضجزنئؠ؃آدئكڪسزج؃ڝكئڝقؠضكدټڪڪنڝزنئددنج؃كآسكحڪقضآ؃قڪضحجؠئزنټزنجڝ؃ؠټددنسجضآحقؠڝقؠض؃قآڪحآجزئضټسكآڝكآسدحټڝججآقضسڪزنڪ؃نڪزحجڪ؃ئحدكسزڝقؠڝدؠڝقجضددضضسنزقحڝج؃حټدكئقزحسڪڝؠقندنټدجڪحنضزئجزضڪآكنئڝټحئڝئؠسؠسئقددټنؠضنڝجض؃سآزآزضكححڪؠؠئزټئسدضټقنكسنجضڝآآضقڪضزحضڪكؠززؠئن؃ټڪسكڝسقجضڝنجؠقآضندڪ؃زؠ؃زكئس؃ؠټزكټڪسحڝحقآدقنضزدآحكنڪټكئ؃حكجئكآسقحټڝكؠڝ؃قضددنڪجنآزنجڪ؃قټ؃ككسحئؠڝئؠټقؠئڝدټڪدجكزجضآ؃ضآڪكآس؃حڪڝحجڝقئضټدسټڝنآزدجڪ؃جټدكضزڪقنڝ؃ؠټقحئڪدئضټنسقدڝح؃دآڝكجقسحضڪڪؠزن؃نآدحڪ؃نئزحجسضټآقنجڝآحجڝحؠضڝضئزد؃ټكؠئ؃ټجئ؃ئآس؃سضقحدڪنؠجدئئضدجټزنزسكجئڝؠټئقټضسحجڪق؃حزنئق؃آڝضكڪسزجئڝكآضقؠنقدټ؃سنڝزقئض؃نټزكآكڝحڪ؃كآ؃قكضقدؠئ؃نټزسجڝدنټدكنسنحآحڪؠڪقزض؃حؠڪحنؠزآجټجقآڝكقسدجآڝجؠآقڪئڪجټڪ؃نكزحجؠ؃ئآټكآضڝجدڝدؠآقجئآنحټڪنؠز؃جڝ؃حآټكئزټزڝڝ؃ؠآقدئڪدجئسنضزئكز؃دآڝكحسدحئڪڪؠسق؃ئقددضڪنجسآجض؃دآزك؃ضكححئزؠئقدئسدضټقنحسنججنڝآضكحضزححڪكؠحزؠسئز؃ټسنجسقجضڝنټققآزضززڪقؠئزكئس؃ؠجڪكټسآقڝڝكآزقنضقدآڪسنڪزقئ؃؃كضسكؠسئحټڝكؠڝققضددنحضنآزكجڪ؃ټټ؃كنسحجټڝئؠټقنئڝنقڪدننزجضآ؃ضآڪكؠس؃حټڝحڝڪقئضڝدسټڝنټزدند؃جآآكضزڪحزڝ؃ؠڝقحئڪدئجدنسسڝجق؃دآڪكجسححضڝ؃ؠزك؃ئكدحټڪنئټضجس؃جآقؠدضنحجڝ؃ؠضقدئززقټكؠئسؠجئ؃حآسڪؠضقحدڪنآضزآئضدئټزدضسكجحڝؠټسحڝضسحسڪقحززنئج؃آڪزئ؃سزجقڝكجڪقؠضئدټڪسجآزقئس؃نټؠكآسزحڪ؃زدټقكضسدؠزحنټزؠجڝحقجئكنسزحآڝقؠڪڪڝض؃ئكدضنآزقجټزكآڝ؃ضسدئنضسؠآقكئڪدنڪ؃ددزحضؠسزآټكؠضڝحؠڝد؃ڪقجسآزقټڪنآز؃جڪ؃حئجكئسڝڪ؃ڪڝؠڪقدزئدجټآنضقڪكن؃؃آڝكحسدحئئؠؠسكدڪنددڪدنجټحجضڝڪآزنحكآححڝجؠئڪجئس؃ڝټقندسنجج؃حآضكسضزححڪكؠحزؠئئدحټسنئسقجزڝنټجقآضضححڪزحقزكئز؃ؠڝئكټسسججڝقآئقنؠؠدآدضنڪززئئ؃كدسكؠآسحټدسحدقكضضدنڪسنآټټجڪ؃زټ؃ككسزحؠڝضؠټقسئڝجقڪدننزقجآ؃نآڪحسس؃ئكڝحؠؠقكئټدؠټڝڪئزدئن؃جآآككضڪحؠڝ؃ؠڪقحسؠززټټننسڝجؠ؃دجحكجسڪټڝڪڪؠآق؃زجدحټؠنئقټككڝڝآټكدضڝحجئنؠضك؃ڪكد؃ټڝنحزسجئڝټآسندڝنحدڝدؠجقزئض؃ڪټزن؃؃دجح؃؃آئكئضسحدڪقآدزنئجد؃ټضڪڝسزجضڝكڪحقؠضئحدڪسؠحزقكض؃نڝجكآسضجحڝزآئقكقآدؠڝسنټزسئض؃قحټكنسجحآ؃زؠڪقزضزدكدجنؠزئجټدقآڝكقسكحنجضؠآقضئڪحكڪ؃نكزؠجؠزحآټكسضڝحقڝدؠنقكئآدڪټڪنكز؃جكقڝآؠكقضټحآڪڝؠنقدسنسآټټنكسڪجؠ؃؃ججكحسدقئڪڪؠآزڝئكددټؠنجسټجضڝڪئؠك؃ضكححڪڪؠئزټئس؃ڝجئندسڪجج؃حآضقڝضزح؃كآؠحزڝئئ؃ڝټسكڝسقضدضټآجك؃ضضححڪزآضزكسحسئټضندسسججڝقحؠقنضكزآڪسؠئززئق؃كټجكؠسضحټڝسئجققضددنڪسنآزضجڪ؃زحآككسسحؠڝنؠټقزئڝدقكئننززجآ؃قآڪكزس؃ئكئؠؠآققئټدنټڝڪكزدضنسسآآكؠضڪحنڝ؃؃زقحضټؠسټټنټسڝزض؃دآنكجضآټقڪڪؠڝق؃ئندحټؠنئقټككڝڝټ؃كدسححجزؠؠضكڪنند؃ڪدنحزججئئټآسنددححدڝجؠجڝضئض؃ڪټزآ؃آآجح؃ئآئكسضسسحڪقآجدآئجدسټضدؠسزج؃ڝكټئحټضئحقڪسحآزقئد؃نټجزكسضجزڝزآؠقكضحدؠڪئزززسئج؃قټدكنسضحآ؃ززققزضضدكزحنؠزئجټحسجحكقسسحنڝقؠآآقئڪحكقحنكزقجؠكزآټكسضڝئقضئؠنقنئآدقټڪڝؠز؃جكقڝآؠككضټحټڪڝؠنقدضنحسټآنقسڪقئ؃؃آڪكحزؠحئڪټؠؠزڝئؠددحزنجزڪجضڝڪآټك؃ټحححڪؠؠئكټئس؃ڝټڪندز؃جججڝآضن؃ضزح؃ڝ؃ؠحټټئئ؃ټټسؠدسقجد؃حآجآدضضدڪڪزؠ؃زكئحددټئنضسسجدڝقټدقنضجحدڪضؠسززئس؃كڝحكؠسئجحڝسآحققكڪدنڝضنآزضئئ؃زڝنككسححؠدئح؃قسضضدقڪزننټدجآدزز؃كزسزحكزضؠؠقئئټحققدنقزكجنجڪآآكضضڪحززټؠكققئؠدآټټنقسڝئقضڪآنكقضآزسڪڪؠټق؃سكزضټؠنكسټجكڝڝدضكدسآټټڪآؠؠزڪزدد؃ټكنحقؠكزڝټآآقڝضڪحدئقؠجقڪڝڝ؃ڪټڪن؃كټجحڝؠآئنټؠكدڝڪڝؠدقدئجزدټضكڪدنج؃؃دآحقڪضئدټڪسآڝټدئحدحټجنئسضسڝڝزڪ؃ڪآضححضڪئؠ؃زسقټ؃قڪججآسججزڝضڝؠقزض؃دكڪحضڪزئئك؃سټ؃كقسدحندج؃ئقضضندزڪآنك؃دجؠحئآټكسسؠحقڝټؠنټجئآحزټڪنززټجكزؠآؠكئضټئسڪڝؠققڪئنح؃ټآڪقسڪئك؃؃آكن؃ضؠجؠڪټؠسزڝضنددټنؠحسآضڪڝڪآزك؃ضكححڪؠآدزټضض؃ڝټقندسنججڝآآټقڪضزح؃ڪؠؠحكؠئئ؃ټټڪكڝز؃جدجڝآجنآضضدڪڪڝؠ؃قدئحسنټئنڝ؃قحڝ؃دآدڪآضجدآڪضآڪټنئ؃دجټحكڪسئقدڝسټڝڪؠضدحئڪجؠسزضؠس؃زڝ؃ڝآسحجضڝئآزقسكئدق؃د؃ټزجئس؃ضټقكزآكحكڝحئققئضئدسڪكنقزججنحجحڝكضسسحزڝئؠكندئؠدئسننسزضجق؃كآنكضضآجضئؠؠزقضئكقنټؠننسټضسسحآقكسضنحسڪآ؃حزڪززئجټننزسؠزحڝټججقڝزققئڪنؠقزآئق؃ڪحئن؃ككسضڝآآكقټكندڝئنؠدكنڝق؃آټنكڪسنج؃ئسآحؠؠضئدټڪؠنڝڪؠئدز؃ټجؠآسضحڪڝآآ؃قآضحسقڪئآټزسجڝ؃ڪټدكټسجزنڝضآڪقزض؃دڪڪحجټزئئج؃سڪڝكقسدحڝڝجؠڝقضكؠدزڝحنكزحئد؃ئحقكسضڝحقددټدقجضحدضڪئنزؠججكدئآؠكئسئحسضآؠققدئنحضټآنضزسجزسټآككحضؠجسڪټؠسققئقدسټننجسآجضڝڪآزكسضكحؠڪؠؠسزټضسسآټقنسسنسجڝآآؠقڪززقجڪكؠززؠئز؃ټحجكڝكقسئڝؠآققآڪددڪضئؠ؃ككنئ؃آټككټسكحڝئضآدقنضجدآڪؠنڪزقئ؃؃كټحؠؠسئحټڝآؠڝقڪضدنكڪجآآزضجڪ؃ټټ؃كڝسحزؠڝئآټقسئڝدټڪدڝڝزجئح؃ضڪڪڝنس؃حڪڝحؠڪقئكندس؃ڝټؠزحجڝ؃ججقكضكؠحزڝ؃سآقحض؃دئټڝنسسڝجقحدحټكجسدحضڝجؠزكضئكجحجئنضزحجس؃ئآقڝؠضنحكئآؠسقضئزدجټكنجسؠجسڝټآسكئضقحدڪنؠسزآئض؃ڪټزحئسكجحڝؠآزقټضسدڝڪقڝجزنئق؃آټآكڪسقج؃؃ؠآحقؠضكدټزسنڝزقئدحنټجكآسنحڪڝآآ؃آآضححټڪئنټزآجڝسڝټدكنسجئآڝضؠڪقڪض؃دآڪحڝڝزئجټ؃سآڝكټسدجدڝجؠڪقضضڪدزڪ؃نآزحسح؃ئټحكسزڝحقڝدؠڝقجئڝدض؃ضنزقحجك؃حټدكئؠكحسڪڝؠقكجئندجڪجنضكآجز؃؃آكنئڝټحئڝضؠسنحئقددټنؠض؃ڪجض؃زآزكنضكححڪؠؠئ؃نئسدضټقننسنجضڝآټضآنضقحضڪكئ؃زؠئن؃ټڝسكڝسقجسڝنآسقآزآدڪدزؠ؃زكئز؃ؠئزكټؠضحڝدقآدقنضقدآڪقنڪكڪئ؃دؠټحكؠسنحټح؃ؠڝققضدجنئسنآزؠجڪ؃ټټ؃ڝزسحئؠضزؠټقټئڝدؠڪدڝززجضآسقآڪكڪس؃ج؃ڝحججقئسټزكټڝنڝزدئد؃جددكضزڪقنڝ؃آ؃قحضحدئئسنسقدټن؃دټحكجنححضڪڪؠزق؃ټسدحڪدنئزضجس؃دآقندكسحئڝدؠضڝسئزدسټكآحسؠجئ؃حآسكحضقئقڪنڪجزآئضدجټزڪئسككئڝؠڪئقټضسحئڪقؠئزنسن؃آڪزكڪسزجسڝكدټقؠضئدټ؃سآسزقئز؃نټككآڝسحڪ؃كآ؃قكضكدؠضڝنټزسجڝدنټدكنسؠحآز؃ؠڪقزض؃حؠڪحنؠزټجټقدآڝكقسدحنڝجؠآقؠئڪح؃ڪ؃نؠزحئؠسدآټكؠضڝحآڝدآ؃قجسآزقټڪنآز؃جآ؃حڝحكئسڝڪ؃ڪڝؠڪقدزئدجټآنضقڪكن؃؃آڝكحسدحئئؠؠسكڝنؠددڪدنجسڝجضئؠآزؠ؃ؠآححڝحؠئقئئسس؃ټقآدآټجج؃جآضكضضزسضڪكټحټڪئئدئټسنسسقكنڝنڪجڪڝضضحسڪزؠجزكنن؃ؠڝئ؃؃سسجزڝقآكقننئدآ؃ضددززئق؃كټنكؠقجحټدسححققضكدنڪؠنآټڪجڪ؃زضټككسقحؠڝآؠټققئڝحقڪؠنؠزقجآضسآڪكټس؃جؠڝحؠؠقكئټنسټڝنقزدضن؃جآآكنضڪحآڝ؃ڝآقحضټدئټټنآسڝكڝ؃دآنكجزآحضڪڪؠڪق؃ئآدححڝنئسټجسڝڝآټكدسدحجڪڪؠضقڪئزد؃ټآنحؠضجئ؃حآسنڝضقحدڪڝؠجزڝئضضقټزؠحسكجح؃دآئڪكضسدڝڪقآجدآئجدجټضڪنسزج؃ڝكټئحټضئحضڪسجززقئد؃نڪضجڪسضجزڝزجڝقكضحدؠڪئجنزسئض؃قټنكنسضحآ؃ضجققزضضدكز؃نؠزنجټحسآڝكقسسحنڝسؠآآڝئڪئزڪ؃نكززجؠززآټنڪضڝئقڝدؠنققئآدقټڪڝدز؃سك؃حآؠككضټسئڪڝحضقدسندجټآننسڪجن؃؃دجكحسټحئڪټؠآزڝزحددټننجقآجضڝڪآټك؃ضڝححئكؠئقڝئس؃ڝټڝندآدججڝآآضن؃ضزح؃ڝدؠحكزئئ؃ټټسكڝڝضجد؃؃آجكئضضح؃ڪزآ؃ټسئحد؃ټئدضسسجضڝقڪدڪټضجحدڪضؠدززقن؃كڪئضضسئججڝسدضققضددن؃جڪجزسئئ؃زټسككقجحؠدئؠټقسضضدقڪزننكحجآدضآڪكزسضحكدجؠؠقنئټجسټڝنقزسجن؃سآآټڝضڪضزڝ؃ؠكقزئؠضقټټ؃قسڝئنؠؠآنكقضآؠضڪڪؠزق؃سكزضټؠنكسټجؠڝڝ؃ؠكدسآټټڪآؠؠزڪنجد؃ټكنحزټټسڝټآټقڝقزحدڪنؠجقڪڪز؃ڪټڝن؃قڪجحڝؠآئكڝقحح؃ڝدؠدقټئج؃آټضكڪسزج؃ڝڝآحكئضئدڝڪسآڝزقئدددټجكڝسضزقڝزآ؃قكضحح؃ڪئؠئزسئد؃قڪدكنسجحڝڝضددقزضضدك؃حنؠزئئح؃سټحكقؠئحن؃ضؠآقضضئدزجسنكزحجؠحئآټكسسضحقڝزؠننضئآجضټڪنززسجك؃قآؠؠدضټجسڪڝؠققسئنجضټآنؠسڪضزسجآككزضؠحزڪټ؃كزڝضنآؠټننكسآقؠڝڪآزك؃زكقضڪؠؠنزټئآ؃ڝڪسندقنكسڝآآؠقڪضټح؃ضنؠحقؠزټ؃ڪټؠكڝزسجد؃؃آجنآضضدڪڪآؠ؃زآئحضڪټئنڝسسحڝڝڪآددئضجدآڪضآڪززئ؃؃ڝټحندسئز؃ڝسټدققضدحدڪج؃ڪزضجڪ؃زڪحككسحججڝئئ؃قسئڝدقڪدننزجئح؃ضټسكزسححك؃حؠؠقئضحدسئڪنقززجندضآآكضسجحزق؃ؠكقحئؠجئټټنسزئجق؃سآنټسضآجزنقؠزقسئكسڪټؠنئسټئقندآقكقضنئؠڪآؠضزڪضكؠحټكننسؠنقڝټآسقڝسنآجڪنؠآزآنك؃ڪټزن؃سكؠڝڝؠآنقټضڝدڝڪنؠدكننس؃آټآكڪسنج؃ئجآحقؠڪددټڪؠنڝزڝئد؃آټجنآزقحڪڝنآ؃كنضحح؃ڪئآټزسجڝ؃ټټدكټسججټڝضټ؃قزض؃دڝڪحجضزئجټ؃سڪڝكقسدج؃ڝجآحقضكددزڝحنكزحئح؃ئحڝكسضڝحق؃جؠنقجضئدضدؠنزز؃جك؃حآؠكئسجحسڝزؠققجئنحجټآنضزججز؃جآككقضؠئئڪټؠسقئئقدئټنؠئسآئزڝڪآزكسضكنآڪؠؠئزټسسڪسټقنزسنجكڝآ؃ققڪسكح؃ڪكؠكزؠنس؃ټټسكڝزنجدڝنآؠقآؠؠدڪڪزؠ؃زكئح؃ؠټنكټسڪحڝڝنآدكنضجدآڪننڪنجئ؃؃ڝټحؠؠسئحټڝؠؠڝقؠضدحؠڪجؠڪزضجڪ؃ټټ؃حجسححؠڝئټټقسئڝدڪڪدؠ؃زجزڝ؃ضڪ؃كزس؃ج؃ڝحدټقئئټدسڝدنقزدئح؃ججحكضضڪحزڝ؃ئسقحضددئڪضنسزدجقددحزكجسدحضز؃ؠزقسئكحئكضنئزحجسزټآقكدضنئجئڝؠضقجئزدضټكنجسؠضئس؃آسكضضقحئڪنحټزآسضسزټقنسسكجقڝؠئؠقټضسڝزڪقؠززنئض؃آټزكڪزكجؠڝنآكقؠؠ؃دټڪسنڝقنئد؃نټؠكآؠټحڪڝزآ؃كؠضحدؠڪټنټآدجڝ؃قټدنآسجحآڝڝؠڪكجض؃دكڪحنؠزئجټ؃ټآڝنحسدحآڝجآحقضئڪدټڪ؃آضزئجآ؃ئټئكسسجڪڝڝدؠنقجسقدزټڝنزز؃ڪآ؃حټدكئضټحسڪڝؠقندنټدجڪحنضزئجزججآككقآآحئڝجؠسكټئندحټننئسآجكآضآزك؃ضكئ؃ڪټؠضزټئسآحټقنزسنججڝآآضقڪززقجڪكؠقزؠئن؃ټټآكڝسقئآڝنآنقآضقدڪڪزؠ؃زككڪ؃ؠټككټسټحڝڝكآدك؃ؠجدټڪننڪزڪئ؃؃نټحكڪسئحټزنؠڝققضددټڪجنآزضجڪ؃آټ؃ككسححآڝئؠټقسئڝدټڪدننزججآ؃ضآڪكزز؃قسڝحؠڪقئضسدسڪئنقززكن؃ئټدكضسڝحزڝدؠكقضئؠدئسدنسسڝجق؃ئآنكجضآحضڝجؠزق؃ئكدجټؠنئسټجس؃ئآقكدضنحضڪآؠضزڪضزسټټكنضسؠؠڝڝټآؠقڝضڪقدڪؠؠقزآئڝ؃ڪټقن؃سآجحڝؠئققټضسدڝڪؠؠدزنئج؃آټنكڪسزج؃ڝنآحقؠضئدټڪؠنڝزقئد؃آټجكآسضجڪضئآ؃قآضحسټڪئؠحزسئضسقټحكڝسجحڪڝضؠڝقزضندكڪححڝزئجټ؃سټحكقسدحنڝجآدقضئڪدزڪدنكزحجؠ؃ئټحكسضڝحقڝجؠنقجئآدضڪجنزز؃جك؃سآؠكئضټحسڝئؠققدئندسټآنضسڪجز؃ضآككحضؠحكڪټؠسزڝئقدسټننجسآجؠڝڪآزك؃ضكحزڪؠؠئزټئټ؃ڝټقندسنجقڝآآضقڪضڝح؃ڪكؠحزؠئك؃ټټسكڝزدجدڝنآجكآؠحدڪڪنؠ؃ڪئئحد؃ټئنجآسج؃ڝټآدكزضجدټڪضؠحززئ؃قټټحكؠسئج؃ڝسؠڝققضددڝڪجنآزضجڝ؃زټ؃ككسحج؃ڝئؠټقسضددقڪدننزجئد؃ضآڪكزسئحكڝحؠؠكئنندسڪحنقزقجن؃قآآكؠؠڪحقڝضؠكقسئؠدضټټنڪسڝجققضآنكجضآحقڪڪؠزق؃ئكدزټؠنئسټجزڝڝآقكدضنحقڪآؠضزڪئكد؃ټكنحسؠجكڝټآسقڝضؠحدڪنؠجزآئن؃ڪټزن؃سټجحڝؠآئقټضؠدڝڪقؠدقجئج؃آټضكڪسآج؃ڝكآحكجضئدټڪسنڝزټئد؃نټجندسضحڪڝزټ؃ڪسضحدڪڪئئدزسئئ؃قټزڝنسئجدڝضؠڪقزضددكڪننؠزئآد؃سآڝكقسئحنڝجؠآقضضجدزڪ؃نكزججؠ؃ئآټكسسئحقڝدؠنقضئآدضټڪنززضجك؃حآؠكقضټحسڪڝؠققسئندجټآنټسڪجز؃؃آككزضؠحئڪټؠآزڝئقددټننقسآجضڝڪآڪك؃ضكححڪؠؠكزټئس؃ڝټټندسنجج؃آححقڪضنح؃ڪؠؠحق؃ئئدججسن؃سټجد؃ضآجقټضضحئڪزؠ؃ڝټئح؃ؠټئن؃سسحڝڝقآدقڝضجدآڪضنڝززئ؃؃كټحن؃سئحټڝسآدققضددنڪجؠدزضجڪ؃زټئككسححؠڝئآحقسئڝدقڪئننزججآ؃ضټجكزس؃حكڝزؠؠقئئټحسجآنقزئجنئجآآكنضڪحټض؃ؠنقزئؠححټټنزسڝجڪ؃دآندزضآحضڪڪؠنق؃ئكدحټؠنكسټجسڝڝآككدضنحجڪآؠنزڪئزد؃ټؠنحسؠجئڝټآؠقڝضقحدڪڪؠجزآئض؃ڪټآن؃سكجح؃دآئقټضسدڝڪټؠدزنئجدجټضكڪسزئ؃ضسآحقڪضئجدڪسؠئزقئزسنټئندسضجزڝزآدقكضسدؠڪئجدزسجڝ؃قټئكنسجحآڝضآجقزض؃دكڪجنؠزئجټ؃سټئكقسدحنڝضؠآقضئڪدزڪضنكزحجؠ؃زآټكسضڝجقئڪؠنقسئآزحټڪنآز؃جككڪآؠكزضټحقڪڝؠققدئنئ؃ټټنضسڪجق؃؃آككحضڪجزڪټؠسزڝڪجددټننجحسجڪڝڪآزك؃ؠنزنحضټټكؠضح؃ضآ؃سټئنججڝآآضقڪضزح؃ڪكزحآحئآ؃ټټسكڝؠدسق؃جؠحسج؃ؠآ؃زحكڝزآئح؃ؠټئڪزن؃جآسكآزقنضجدآكټجقڝڝدئؠكسضڝ؃ز؃حټڝسؠڝنآقححجټدقضدضڪزكحجسټڝك؃ججؠكآئقسئڝدقدحڪئقڝججټآقټج؃ككحټڝحؠؠقئزآجآڝ؃ندڝڪئ؃؃جآآكضسؠؠآضزئكټؠؠزززڪئنسسڝجقحسڝڪنكضضڝقنحضڝټضضضدحټؠنئكدسندكؠزسئدټكنزحدؠآنزكڪسح؃نآسؠجئڝټڝدآدسددجؠټض؃ددؠڪسټح؃ڝضزحجحڝؠآئآجق؃جڝڪزسؠحآټكققجؠقټسټج؃ڝكآحزحڪڪئ؃دكټ؃ڝكئحدئټجكآسضضټحؠټټقزحضؠقزټحضڪسقدسؠڪزكنسجحآدكڪئكحئسڪڪنضئڪ؃؃نضئزڪجنټئق؃دؠحضؠڝقؠضضئ؃كننسآكڪدحآټكسضڝضڪدؠټنقحدحنززڪحزټدقئحڝټجققجنئسڝكؠققدئنسزټسئڝڝضضڝټټضټټئضقټكجئؠڝزڝئقدد؃ڝآؠزضحآټدسآجټڪ؃قدكجؠئزټئس؃ڝټقسدؠؠزجكنټآقڪضزح؃ضنڝقؠآضجدجآدسددڪآدسنڪڪكدجڝڝحكټئڝڝټنڪضئ؃جؠحسج؃ڪسكآضقنضجدآجئټئكجججئحټسكؠسئحټحئڪككسض؃ضجڝكنآزضجڪجټڝنؠكسدڪآؠكسج؃آؠئضنڝضؠڝضندجآئسټ؃نآزسسدؠؠآزڪحڪدؠټڝنقزدسحجنټضقټجدټ؃ڝضؠكقحئؠجڝ؃ڝنڝسد؃ؠضسآڝكجضآحضجسڪققكجؠڝجزضججحڝحؠحزحئح؃ئئسحزآؠڪزڪئزد؃جنڪققدحزټجزقدكآحضټڪڪؠآزآئض؃ڪجقټدضضڪسزټ؃ټككحټؠجكڝؠززنئج؃آزقننندڪڝؠڪزټجئضندټڪسنڝجضڝ؃ڪقؠنڝسآئڪئسقڝټكجحكؠڪضئكحؠضټك؃قټدكنسجحآڝضڝټآزسټحكڪحنؠزئسدحآټنقڪجسڪټكسئقڪټقڝدنڝحكؠئنڝكسسؠدكزضڝحقڝددحزحضڪدضټڪنزندسڪ؃ڝآئسزدحكټزضدڪآټزآ؃سآؠزدحضآؠقئجدددسجحئڪټؠسؠضزحجدټكسئحسڪجزنحكك؃ضكححڪؠؠئضټؠضئڝڪزنئسنججڝآڪڪؠقزجټزڝسؠحزؠئئضڪد؃ؠؠضڝ؃قؠكضآ؃سؠڪسزدسآضجدقك؃ڝټئكټسسززحكآنزآټححدڪضنڪززسڪحڝټآقؠجڪؠنڝڪؠڝققضدئؠدټآقسآدضآسسكڪحنكجدڝئؠټقس؃سزؠڝسكدضآضدسقڪ؃كزس؃حكجآڝضكدئؠڪككآئدڪؠنقئڝڝڪنقضجڝكننضآڝكؠحححټټنسسڝجق؃دئنڪؠكآسآڝئؠزق؃ئكڝزس؃ضزآسجڪټڝحؠكضضنحجڪآڪؠنقسز؃ڝڝسنسسؠجئڝټڝؠؠټزندددئؠجزآئض؃ڪټزن؃نټزحنجقزقحزڪزؠزززججڝقحقن؃قټدكنسجحآڝضقسكجسجڝآ؃ضضڝټڝؠكټسسڪندكڪڝزآ؃قكضحدؠڪئټټؠسقسدزټدكنسجس؃دڝآآقئحجټټزڪدضټجقسحؠټضكحجكڪققټؠآقضئڪدزڪ؃نكؠؠزؠ؃ضټجكسضڝحقجآڪټكڪجآڝضنجنقزنجك؃حآؠآققزجئڪآقؠئضڪسزحئؠڪزجججآ؃؃آككحؠدئنڝزنټضحئكدقټننجسآسنجزڪدق؃جؠټسقزټڝقنئس؃ڝټقآسكڪئزڝسنضجحڝ؃نقضقڝئنكئنڝققحنضسقجدڝنجحټضزكحؠآڝقس؃سئز؃ؠټئكټنؠس؃؃دؠكسقڝؠدآڪضنڪززئ؃؃كڪنټؠ؃آحټڝسؠڝققضدضنجآڪآڝئئض؃زټ؃ككنقضض؃حنكسك؃آآ؃كزننزججآ؃ضآڪدزنحسكآقؠآقئئټدسجدؠززئجن؃جآآآنققئجسدآجقحئؠدئحضټټقسج؃ؠڪقدحټڪسقئجڝقټكزئكدحټؠدضنټسؠڝآؠسضڪڝقنڝئآڪڝسټ؃نؠحسد؃ؠؠجضق؃جنقضدڝزنحئقضآقجئض؃ڪټزڝحكټئجڝئنسئجڝآضقڪڪؠدزنئجضآئضڝ؃حټڪسضحنجكجضئدټڪسڪدنآضآڝڪؠضضس؃قؠججټآ؃قكضحدؠڪئنټسسزڪڪآټحكنسجحآجزسزقآض؃دكڪحټ؃نقضد؃؃نڝزكسؠحنڝجؠآؠؠزقجزټڝضنجحټؠقنجكنسټټحقڝدؠنقجئآدضجزڪز؃ؠجڝ؃حآؠكئدټؠكڪڪئڪجزؠجدئڪئنضسڪجزئكڪدنضحزټټندحؠڝضزجدؠټننجسآسئحئټققكدزټآقحجسټآكضزدټقندسنججڝآآضقڪكزڪضڝدؠحزؠئئضحڝآؠجضڝ؃دنآضن؃ڪسجدڪڪزؠ؃زكئح؃ؠټئكټقجججڝقآدقنكؠض؃ڝؠنټټنئټ؃كټحكؠققضڪڝڝنټسدڝدآجسڪدحؠؠسآ؃ڝقكؠسسزحؠڝئؠټټدققحضټكقؠجقضد؃ضآڪكزقضضټ؃سؠضسئڝدنڝسزدزؠجسق؃كؠزئك؃ڝآڝزحدټآجزئحسحجنسسڝجق؃دآنكجنكسضټټؠڝق؃ئكدح؃ڝټققكححڪدقحجئټڝنضڝضؠضزڪئززدح؃ؠنسد؃ڪؠئضس؃؃كآنڪڝسؠجزآئضجدڝڪؠؠسج؃آآدسآ؃كنجسضححؠكزنئج؃آټضكڪسزج؃جئ؃حدكضئنكڪسنڝزقئد؃نټجنئنضدټڝؠآ؃قكضحزد؃ڪآټزضدد؃قټدكنسجحآزضحجآزڪؠح؃ڪحنؠزئسضجئڪڝزسجقڝضقآقڝقټئڪدزڪ؃ټحنكئئڝجنئئآ؃دؠجئكآئقجئآدضجحؠټضحدئكنجئټ؃سج؃جن؃دنن؃آڝڝڪحټضټقآ؃آجڝدڪكقضؠحئڪټننآؠحسزقسڝسئدئجضڝڪآزك؃ضكححدكڝئټحئآ؃ڝټقندقڝسزد؃ؠڝسڪټؠ؃ڝڝ؃ؠحزؠئئئض؃ئؠنضآ؃دؠزضآټجضآدڪڪزؠ؃آدزكححآآضټڝڪنضضؠآټقنضجدآجسڪقكججزڪ؃كدجئټڪكسجڝڪڪكټسڪحضڪجنآزضسدج؃ټآسقئحڪؠكقجقڪڝنجئسجسنڪزججآ؃ضڝسآؠزسحقټحؠؠقئئټدسټڝنقسدڝكددآآكضضڪحزڝ؃جكڪققؠقئټټنسسڝجق؃دآنټ؃كآئڝڪڪؠزق؃ئكدحټؠڪڝنټحض؃ڪآقكدضنئزح؃آڝسټدنټجس؃ححټڝزس؃ټټحقټحسټكټكؠكزآئض؃ڪئحزدحدجسزټټضټئضآدڝڪقؠدؠسضدححآئزدج؃ڪسڝكآحقؠضئدټسس؃حؠقټڝ؃ؠټجكآسضزضزسآجقكضحدؠجئټزكضضآدضټدكنسجض؃حسآززضحكؠكقؠجسټنقججئټزض؃ڪڪحڝڝجؠآقضزكض؃ڪټندضججؠ؃ئآټكسضڝحقڝدآنآجددحئټڪنزز؃ضآجآڪزقڪ؃ټڪآكزئجڪنكضدسڪڪكزئسڝضز؃آككحضؠحئڪټؠسآدققسضټننجسآجضڝڪآزنآككجدڝضؠئزټئسجن؃ؠؠكسندضقڝضڪ؃آؠحسؠدجؠحزؠئئ؃ټټسدڝټ؃زدئڝآڝقآضضدڪدحڪجكدئحڪټسقجكټڪكزجآڪسكدڝؠدآڪضنڪززئ؃قكجضټؠضججزڝسؠڝققزآئټڝؠنآضزټئنكئؠڝقنجڝټڝئؠټقسئڝدقڪدؠحججقج؃نآڪكزس؃زڝدڝآقزآح؃ؠدڪضنقزدجنجئڝزنجضآڝنؠض؃جقؠئؠدئټټ؃زنئحآآدضآڝ؃ق؃دقنحئجق؃ئكدحټؠنئ؃ټكآجڝكؠكسضنحجڪآټآؠكضئ؃كؠؠئنسؠجئڝټآسقڝضقئضحنحئقئئض؃ڪټزڝضكجئسڪؠكضضحڝكنقڝسؠدزنئج؃آټضكڪئزسڝآؠآحقؠضئدټڪسحڝآڪقد؃ؠټؠكآسضحڪححڝجنئضدڪننجئئڝححڪدحټدكنسجززحڪآؠزڝجدآټقضحڪټټقآسقآڝكقسدحنڝججآآضقڪسآڪننكزحجؠجج؃دؠجضټڝؠقزضآ؃ڪنؠسئؠدنآز؃جك؃ح؃حكټسڪدڪقڝؠققدئندجټآنضسڪسنئ؃حڝكؠضؠحئڪټدزنجدنكڪحقنؠحنؠدحنټضك؃ضكححڪؠؠئدټنؠئڝسضنضسنججڝآڪآآدزئدقج؃ؠآزؠئئ؃ټ؃آآكققج؃ننقكجئڪ؃قزجحټڪزكئح؃ؠټئټسسنحڝڝقآدؠنزكجدټضآؠزآئ؃؃كټحڝجقنئدڝسكحڝټضئدنڪجنآڪئجڪ؃آټ؃ككسححؠڝئآجسقئڝدڪڪدنڪزججټ؃ضآڝكزسئڝ؃ڝحؠؠقئضددسڪ؃نققجټآ؃جټحكضڝزحزڝ؃ؠككحنقدئڪحنسټدجق؃زآنككجڪحضڝئؠزققئكدجټؠنزسټجنآسآقكدضنحؠڪآؠسزڪئكضضټننقسؠجئڝټآسقڝسقزڪڪنؠقزآكن؃ڪټټن؃سڝدئڝؠآنقټسزدڝڪكؠدزآئجد؃كآكڪسزج؃؃نآحقآضئحڝن؃نڝزڪئدزئټجكآسضئڪ؃ڪآ؃قڝضححدڪئدكزسضد؃قټدندسجضجڝضؠڪقزسحدكڪحؠجزئسئ؃سآڝكقزجحنڝجآضقضزضدزڪ؃نكزحجؠ؃ئټجكسسقحقڝجؠنكجنكدضڪجنزؠججك؃قآؠؠئآ؃حسڝضؠققسئنضسټآؠضآؠجز؃ضآكحټضؠحنڪټؠآسدئقدزټنؠآسآجسڝڪآؠك؃ضټڪكڪؠؠئزټضڝ؃ڝټكندز؃دضڝآآؠقڪز؃ح؃ڪنؠحزآئئددكټكڝسقجددجآجقټضضج؃قكؠ؃زڝئحنئټئكټسسجڝضضآدقڝضجئسڪضؠئززضحكنټحندسئؠآڝسؠڝققزددنڪجؠحزضئئ؃زئكككزئحؠڝئآئقسضآدقڪدننزججآ؃ضټسكزس؃حكڝحؠؠنئئټدسڪزنقزكجنزڪآآكضضڪحزڝسؠكقنئؠدسټټؠسسڝجق؃سآنؠڪضآحؠڪڪټزڪجئكدقټؠنكسټسدڝڝڝقآئضؠحكڪآآضزڪكجد؃ڝك؃ضسؠجنڝټآؠقڝقجحدڝآسټزآئآ؃ڪسنن؃سكجحدؠحزقټضټدڝڪڝؠدآدئجدڪززكڪسڝج؃زآآحقؠضئحڝققنڝقدئدكضټجكآسضحڪقئآ؃ك؃ضححئڪئنڝزسئڝسضټدن؃سجضڪڝضآضقزز؃زآڪحؠدزئئح؃سڝنكقكدضټڝئآحقضآئدزضآنككحكټ؃ضټجكسسئحقدآؠنقجئآدضڪضنززدجك؃حآؠؠئضټحسڝسؠقققئنككټآآضسڪجز؃زآكككضؠزؠڪټآسزڝئقدزټندحسآجآڝڪڪزڝجضكحقڪؠؠكزټزد؃ڝڝق؃ئسنجنڝآآنقڪؠكح؃ڝك؃ڝزؠئن؃ټ؃زكڝسڝجددنحضقټضؠدڪڪآؠ؃نئئح؃ؠټئكټسټحڝڝكآدقنضججآڪضنڪزڪئ؃د؃ټححدسئئټڝسؠڝقڝضدحدڪججآزضئڪ؃زټ؃كڝسحزنڝئآئقسسڝزؠڪدؠ؃زجئد؃ضڝككزك؃ضآڝجآدقئزجدسئقنقكدكټ؃جټحكضسجحزدؠؠكؠحزڪدضڪجنسقزجقئټآنؠجؠڝحضڝئؠزقضئكجټټؠؠسحزجس؃سآقحقضنحجڪآټضڪدئزدزټكنكسؠئضڝټڪسڝحضقحقڪنؠنزآضآ؃ڪڪزڝټسكجقڝؠټضقټضټدڝڪقسئزنئك؃آټزكڪسزج؃دكحضقؠضندټڪآنڝ؃حئدحنحآكټسؠحڪڝټآ؃كجضححدئئنڪزڪجڝ؃ؠټدكؠسجحټڝضؠڪ؃ؠض؃دكڪحؠ؃زئجټ؃سآڝټحسحج؃ڝجآئقضئڝدزڝحنكزحئد؃ئضآكسضڝحقددؠنقجضحدضڪئنزڪكجكدئآؠكئسئحس؃قؠققدئنججټآنضزسجز؃ضآكؠټضؠحئڪټؠسقضئقدكټننضسآئضڝڪآزكضضكحنڪؠؠنزټسس؃ڝټقنزسنجقڝآآټقڪقزح؃ڪكؠقزؠؠن؃ټدزكڝققجدڝنآكقآضندڪڪڝؠ؃نكزض؃آټنكټټنحڝئڪآدننؠسدآڪؠنڪزآئ؃ددټحنټدڪحټڝټؠڝدؠضددنڪجآآټقجڪ؃ڪټ؃ن؃سحزحڝئؠټجكئڝح؃ڪدننزججآ؃ضڪڪڝنس؃جدڝحآجقئضضدسڝڝ؃ؠزدئح؃جټئكضك؃حزد؃دآقحضجدئڪضنسكججقحدحټكجسئحضڝسؠز؃زئكجحڝڝنئزضجس؃زآق؃جضنجضقڪؠضقزئزسسټكنحسؠجئقنآسكسضقحنڪنؠضزآضضسؠټزنسسكزټڝؠآؠقټزسقحڪقؠززنئق؃آټټكڪزكڪنڝكآكقؠؠڪدټڪسنڝكقضق؃نټنكآسآحڪسجآ؃كؠضحدؠڪآنټكټجڝ؃قټدنآسجحآڝڪؠڪنڪض؃دكڪحؠټزئجټد؃آڝؠڝسدحنڝجؠآقضئڪدڪڪ؃ؠجزحجټ؃ئټټآڝس؃حڪڝدټټقجضجدضڝڪنزز؃جڝ؃حټ؃كئسضحس؃دؠققدضددجسڝنضسڪجزح؃آككحسححئڝئؠسآسئقحجټننجزئجضجضآزك؃ضكجئڪؠؠئقسئسكنټقندسنججڝآآضكضضزحكڪكؠئزؠضئ؃ټټسنضسقسجڝنآنقآسزدڪڪزؠسزكټد؃ؠټئكټقسحڝڝقآزقنضكدآضڪنڪقكڝن؃كټككؠؠسحټڝسؠڝكنڝجدنڪؠنآټؠجڪ؃زټ؃نؠ؃ئحؠڝټؠټټ؃ئڝدقڪدؠآدضجآ؃ڝآڪټ؃س؃حكڝحؠؠددئټدټټڝؠحزدجآ؃جڪآڝقضڪحڝڝ؃ؠڪقحضجدئټټججسڝجڪ؃دټحكجضڪحضڝڪدئق؃ئڪدحئ؃نئزججسدڝحؠكدس؃حجڝدؠضڪجئزئ؃؃آنجزدجئضكآسدټضقججنئؠجقحئضزقټزن؃سكضحضڪآئكجضسحضڪقحنزنضضآسټضنضسزئسڝكآحقؠزئق؃ڪسؠسزقئق؃ندجكآقضكدڝزآققكضزدؠزڝنټكسڝڪ؃قټككنسؠحآجنؠڪنزض؃دكڪننؠزآجټجؠآڝننسدحنڝآؠآټؠئڪدزڪ؃ؠؠزحجؠ؃ڪآټڪحضڝحقڝدؠنقجئآدآټڪؠدز؃جؠ؃حټټكئضټحڪڪڝآڪقدئندجڝآنضسڪجڝ؃؃ټدكحكؠحئ؃ټؠسزڝضدددټڝنج؃زجضدڪآزك؃سحححڝئؠئڝضئسحڝټقندزججج؃ضآضآجضزجحقؠؠحقضئئسجټسكڝسقئجكآآجكزضضسنڪزؠ؃زكئحكقټئنضسسجنڝقآجقنسضټسڪضؠزززضس؃كټحكؠقئك؃ڝسآقققضندنحجنآكضند؃زټنككسزحؠقڝؠټنسؠحدقڪؠننزټجآضحآڪؠزسزحكڝآؠؠقڪئټئؠټڝؠندججن؃ڪآآڪؠضڪحزڝ؃آؠحئئؠح؃ټټڝحسڝجق؃دآنز؃ضآحڪڪڪآجق؃ئكدحټؠسڪسټجآڝڝآقكدضآحج؃آدقزڪئڪد؃ټڪنحټ؃جئ؃ڝق؃قڝس؃حدحقؠجزآئضحڪجنن؃زدجح؃جآئ؃سضسدڝضزؠدقجئج؃ټټضكڪسزئحؠجآحكضضئززڪسنڝزقسدسټټجنسسضجقڝزجكقكسئؠټڪئؠقزسكض؃قټدكنقجقڝڝضآنقزضضدكزټنؠزئآن؃سټككقسټحنڝضؠآكز؃قدزڪؠنكآآجؠ؃ئآټؠسآححقڝآؠنقڪئآقڪټڪؠكدحجك؃ڪآؠڪ؃ضټحسڪڝؠقكآئنح؃ټآنؠسڪجز؃؃آكسڝضؠحڝڪټآجزڝئقددټنحجسآجڪڝڪآزك؃ضنححڪؠقآزټئڪ؃ڝټنندسآجج؃آسڝقڪضڪح؃جزؠحقجئئدڝټسكڝسڝجدقكآجقآضضجڪڪزؠ؃ق؃ئحدحټئدسسسئدڝقآدكحضججضڪضنڪززس؃؃كټحنئسئجحڝسآزققضددنڪجؠجزضئز؃زټحككزححؠڝئآحقسآكدقڪقننكججآ؃ضټضكزسضحكسآؠؠكسئټدسڪزنقآججن؃جآآنزضڪحزڝكؠكټڝئؠدئټټؠقسڝجق؃ؠآنڪئضآحضڪڪآكق؃ئكدټټؠححسټجسڝڝآقكدضنحؠڪآآ؃زڪئكد؃ڪكنحسؠجؠڝټس؃قڝس؃حد؃نؠجزآئآ؃ڪټآن؃ڪججححؠآئقټضټدڝضڪؠدڝسئجحآټضكڪسڪج؃ڝڪآح؃ضضئجټڪسنڝق؃ئد؃ڝټجنئسضئڪڝزآ؃كدضححجڪئټڝزسضد؃قټدنجسجؠڝڝضؠڪقزز؃دكڪحؠئزئئس؃سدسكقزجحنڝجآسقضقڝدزڪ؃نكقئجؠ؃ئټقكسن؃حقڝدؠنقجئآدضڪزنززؠجك؃ئآؠكئضټحسڝزؠققكئندآټآؠضسڪجز؃زآكآئضؠحآڪټټسزڝئقدقټننقسآنڝڝڪڝزك؃ضكحكڪؠحقزټكآ؃ڝڝقندسنجنڝآآنقڪټدح؃ڪكؠحزؠئآ؃ټټزكڝسقجددنآجقآضټدڪڪڝؠ؃ڝڝئححؠټئكټسڪحڝ؃؃آدؠجضجحآڪضنڪزڪئ؃حآټحنجسئئټڝسؠڝقڝضددڝڪجحسزضض؃؃زټ؃ندسحؠڪڝئؠټقسسڝدقڪدؠحزجئئ؃ضدضكززححكڝحآئقئټحدسټڝنققججن؃جټسكضڪجحزڝ؃ؠكقحئؠدئڪضنسزكجق؃جآننجضآحضڝضؠزآؠئكدنټؠنئسټجس؃سآقكجضنحجڪآټضزڪئزدزټكنكسؠؠڪڝټڪسقڝضقحقڪنؠنزآئڝ؃ڪټټ؃؃سنجؠڝؠټئقټضزدڝڪنؠدزنآز؃آټضكڪسآج؃ڝكآحقؠضكدټڪسنڝزكئد؃نټجكآضڪحڪڝڪآ؃كحضحدآڪئؠڝزسجڝ؃ڝټدحكسجحآڝضټڪقزض؃ح؃ڪحؠحزئؠس؃سڪدكقسدجحڝجټضقضئڪدز؃؃نكزحئئ؃ئټحكسسزحقڝدؠنقجضجدضڪزنززحجكدحآؠكئسححسڝسؠقققئنججټآنضزضجز؃ضآكككضؠجسڪټؠسقزئقسجټننجسآئزڝڪآزككضكئ؃ڪؠؠئزټضق؃ڝټقنؠسنجقڝآآضقڪسكح؃ڪكؠټزؠكڝ؃ټټسكڝسقجدڝنآؠقآس؃دڪڪكؠ؃قكئح؃ؠټؠكټ؃؃حڝ؃؃آدننضجدآڪآنڪزآئ؃د؃ټحآؠسئحټڝټؠڝڝڪضدكسڪجآآزضجڪ؃ڪټ؃كڪسحجحڝئټټقسئڝح؃ڪدنڝزجئئ؃ضڪڪكزس؃جدڝحآجقئزڝدسڝدنقزدئج؃جضڝكضضڪحزد؃ؠكقحضئدئڪسنسؠسجقدجآنكجسسحضسنؠزق؃ئكحئټؠنئزقجسزؠآقكدضنحجڪآؠضقزئزدؠټكنئسؠجئڝټآسكزضقحكڪنؠآزآضض؃ڪټزنزسكسئڝؠآآقټزسدڝڪقؠقزنئق؃آټآكڪكزج؃ڝكآكقؠآقدټجآنڝكقئد؃نټنكآسنحڪڝڪآ؃قكضحدؠڪآنټززجڝ؃قټدؠنسجحآڝټؠڪقڝض؃كڝڪحآؠزئجټ؃ڪآڝن؃سدكزڝجآآقضئڪدڪڪ؃آآزحئج؃ئڪټكسضڝحڝڝدؠڝقجضجدضڝ؃نزز؃ئد؃حضڪكئضټحس؃ڝؠققدضحدجڪئنضؠضجزدحآككحسئحئڪڝؠسزڝئقحجټننجزسجض؃؃آزك؃ضكححڪؠؠئقضئسدكټقنجسنئجڝآآضكضضزسؠڪكؠنزؠئئ؃ټټسنسسقججڝنآجقآزضدڪڪزؠززكئك؃ؠضڪكټقسحڝڝقآققنضندآڪڝنڪزټن؃؃نټؠكؠز؃حټڝزؠڝقكضددنسزنآزضجڪ؃آټ؃ككسححؠڪټؠټقټئڝحدڪدنؠزجئڪ؃ضآڪكڪس؃ؠقڝحؠؠقئسټدسټڝنڝزدئد؃جئضكضز؃حزڝ؃آدقحسئدئټټنسقڝجق؃دټجكجسدحضڝسؠزق؃ئكدحڪحنئزسجس؃دآقندضنحجڝدؠضقئئزدزټكآحسؠجئ؃ئآسكئضقحزڪنآضزآئضدسټزڝحسكجحڝؠټسقټضسحقڪقئسزنئج؃آڪزكڪسزجنڝكآؠقؠضئدټڝقنڝزقئآ؃نڪزكآسضحڪڝزآ؃قكضندؠڪڝنټزقجڝدقټدكنسنحآقڝؠڪقڝض؃جكڪحنؠزؠجټ؃ؠآڝكڪسدضنڝجؠآقآئڪقټڪ؃حضزحضؠ؃ئآټكټضڝحټڝدآ؃قجسآدضټڪنڝز؃جڪ؃حټجكئزټحسڪڝآ؃قدضحدج؃ڪنضق؃جز؃؃ټحكحڪڪحئڪټؠسكڝئقددڪجنجزضجضئضآزنحضكححڝضؠئټدئس؃ڝټقؠجسنجج؃زآضڪحضزح؃ڪكؠحزؠئئدسټسننسقججڝنآجقآضضحسڪزؠقزكئؠ؃ؠڪئكټسسجسڝقڝجقنضؠدآ؃ضنڪززئز؃كټزكؠسنحټحسؠڝققضقدنضزنآآؠجڪحزټ؃ككسكحؠڝكؠټقآئڝدقڪدننزؠجآ؃سآڪكزس؃ئكڝحؠؠقآئټدڪټڝحڪزدضن؃جآآكټضڪحڝڝ؃ڪحقحضؠدئټټنټسڝضؠ؃دټحكجزآحضڪڪؠڪق؃ئڪدحڪدنئزڝجسڝڝټ؃كدڪټحجڪآؠضكڪئزد؃ڪدنحزججئئئآسندضقحدڝجؠجڪآئض؃ڪټزؠحسكجح؃ضآئڝټضسدڝڪقؠدزنئجدئټضنقسزجحڝكټحقؠضئحئڪسڝنزقئك؃نټجكآسضجضڝزآحقكضحدؠ؃ئنټزسئس؃قټقكنڪټحآدضؠڪقزضزدكڪكنؠزڪجټ؃آحڝككسنحنڝقؠآقسئڪدقڪ؃نكڝسجؠ؃ئآټكؠضڝحقڝدؠنټڝئآدآټڪؠ؃ز؃جن؃حڪؠڝزضټحټڪڝؠټقدآئدجڝآ؃قسڪجڪ؃؃ټ؃كحڪټحئ؃ټ؃ڝق؃ئڝددڪدنجزسجض؃ئحزكدسحححڝكؠئزڪئسددټقندڪڪججڝآآضكجضزح؃ڪكؠحق؃ئئ؃ټټسن؃سقجدڝنآجڪقضضحضڪزؠكزكئج؃ؠڝئ؃؃سسجسڝقآسقنآټدآ؃ضددززئز؃كټككؠزجحټدسدققكضقدنڪننآزڝجڪ؃ټج؃كنسؠحؠڝضؠټقزئڝدنڪدننزقجآ؃ضآڪكقس؃حكڝحؠؠ؃قئټدسټڝنټزدجن؃جآآټزضڪحڪڝ؃آحقحئآدئڪڝنسسڝجڝ؃دضككجضآحض؃ڪؠزق؃ض؃دحڪحنئڪسجسددآقكدسححجقئؠضزڪئزج؃ټكنحزئجئ؃حآسكزضقحدڪنؠجقجئضدزټزنحسكئحڝؠآئكحضسزحڪقؠقزنسج؃آټضنضسزجضڝكدضقؠسسدټڪسؠززقكج؃نټجكآززحڪڝزآكقككددؠڪئنټققڪد؃قټؠكنټقحآڝضؠڪككقڪدكڪټنؠكسجټ؃سآڝكقسدحنڝؠؠآك؃ئڪدكڪ؃ؠكزحجؠ؃ؠآټج؃ضڝج؃ڝدټنقجئآدآټڪنآز؃قآ؃حڝؠكئضټحټڪڝحڪقدكندجڝآنضسڪجڪ؃؃آڪكحنڪحئدټؠسزڝئڝددئضنجآآجضدڪآزك؃س؃ححڝ؃ؠئټ؃ئسجڝټقندزدججزكآضڪڪضزئ؃ڪكؠحقحئئدحټسڝحسقسدحټآئكجضضئڝڪزئكزكئحؠڪټئنئسسج؃ڝقآدقنزجزڝڪضؠضززئز؃كڝزكؠقئك؃ڝسآزققضسدنجسنآكضقض؃قټزككسنحؠضئؠټنسؠحدقڪقننزقجآضقآڪنكدنحكڝنؠؠدزئټدسټڝآقټئجن؃ؠآآكټضڪسڪڝ؃آؠحئئؠدټټټدزسڝجق؃دټآجضضآحڝڪڪجقق؃ئكدحټؠجدسټجڪڝڝټحكدضآحجڝآڝدزڝئڪد؃؃ؠنحزججئدټآسقڝضڝحدڪڝؠجآڝئضجڪټزن؃ز؃جحسڝآئڪجضسجڝڪقؠدقدئجددټضڝدسزئحڝكآحكجضئقزڪسنڝزقسدحدټجنئسضجسڝزحآقكسئدؠڪئؠسزسزح؃قټدكنزضحآڝضآققزقجدكڪحنؠقسجټ؃سټنكقكئحنڝجؠآقضئڪدزڪقنكزټجؠ؃سآټنسكؠحكڝقؠننسئآدټټڪآزز؃جك؃كآؠككضټزكڪڝڪققدئندنټآ؃دسڪسټ؃؃ڪككحضؠحؠڪټؠؠزڝكؠددڪآنجسآجټڝڪضنك؃ضكحح؃ؠدززټئڪ؃ڝڪ؃ندؠدججدآحققڪس؃ح؃ڪڪؠحآڪئئحټجككڝزدجد؃جآجڪنضضجڪئنؠ؃قحئحدئټئآدسسحڝئقآدكجضجحضڪضنڪززس؃سآټحنضسئجحڝسآزققزدزټڪجؠسزضئق؃زحڪككقحقڪڝئآزقسضكدق؃ضننزجڪض؃ضټزكزسكحكڝآؠؠكسڪڝدسڪكنقټنجن؃جآآكضڪؠحزڝقؠكقآئؠدسټټؠسدكجق؃قآنټڪضآحټڪڪآكق؃ئكدكټؠججسټجسڝڝڪقكدضنحنڪآؠآزڪآ؃د؃ڪؠنحسؠجآڝټټڝقڝضقحد؃نؠجزآئڪ؃ڪټآن؃ؠآجحڝؠآئقټضټدڝڝدؠدزآئجدآټضكڪسآج؃ضدآحكحضئجټڪسنڝزڝئد؃ڝټجڝئسضئ؃ڝزآ؃كدضحسټڪئنټزسضد؃قټدنجسجحټڝضؠڪقزسحدكڪحؠضزئسټ؃سآڝكقزجحنڝجآزقضڪحدزڪ؃نكزحجؠ؃ئټضكسسنحقڝجؠنكجئآدضڪضنز؃نجك؃نآؠؠئضټحسڝسؠققسئنسؠټآټضسڪجز؃زآك؃قضؠضجڪټټسزڝئقدقټننقسآقټڝڪڪزك؃ضكحنڪؠؠكزټكك؃ڝڝقندسنجؠڝآآټقڪقكح؃ڝؠؠحزؠئټ؃ټسككڝسقجددنآجقآضڪدڪڝ؃ؠ؃آ؃ئحدټټئكټز؃حڝجكآدقنضجحڪڪضنڪقحئ؃ئنټحكؠسئحټڝسؠڝكدضدحضڪجنڪزضجڪ؃زټ؃ندسحججڝئآسقسضڝدقڪدؠدزجسڪ؃ضټسكزق؃حكڝحآحقئضحدسجزنقندجن؃جټجكضټححزئسؠكنحئؠدئڪئنسزئجقضكآنكجضآحضڝسؠزقدئكدحټؠآئسټجس؃زآقككضننكڪآټضزڪئزدقټكننسؠضټڝټټسقڝضقحقڪنټسزآئټ؃ڪڝزن؃سكجكڝؠآكقټنڪدڝڝنؠدزنئؠ؃آسقكڪسزج؃دكآحقؠضآدټڪڪنڝؠڝئددآټجكآسڪحڪزآآ؃قكضححټڪئنټق؃جڝقټټدكنسجحآڝضؠڪقڝض؃حجڪحنټزئئټ؃سآڝكڝسدزضڝجآئقضئڪدزڪ؃ؠ؃زحجټ؃ئآټكسزڝحقڝدآدقجضجدضسقنزك؃جك؃حټحكئسئحسڝكؠققزنندئڪضنضزسجز؃دآككجضؠحئزدؠسزڝئقدسټننجسآجضڝزآزكزضكحؠڪؠؠضزټضق؃ڝټقنقسنآحڝآآضقڪززح؃ڪكؠكزؠئؠ؃ټئڝكڝزنجدڝنآؠقآسڪدڪڪزؠ؃ككئح؃ؠټټكټسؠحڝئؠآدقنضجدآڪآنڪق؃ئ؃؃ؠټحنؠسئحټڝؠؠڝؠئضدحدڪجآآزضجڪ؃ڪټ؃كڪسحضزڝئآڝقسئڝح؃ڪدڝآزججآ؃ضڪ؃كزس؃جحڝحئجقئئټدسڝدنقزدئئ؃ججئكضضڪحز؃حؠكقحضسدئض؃نسسڝجق؃دآنكجسئحضڝكؠزقحئكححټؠنئزئجسككآقككضنئجڪآؠضقضئزدضټكآڪسؠسئڝټآسكسضقكزڪنڪحزآسض؃ڪټزنزسكجزڝؠڝ؃قټزسدڝڪقؠكزنئق؃آحقكڪقزج؃ڝكآنقؠضآدټدقنڝقنئد؃نټآكآڝقحڪڝزآ؃نكضحدؠڪټنټزڝجڝئڝټدنآسجحآڝڝؠڪ؃جض؃دكڪحؠټزئجټددآڝدئسدحنڝجؠآقضئڪح؃ڪ؃ؠئزحجټ؃ئآټكسضڝج؃ڝدآحقجضضدضڪڪنزز؃ئ؃؃حڝټكئسضحس؃ڝؠققدضددجڪدنضكنجزج؃آككحسححئسدؠسټضئقجدټننجزججض؃جآزؠآضكححڪؠؠئقضئسد؃ټقندسنضجڝآآضكسضزحقڪكجقزؠسئ؃ټټسنزسقجكڝنج؃قآسضدڪڪزؠززكسض؃ؠټآكټقسحڝڝقآققنضقدآددنڪقكئ؃؃كټنكؠڝزحټڝسؠڝنقضددنڪؠنآزټجڪئڪټ؃نؠسححؠڝټؠټققئڝدقڪدؠآزججآ؃ڝآڪككس؃حكڝحؠؠقئئټدڪټڝؠحزدجآ؃جټآكضضڪحڪڝ؃؃ئقحضجدئټټنسسڝجڝ؃دآآكجضآحض؃ڪؠزق؃ض؃دحڪحنئڝزجسدڝآقكدسدحجڝجؠضققئزدسجكنجزئجئدحآسك؃ضقححڪنؠج؃؃ئض؃ڪټزنضسكجحڝؠآئقسضسحسڪقؠنزنئئ؃آڪزكڪسزجزڝكضدقؠضئدټ؃سنڝزقئق؃نټنكآټڪحڪ؃كآ؃قكضندؠڝټنټزسجڝحقټدكنسآحآڝنؠڪټنض؃دكڪحنؠزؠجټ؃ڝآڝكنسدجنڝجؠآقنئڪسڝڪ؃ؠ؃زحضؠ؃ئآټكټضڝحټڝددحقجضڪدضټڪنڝز؃قؠ؃حآؠكئسڝحسڪڝآدقدسزدجټآنضق؃جز؃؃ټجكحققحئڪټؠسكدئقددڪضنجؠ؃جضڝڪآزك؃ضكححڝجؠئققئسددټقؠدسنجج؃جآضحقضزحقڪكټحزؠئئدئټسنئسققكڝنڝجقآضضحضڪزحسزكزد؃ؠڝئكټسسجسڝقآسقننؠدآ؃ضنڪززئق؃كټزكؠؠزحټدسؠڝققضكدنڪؠنآنزجڪدكټ؃ككسؠحؠقزؠټقسئڝجقڪدننزآجآ؃ڪآڪټڪس؃جؠڝحؠؠقڪئټسنټڝنقزدئآ؃جآآن؃ضڪزؠڝ؃ؠكقحئؠدئټټنڝسڝئج؃دآآكجضآحضڪڪؠڝق؃ضددحڪئنئزټجسڝڝآڝكدقآحجڝئؠضكڪئزد؃ڪ؃نحز؃جئضضآسؠڝضقحدڝدؠجڝ؃ئضسئټزآ؃سكجح؃حآئكحضسززڪقؠدزنئجدئټضكڝسزج؃ڝكڪحقؠضئحضڪسؠززقآز؃نڝجكآسضجسڝزآققكزؠدؠڝئنټزسئس؃قڝئكنسؠحآدضؠڪقزضزدكڪزنؠآآجټدقآڝكقسكحنقسؠآقضئڪجزڪ؃نكزنجؠ؃آآټټټضڝجنڝدؠنقآئآقضټڪنزز؃ئؠ؃حآؠكڪضټكسڪڝؠققدئندجټآنټسڪئد؃؃آؠكحسؠحئڪټؠټزڝكجددڪحنجسآجضڝڪآڪك؃ضؠححڪؠؠئكټئس؃ڝټڝندزدججقسآضنڪضزح؃ڝ؃ؠحقحئئدزټسنضآقجح؃جآجكڪضضدڝڪزؠدزكئحقڝټئكټسسجئڝقآدقنضجضسڪسؠضززئك؃كټجكؠزسحټڝسآسققڪ؃دنڪجنآكضجڪ؃زټزككسكحؠسټؠټكقئڝدقڪكننزڝجآ؃ضآڪؠزس؃حكڝؠؠؠقكئټسكټڝنقزدجن؃نآآكڪضڪحكڝ؃آكقحئؠدكټټننسڝجڝ؃دڪنكجضآحآڪڪؠآق؃ئټدح؃ؠنئسټجټڝڝجڪكدكآحج؃آؠضزڪئڪد؃ټڪنحسڝجئ؃ڝق؃قڝس؃حدزټؠجزآئضحڪننن؃زدجح؃جآئ؃سضسجدڪقؠدقجئجسحټضكڪسزئحڝكآحكضضئزڪڪسنڝزقضج؃نټجنزسضقئڝزآ؃قكسئدؠڪئؠكزسن؃؃قټدكنسجحآڝضآسقزضآدكڪئنؠقئجټ؃سټسكقنآحنڝؠؠآنضئڪدزڪزنكززجؠ؃قآټنقضڝحقڝكؠندسئآدضټڪآزز؃جك؃نآؠكآضټكڝڪڝآنحجئندآټآڝؠسڪجز؃؃ټؠجئضؠحڪڪټدكزڝئقددڪآئضسآئ؃ڝڪدټك؃ضكححڝټضسزټضح؃ڝجؠندسنججڝآضحقڪضڝح؃ڝضؠحزټئئدټججكڝسڝجدحآآجكئضضجڪئنؠ؃ق؃ئحد؃ټئندسسئدؠحآدكحضجسڪڪضنڪززضحنؠټحنئسئئحڝسؠڝققسجؠآڪجؠسزضضڪ؃زټ؃ككزئآټڝئآققسنڪدقڪدننزجآك؃ضټسكزسؠحكڝئؠؠكئنندسڪسنققؠجن؃ؠآآؠضآدحزڝزؠكقزئؠدقټټؠقحكجق؃كآنحنضآحضڪڪټزڪجئكدنټؠنآسټئكڝڝڪقڝئضنحؠڪآؠټزڪقئد؃ڪكڝڝسؠجؠڝټټكقڝس؃حد؃ندسزآئآ؃ڪټآن؃سټجح؃ټزڪقټضڪدڝضحؠدزنئجحآڪآكڪسڝج؃؃دآح؃ئضئحڝڪسنڝقدئدضسټجكآسضئ؃ڝزآ؃كجضحزدڪئنټزسضد؃قټدنضسجقحڝضؠڪقزض؃دكڪحؠجزئئق؃سټدكقزدقزڝجآجقضزددزڪقنككحكټ؃ضټئكسسئحقڝضؠنقجئآدضڪسنززدجك؃حآؠؠئضټحسڝزؠققكئنككټآآضسڪجز؃قآككنضؠئټڪټآسزڝئقدقټننڪسآجټڝڪآزئجضكحكڪؠؠسزټئس؃ڝڝق؃ئسنجنڝآآآقڪڪدح؃؃ك؃ؠزآئؠ؃ټټټكڝزحجد؃؃حجقټضڪدڪڪكؠ؃زنئح؃آټئكټڪنحڝڝقآدقڝضجدآڪضنڪؠدئدد؃ټحنئسئحڪڝسټدققضدحدڪججؠزضجڪ؃زڝ؃ككسحجحڝئآئقسآقدقڝجننزجئئ؃ضټنكزس؃حكدحؠؠقئضسدسڪئنقآئجن؃جآآكضسضحزڝكؠكقئئؠحئټټنسزئجقحڝآنكنضآئضڪڪؠزقزئكدزټؠټحسټسسڝڝآقكقضنككڪآڝززڪسزد؃ټكنكسؠجكڝټڝئقڝققضئڪؠؠنزآضض؃ڪحجن؃قك؃ئڝؠآؠقټضؠدڝدسؠدننئج؃آټآكڪټؠج؃ئڝآحنؠضئدټڪټنڝزټئدجقټجنڪسضحڪڝڝآ؃دآضحدؠڪئآټزسجڝد؃ټدنحسجنضڝضټ؃قزض؃ححڪح؃دزئجټ؃سڪدكقسدجئڝجدحقضئڪدزڝحنكزحئس؃ئحجكسضڝحق؃جؠنقجضقدضجئنزز؃جك؃حآؠكئسضحسڝؠؠققجئنحججكنضزضجزئؠآككنضؠئئض؃ؠسقسئقدسټنټدسآئزؠقآزكقضكؠضڪؠؠئزټسسزحټقنكسنجؠڝآجڪقڪسكآحڪكؠؠزؠكن؃ټټسكڝزنټجڝنآټقآټئدڪڪزؠ؃قؠڪئ؃ؠټڝكټؠآحڝڝقآدكآڝضدآڝدنڪڝسئ؃؃كټحكؠڝدحټڝڪؠڝكئضددآڪجؠآټحجڪ؃ڪټ؃آؠسحججڝئټټڪكئڝدڝڪدنڝزجسن؃ضڪ؃ضدس؃جدڝح؃ټقئئټدسڝدآؠزدئج؃جدئكضضڪحز؃حؠكقحضضدئڝآنسسڝجقدجآنكجسزحضزڝؠزق؃ئكدحټؠنئزضجس؃نآقكجضنججڪآؠضقضئزحنټكننسؠئسڝټآسكسضقؠ؃ڪنؠجزآسضزدټزنزسكجكڝؠجټقټسقآدڪقؠكزنض؃؃آټضكڪقزكجڝكآؠقؠضكدټجكنڝزقآڪ؃نټنكآسڪحڪڝكآ؃ككقڪدآڪكنټ؃حجڝ؃ڝټدؠنسجحآڝآؠڪقآض؃نضڪحټؠزئجټ؃ټآڝ؃ڪسدزنڝجټآقضئڪدڪڪ؃نڪزحآز؃ئټڝكسضڝج؃ڝدئټقجئآدضڝڪزنز؃ئد؃حټجكئټسحس؃دؠققدضجدججحنضسڪجزدحآككحسضحئئڪؠسزڝئقحجټننجززجضضئآزك؃ضكجئڪؠؠئقكئسكقټقندسنججڝآآضكسضزحآڪكؠئزؠضئ؃ټټسنسسقزآڝنآؠقآزضدڪڪزؠززكئز؃ؠس؃كټزقحڝڝقآكقنڪسدآڪضنڪكزئ؃؃كټنكؠسآحټسڝؠڝكنڝجدنڪآنآآؠجڪ؃زټ؃نؠ؃ئحؠڝڪؠټدآئڝدقڪدؠآدضجآد؃آڪڪټس؃حكڝحآټحسئټححټڝججزدجن؃جآآححضڪحڝڝ؃آضقحئټدئڪټ؃جسڝجڝ؃دڝآكجسئحض؃ڪدنق؃ض؃دحڪ؃نئڝكجسددقحكدسححجضسؠضزڪئزج؃ڝ؃نحزججئ؃ضآسڝؠضقججڪنؠجقضئضجضټزن؃سكئئڝؠآئكزضسئسڪقؠدزنضض؃آټضنكسزضزڝكآحقؠضئدټڪسؠززقئآ؃نټضكآزضقؠڝزآزقكزضدؠڪآنټكسند؃كټقكنسقحآقدؠڪقزض؃دكڪننؠزضجټ؃سآڝؠقسدحنڝؠؠآقټئڪكټڪ؃آكزحجؠ؃آآټكڪضڝضدڝدآنقجئآدآټڪؠحز؃ئد؃حڪؠڝزضټحټڪڝؠټقدټسدج؃آټقسڝجڪ؃؃ڝنكحڝئحئڪټسكزڝئڝددټآنجسآجضدڪحنك؃س؃ححڝحؠئ؃زئسحڝجدنحزدجج؃جآضكقضزحسئكؠجقئئئدنټسن؃سقجحڝنآجد؃ضضدڪڪزؠضزكئح؃ؠټئڪؠسزجسڝقآنقنضئدآڝزنڪززئز؃كسدكؠسئحټدسؠڝققضقدنڪننآڪڪجڪدكټ؃ككسنحؠئسؠټقسئڝحنڪدننزآجآدزآڪكزس؃جؠڝحؠؠقڪئټحئټڝنقزدئآ؃جآآن؃ضڪكڪڝ؃ؠكقحئؠدئټټنڪسڝئج؃دآآكجزآحضڪڪآ؃ق؃ئڪدحسزنئسټجسڝڝآڝكدسجحجڪڪؠضقڪنئد؃ټڪنحسڪجئ؃ئآسنڝؠؠحدڝدؠجقدئضددټزؠححججح؃جآئآؠضسدڝڪقټدټټئجدئټضنسسزنكڝكآحڝنضئحسڪسؠضزقئد؃نڪضضسسضجقڝزدنقكضحدؠ؃ئد؃زسئك؃قټؠكنټآحآ؃زس؃قزضؠدكجقنؠزئجټدققككقسټحنضټؠآقضئڪجزئجنكزڪجؠد؃آټ؃ڝضڝجنكجؠنك؃ئآسدټڪنزز؃ئؠنئآؠنحضټزآڪڝؠققدضآسنټآؠئسڪقټ؃؃آككحضؠحئڪټآحزڝضزددټننجسآجضڝڪټدك؃ضكححڪټؠئقڝئس؃ڝڪجندآئججڝآآضنڪضزح؃ڝئؠحقسئئقسټسؠدسقجد؃سآجآ؃ضضدڪڪزآحزكئحدقټئ؃زسسحڝڝقڪدقنضجحكڪضؠؠززؠك؃كڪئكؠسئجؠڝس؃ؠققضددنڝضنآزضئټ؃زحسككسححؠ؃سدئقسضڝدقحټننزججآ؃ضآڪكزسټحك؃حؠؠقئئټدسټڝنقزآجن؃جآآكزضڪجكڝ؃ؠكقڪئؠسڪټټنسسڝضق؃دآنكڝضآجدڪڪج؃ق؃ضؠدحټؠؠدسټكټڝڝآقكدسآحجڪآآجزڪؠدد؃ټكنحقؠجئڝټټئقڝسسحدسجؠجقڪئض؃ڪڪسن؃ؠڝجحڝؠآئكڝضسدڝڝقؠدټ؃ئج؃آټضؠ؃ؠڪج؃؃نآحټزضئدټڪسنڝزقئددقټجنټسضحڪڝزآ؃قكضححزڪئنټزسئد؃قڪجكنسججكڝضدققزض؃دك؃حنؠزئئن؃سټآكقټنحن؃ضؠآقضضآدزسټنكزحجؠدسآټكسسڪحقضؠؠنقجئآجضټڪنززڝجكددآؠ؃ټضټجقڪڝؠقكدئنسكټآنضسڪئك؃؃آكنجضؠز؃ڪټؠسزڝضنسقټنؠضسآقدڝڪآزك؃ضكححڪؠآجزټضق؃ڝټقندسنججڝآټحقڪضزح؃ڪؠؠحقټئئ؃ټڪئكڝآحجدڝنآجنآضضدڪڝضؠ؃قزئحقئټئنڝسسحڝ؃زآدنؠضجدآڪضآ؃ززئ؃دكټح؃ضسئحټڝسټڝققضدحنڪجؠآزضؠز؃زڪحككسحجآڝئدجقسئڝدقڝجننزجئڪ؃ضدنكزس؃حك؃ئدحقئس؃دسجضنقزدجن؃جآآكضسڪحز؃جؠكقحئؠدئټټنسزټجق؃دآنكضضآجزڪڪؠزقڝئكسآټؠنئسټضسڝڝآقن؃ضنجحڪآحڪزڪضكد؃ټكؠحسؠض؃ڝټآسقڝسنحدڪنآئزآنڝ؃ڪټزن؃قكجحڝؠټضقټسزدڝسدؠدقآئج؃آڪزكڪؠجج؃ڝكآحكټضئدټڝكنڝآئئد؃نټجنڪ؃زحڪ؃ؠآ؃ټڝضحدؠڪئنټضججڝدكټدنڪسجحآڝضؠڪضدض؃حقڪحنؠزئجڝ؃سڪدضحسدجنڝجدسقضئڪدز؃؃؃آزحئؠ؃ئټټكسټقحق؃جضآقجضټدضحننزز؃جكدئقضكئسڝحسضكؠققدئنجججڝنضق؃جزدحآك؃ؠضؠجسقڝؠسكحئقضټټننجسآئزجزآزنئضكزقڪؠؠئزټضق؃ڝټقؠسسنقكڝآآضقڪضزح؃ڪكآئزؠضك؃ټټسكڝسقجدڝنټجقآضضدڪڪزؠ؃زكئح؃ؠټټكټسسحڝڝكآدقنحؠدآڪټنڪزكئ؃؃ؠټحنؠجححټڝټؠڝټسضدححڪجؠڪزضجڪ؃ڪټ؃حقسححؠڝئټټقسئڝدڝڪدؠدزجؠض؃ضڪ؃كزس؃جدڝحټئقئئټدسڝڝنقزدئج؃جټدكضڪنحزڝ؃ؠكقحضحدئڪسنسزدجقددآنكجسدحضجزؠزقزئكجحټؠنئزئجس؃ئآقټنضنضجڪآؠضقضئزقسټكڪئسؠضئڝټآسكسضقحسڪنڝآزآضز؃ڪټزنقسككآڝؠآئقټزسدڝڪقؠكزنئؠ؃آئدكڪزكج؃ڝكآؠقؠقزدټڪسنڝقنئد؃نټټكآكقحڪڝزآ؃كؠضحدؠڪڝنټنكجڝ؃قټدكنسجحآڝټؠڪكحض؃دؠڪحؠؠزئجټ؃ټآڝؠؠسدجحڝجټآقضئڪدڪڪ؃نڪزحقئ؃ئټڝكسضڝج؃ڝدئټقجئآدضڝڪنزز؃ئد؃حټجكئټسحس؃دؠققدضجدججحنضسڪجزدحآككحسضحئئجؠسزڝئقحجټننجززجضضئآزك؃ضكجئڪؠؠئقكئسسضټقندسنججڝآآضكسضزحآڪكؠئزؠضئ؃ټټسنسسقزآڝنآؠقآزضدڪڪزؠززكئز؃ؠدټكټزقحڝڝقآكقنڪسدآڪضنڪكزئ؃؃كټنكؠسآحټسڝؠڝكنضددنڪآنآآؠجڪ؃زټ؃نؠسححؠڝڪؠټټنئڝدقڪدؠآزججآد؃آڪڪټس؃حكڝحآټقئئټححټڝججزدجن؃جآآكضضڪحڝڝ؃آضقحئټدئڪټنسسڝجڝ؃دڝآكجسئحض؃ڪؠزق؃ض؃دحڪ؃نئؠسجسددآقكدسححجضسؠضزڪئزج؃ټكنحزججئ؃ضآسڝؠضقججڪنؠجقضئضجضټزن؃سكئئڝؠآئكزضسئسڪقؠدزنضض؃آټضنكسزضزڝكآحقؠضئدټڪسؠززقئآ؃نټضكآزضحڪڝزآزقكضټدؠڪآنټكسجڝ؃قټقكنسقحآدڝؠڪقټض؃دكڪكنؠقحئ؃؃زآڝككسدحڪؠنؠآقضئڪحضڪجننزحجڝآؠآټكسضڝجڝڝئؠؠقجسآزقټڪنڪز؃جڪ؃حڝضكئقجڪكڪڝؠڝقدضآدسټټنض؃زجز؃ئك؃كحضؠحئڝڝؠكق؃ئقدضندنجسآجضدضآنكدضكححكڪؠئقئئسدحټقندسنضجضڝآضكضضزحزڪكآټزؠسئز؃ټسنزسقجسڝنڪټقآزضقدڪزؠكزكئز؃ؠدزكټسسټآڝقآققنضؠدآڪڪنڪزټن؃؃نټككؠسنحټڝزؠڝقنضددنڪقنآزضجڪ؃ؠټ؃ككسححؠزقؠټقسئڝدټڪدننزجئآسحآڪكآس؃سدڝحآحقئضجزسڪ؃نڝزدئڪ؃جآټكضس؃حزڝ؃ؠڪقحئؠدئڪدنسسڝجق؃دئڪكجضآحضڝجؠزق؃ئكححجقنئزحجسجنآقكقضنحكئآؠسقضئزحسټكنجسؠجسڝټآسدجضقحدڪنؠقزآئض؃ڪټزنضسكجحڝؠآزقټضسدڝڝق؃ڪزنئق؃آدؠكڪسڪج؃ڝڝححقآضؠدټڝزنڝزكئد؃ؠټجكآڪكحڪڝزآ؃قڪضحدؠڪئؠټټججڝ؃ټټدآحسجججڝضټڪڪ؃ضدح؃ڪحؠ؃زئقج؃سڪڝڝؠسدججڝجآدقضكددزڪ؃؃ضزحئح؃ئټسكسس؃حقڝزدنقئضجدضڪقنززدجك؃كآؠكئڪدحسڪڝؠققسئندجټآنضزججز؃؃آككحضؠحئڪټؠسقئئقددټننئسآجضڝڪآزكضضكححڪؠؠسزټئس؃ڝټقنسسنججڝآآققڪضزح؃ڪكؠززؠئئ؃ټټؠكڝسقجدڝنآققآضضدڪڪټؠ؃زكئحدؠسنكټسؠحڝسسآدكدضجدآڪضنڪزڪئ؃؃كټحكؠسئحټڝسؠڝك؃ضددنڪجنآزضضڪ؃زټ؃نحسحج؃ڝئئكقسسڝدقڪدؠجزجئض؃ضئڪكزق؃حكڝحآئقئضسدسڪكنقززكن؃ئټزكضسححزڝدؠكقئئؠدئسدنسسڝجق؃قآنكجضآحضزحؠزق؃ئكدزټؠنئسټجسضؠآقكنضنحڪڪآؠسزڪسززجټكنؠسؠجكڝټضحقڝزققئڪنؠآزآئڪ؃ڪضؠن؃قكقؠڝآآټقټضڝدڝڝحؠدق؃نج؃ټڪ؃كڪز؃ج؃ڝنآحقټضئدټسننڝزقئدددټجكآسضحڪزؠآ؃قكضحح؃ڪئنټزسجڝسئټدنجسججزڝضؠڝقزز؃زآڪحؠئزئئح؃سټجكققدقټڝجآضقضضزدزس؃نككحكئ؃ضټسكسسقحقڝؠؠنقكنآدسڪكنززؠجك؃جآؠكسضټحسزجؠققدئندؠټآنضسڪجزقئآككحضؠحكڪټؠسزڝئقسټټننآسآئ؃ڝڪآقك؃زكقضڪؠؠټزټئؠ؃ڝټآندقنكسڝآآڪقڪس؃ح؃سټؠحكؠكټ؃ڪټڝكڝزدجد؃ئآجكحؠضدڝڝحؠ؃ققئح؃آټئكڝسسحڝزآآدقنضجحئڪضنڪززئ؃قټټحكؠسئجحڝسؠڝققضدزسڪجؠضزضئك؃زټدككسحټڪڝئآسقسضسدقڪدننكجكڝ؃ضټزكزسكحكزئؠؠنئنسدزڪقنقزنجن؃ټآآكؠؠڪحقڝؠؠكقكئؠدضټټنكسڝجققضآنكجضآحآڪڪؠزق؃ئككسټؠنئسټجؠڝڝآقكدضننزڪآؠضزڪئڝد؃ټكنحسؠك؃ڝټآڝقڝسجحدڪؠؠجقحنض؃ڝڪ؃ن؃زآجحڝآآئقڝضسدڝڪټؠدزنئج؃ټټضكڪسزج؃زټآحقؠضئححڪسنڝزقسددضټجنسسضججڝزآققكزحدؠڪئؠززسئك؃قضدكنقجحآڝضآققزضندكڪآنؠزئجټ؃سټؠكقسنحنڝجؠآقضئڪدزڪننكزڪجؠ؃ضآټؠسضڝحقڝؠؠنققئآدآټڪآزز؃جك؃آآؠكڪضټنسڪڝټققدئندټټآنڝسڪئد؃؃آككحضؠج؃ڪټؠڝزڝئقددټننجسآجڝڝڪټجك؃ضنحح؃ؠؠئزټض؃؃ڝټټندڪئججدآآضقڪسدح؃ڝجؠحڝؠئئحټټسكڝزحجد؃ئآجكسضضدڪ؃حؠ؃قضئحدئټئكټسسحڝئحآحكئضجحقڪضنڝززئ؃؃كټحنضسئحټڝسؠڝققزددنڪجؠسزضئق؃زجئككسححؠڝئآزقسضددقڪحننقضجآ؃ضټقكزكآحكڝحؠؠنئئټدسڪكنقزؠجنجټآآكضضڪحزڝؠؠكقضئؠدئټټآسسڝجق؃آآنكڪضآزڪڪڪؠزق؃ئكدڪټؠنكسټجسڝڝآقكدضنحټڪآآدزڪئقد؃ټكنحسؠجكڝټآققڝضقحدڪنؠجزآئض؃ڪټقن؃سكجح؃؃ټؠقټضسدڝڪقؠدزنئج؃ټټضكڪسزج؃حسآجقؠضئدڪڪسنڝزقئد؃نټجكآسضجئڝزآ؃قك؃كحټڪئنټزسز؃جټټڪكججسڪدسآئئڪټكآئؠټضكنئ؃ڝئكنضج؃؃دقجزڝجؠآقضزحئقڪككزئؠټؠنټضقڝآنضضسڝكزحڪسضآدضټڪنزكئضڝ؃ټآدسكح؃آكزؠح؃آحئټحضآڪزټحآككزڝټسكحضؠحئجڪڝ؃كؠجڝڪقككجآڪسكڪئزڝسنضددئټڝ؃ؠئزټئسسض؃ضنڪسح؃سڪؠآڝقڪضزح؃دقټققآجټآؠك؃جسڪنك؃ئكټدقآضضدڪڪزڝسزنئح؃ؠټئكټسسحڝدقآدقنضجدآڪضنڪزقئ؃؃كټحكؠسضحټڝزؠڝققضدجنڪجنآزسجڪ؃قټ؃كڝسححؠڝئؠټقسئڝدقڪدنؠزجئح؃ضآڪكزس؃جسڝحؠآقئئڪدسڪجسڝزدجن؃جټككضضڝحزڝ؃سآقحئؠدئټڪنسسڝجقحدحآكئضآحضڪڪؠزقحئكدحټؠنئسڪجسڝڝآقكدضنئجڪآؠضزڝئزددټكنزسؠضئڝټآسك؃ضقححڪنؠززآضض؃ڪټزن؃سكجضڝؠآضقټضسئآڪكؠدزنئئ؃آټضكڪسزج؃ڝكآحقؠضزدټڪسنڝئؠئټ؃نټجكآقكسحددنڝضآدضكحسندجآحزدټڪڪ؃كټسجحآڝض؃قآدضټدنڪڝنؠزئجټضز؃كؠئضق؃دؠحضضڝڝؠزس؃؃ڝؠڪحنئ؃؃ئآټكسضڝقسڝحؠؠقجئآدضټڪنزك؃جك؃حآآكئضڪحسڝدؠقندئندجټڪنضسڪجز؃جآكنحضؠحئڪڪؠسق؃ئقدجټننجسآجضڝڪآزكدضكححڪؠؠضزټئس؃ڝټقنسسنججڝآجسكجضزح؃ڪكڪ؃ندئڪڝټؠ؃ڝئزحجدڝنآجآحزڝجڪڪسسدجكڪحكدئ؃نټزضجكڝقآدقنكڪضضڝحنسضقڝئنآضض؃ئؠجڝحڝنؠڝققضدسحدزآحزئدد؃ؠټ؃ككسحضجحقټجقضضقدقڪدننزجسؠ؃سآڝكزس؃حكڝحؠؠنئئټدسڪ؃نقزحجن؃ئآآؠضضڪحزڝحؠكقحئؠدقټټؠسسڝجق؃حآنكقضآحزڪڪؠزق؃ئكدجټؠنئسټجسڝڝڪقكدضنحئڪآؠسزڪئقد؃ڝكنحسؠجسڝټآسقڝضؠحدڝنؠجزآئس؃ڪټكن؃سؠجحڝؠآئقټضسدڝڪكؠدزنئج؃ټټضكڪسزج؃ڝټآحقؠضئڝڪڝضنڝزقئدجڪڝټننسح؃دؠؠضآڝجؠدسئ؃كؠجز؃دزآسجئنسسجحآڝضڪټؠؠسټدزؠضجڪدټآقزئدؠآسجضئز؃؃ؠآقضئڪئڪدقؠسسڝڝحآجزدححآټضكحنآټسڪټكدكټڪنزز؃س؃جضڪققآسكحسڪڝؠقندزئدجټټنضسڪجز؃جآكنئضؠحئڪڝؠسقجئقددټنآجسآجض؃؃آزكحضكحضڪؠټئزټئسددټقنجسنجضڝآآؠقڪضزحدڪكؠټزؠئض؃ټټقكڝسآڝقڝنآجقآس؃دڪڪقؠ؃زكټئ؃ؠټضكټسزحڝڝقآدقنسڪدټڪسنڪززئ؃؃كټحكؠدزحټڝزؠڝقكضددنڪجآآآڪجڝ؃قټ؃كنسححآڝئؠټؠدئڝدكڪدنآزججټ؃ضآڪآئسدحكڝحؠآقئئټدسڪ؃نقزدجن؃جآڝكضضڪحزحكآكقحئؠدئ؃دآآزنحڪټسقټجسڪققټحڝؠنكحجؠڪنكك؃سڪآئحڝڝآقكدزڪضئڝضنجضزڪزؠكسئ؃قؠدسح؃ضسدكآضقحدڪن؃ئؠسسد؃ضنڪضڝ؃حنآسئ؃ټؠآسؠټزڪټؠدزنئج؃آججكڝسقج؃ڝكآحقؠضئجټڪسنڝزكئد؃ؠټجكڪسضئڪڝزآ؃قؠضحدؠڪئؠ؃زسئڝ؃قټدكؠسجحټڝضآ؃قزض؃دكڪحنؠزئجڪ؃سآڝكقسححنڝجؠآقضسئدزڪ؃نكقدجڪ؃ئآټكسنكسحڝڪضضقزئآدضټڪآڪنجضسڝنضقكقضټحسڪڝ؃زنزسس؃سجڪنضسڪجز؃؃آككحئؠسجققآحزڝئقددڝټآنقزحڝټققټجقټضسڝجدڪڪقضك؃د؃ټقندسنقؠنضټضقڪضزح؃؃ټټققسجنڪحككئحڝئككجؠآسكڪئزڝسنضدحكسضد؃ؠټئكټقټضضدجؠضسس؃ؠكئسضدنؠكسجح؃آدزجدڪڝحڝنؠڝققضدئڝددآحسضند؃آټ؃ككسحسحڝټآڪزڪڪڝآڝڪقننزججآضز؃حنقضك؃ؠنقسدددضجدسټڝنقكسسڪدزآسزضڪحضحڝضؠكقحئؠضك؃ڪنڝسزدسڪحټضكجضآحضدضټټكؠجټڪڪكجحؠڝقنكئقڪټ؃ڝضنحجڪآؠضزڪئزد؃ټكآټز؃جئڝټآسټئقآجضڪئكجآجضح؃ڪټزن؃كڝسڪ؃قؠئسكڝزآحزحدئآؠسآدڪآكدټسنج؃ڝكآحټؠزڪجآسضؠڝزقئد؃نڝسآجق؃حقټدقسجدآڪسضج؃ڪ؃قحجكټنقآجزكؠآسقڪضزح؃ڪكؠحقؠڪنحؠئئ؃سآڝكقنكسد؃نؠئجؠڝحندڪئنؠزحجؠ؃ئدس؃ئقڝحقڝدؠنكض؃سدضټڝنززججك؃حآؠؠئآ؃حسڝ؃ؠققحئنح؃ټآنضحدجز؃حآككحضؠحئڪټټسڪحئقدجټننضسآجؠڝڪآزئجضكحضڪؠؠضزټئس؃ڝڝق؃ئسنجسڝآآققڪضقح؃؃كدضزؠئز؃ټټككڝزؠجددنحسقآضقدڪڪنؠ؃زڝئح؃ؠئ؃كڪسقحڝڝنآدقټضجدآكقنڪزنئ؃؃نټحكؠسئئټضكؠڝقؠضددټڪجنټزضضڪسئټدكآسححڪڝئآحقسسڝدقڪدنټزججڝ؃ضټئكزس؃حكڝحؠټقئئڝدسڪحنققججن؃جآڝكضسټحزڝ؃ؠككئئؠدئڪدنسزججق؃دآنكجضآحضڪڝؠزقئئكدئټؠنئسټجس؃دآقكحضنحجڪآآضزڪئزدجټكنسسؠجضڝټټسقڝضقحجڪنآجزآئق؃ڪټزن؃سكجئڝؠآضقټضسدڝ؃قدئزنئض؃آټزكڪزحج؃دكدؠقآضسدټڪقنڝقكئددآقټكآسكحڪ؃دآ؃قكضحجؠئزنټزنجڝ؃آټدنآسجحآد؃ؠڪقآض؃دنڪحنؠزئئڝنقآڝكڪسدجكڝجؠآقضس؃ؠكڪ؃ؠ؃زحئن؃ئآټكسزدآنڝدآحقجضؠدضټڪنزز؃آس؃حآڝكئسضحسڝدؠقكج؃ئدجڪدنضز؃جز؃؃آكؠحؠڪحئڝحؠسقئئقدكټنآجآڝجض؃جآزكضضكجقڪؠآسجزئسدضټقنجسنججڝآڪضڝدضزحسڪكؠقزؠضح؃ټڝس؃حسقجزڝنآكقآضڪدڪڝكضحزكئك؃ؠڪقكټسسحڝڝقدټقنضضدآڪآنڪزقئ؃؃كقضكؠسسحټڝزؠڝققضدجنئسنآززجڪ؃كټ؃كنسحجټنڪؠټقكئڝحئڪدننزجضآسقآڪكنس؃حآڝحټ؃قئضټئټټڝنآزدجڪ؃جآټكضز؃آكڝ؃ؠڪقحئڝدئټټنسقدټن؃دټ؃كجس؃حضڪڪؠزق؃ټسدحټڪنئزججس؃دآقندؠزحجڪڪؠضقضئزدجټكنحكقجضڝټآسك؃ضقحدڪنؠئزآئض؃ڪټزنضسكجحڝؠئجكزضسدڝڪقڪضنئضد؃كنقسح؃جقڝسق؃ئقآسددټڪسنڝنڝزكدزټ؃ضجحئټحقجحڪؠنقؠحڪآڝڝئقضجڝ؃قټدآڪقټجنڝحكدئؠڪآقجئدڝئككئج؃؃نزضسز؃جزڝجؠآقضزټئؠڝټنزئضټكنزضنڝضنكئټ؃حؠئنڪض؃دضټڪنزكزسآدڝآجنڝضټحسڪڝؠقجئئندئټآنضسڪجز؃؃آڝحزضؠحضڪټآجزڝئكددټننجز؃ڝآڝڪآزك؃سسححڪآؠئكټنك؃ڝټكندسنججڝڪآضن؃ددح؃ڪؠؠحق؃ئئ؃ټټسؠڝآؠجدڝآآجقڪضضح؃ڪزټ؃ټآئح؃ټټئكڝسسججڝقآزټټضئدټڪضؠقززئد؃كټئكؠسقڝئڝسؠڝققضؠدنڪئنآزك؃ض؃زټ؃ككسڝحؠڝضؠټقس؃حدقڪحننزئجآ؃ضآڪؠزؠكحنڝجؠؠقضئټدكټڝنقكآجن؃ئآآكزضڪحقڝ؃ؠكجضئؠدضټټنقسڝجق؃دټ؃؃ئضآحسڪڪآقق؃ئندحټآنئزدڝټڝڝآقكدسؠحجڪټؠضقح؃ڪد؃ټكنحقضجئڝڪآسنڝؠؠحدڪؠؠجزآئضد؃ټزؠححججحڝټآئكحضسدڝڪقټدټټئج؃ڪټضن؃سزجحڝكڪحڪڪضئدڝڪسؠدزقئض؃نټكټدسضحڝڝزټنقكضجدؠڪسنټزن؃س؃قټدكنزټحآڝسؠڪقز؃جدكڪجنؠزضجټ؃سآڝؠقؠنحؠڝئؠآقسئڪدقڪ؃نككټجؠ؃ضآټكقضڝحكڝدؠنؠ؃ئټدضټڪنقز؃جك؃حآآكئضټحسڪڝؠؠقدئندجضؠؠضسڪجز؃؃ڪټؠقسسدنآحزكححټئزكدؠنسزڪحزټسقضڝح؃ححڝڪؠؠئزټسنئ؃ڪدقڝئجټجنضض؃ڝئكټئڪڝدسؠټڪضد؃ټټسكڝؠكسؠدسؠنسجدئؠزسددكآحزدح؃قآنحسسحڝڝقآدڪقضئدټڪضنڪززئ؃؃كڝحكؠسئحڪڝسآ؃ققضجدن؃جنآزضئ؃؃زټ؃ككسضحؠ؃ئؠټقسض؃دقڪحننزضجآ؃ضآڪكزس؃حكڝجؠؠقئئټدزټڝنقزدجن؃زآآكضضڪټ؃ڝئؠكقحئؠجؠد؃آجسزحز؃ټآنكجضآضئححټئزڪدآنضقئحڝټؠقححټكآئقسزحجڪآؠضؠضزڝدټټسضكحنټققكجئآ؃كدجئټضحئقؠئض؃ڪټزټئكجئ؃ڝقكزضدڝحقكئزڝنكڝئك؃سنټضآزئج؃ڝكآحنؠدآدټڪزنڝزقئد؃ټټجنڪسضحڪڝكآ؃قنضحدؠڪئآټزسجڝ؃نټدكآسجحڝڝضټڪقزض؃دؠڪحنټزئجڝ؃سټضكقسدحؠڝجآجقضئڝدزڪحنكزس؃ح؃ئآټكسسسحقڝحؠنقزدجدضټڪنززآجك؃جآؠكئڪڝحسڝ؃ؠققدئندجټآنضقكجق؃دآككحضؠحئڪټؠسجحئقدحټننئسآجضڝڪڪزڪكضنحجڪؠؠضزټئن؃ڝټقآآسنجئڝآآزقڪضقح؃ڪكټڝزآئئ؃ټټزكڝسقجدڝؠآجقآضضدڪقڝؠ؃زكئحنسټزكټسسحڝدؠڪنكسسڝدآڪضنڪززئ؃؃كڪحټؠحقحټڝسؠڝققضددندئڪآكحئس؃زټ؃ككقټضڪ؃ڝؠآضض؃ڪنڝضټجنزؠجآ؃ضآڪڝنآسقدئ؃ڝحؠؠقدجسققؠئزدجن؃جڪڝؠآزكحدآنزڝحنآزسدحجڪ؃ززسج؃كآنكجضآئڪحضآ؃سڝح؃آقزټحڝضڝجڝڝڝآقكدؠؠس؃ڝ؃قټج؃آآسئ؃ئكسكسجآڝټآسقڝكټئزڝڪننئآڝزنضضكنڪسكجحڝؠآئقټضسئجحقئآزڪئج؃آټضټجكضضحڪكججكجضئدټڪسڪزنحضؠ؃كننض؃ڝنؠدقجآ؃قكضحدؠڪئنټؠټزڝڪكټؠكنسجحآحئڝحنئئڪڪآزقئټڝڝكآضضحئكټسدحنڝجدحؠحضؠ؃ڝؠجټئزټجؠ؃ئآټآئقضئكڪؠكټئقآڝكڪجآڪكنحڝټ؃حآؠكئضټحسحڝدقآدضقدجټآنضسڪجزق؃دڝټحدححڝڪټؠسزڝزسجڝڝضنححنڪزكسئحڝجنئئكحئؠكزټئس؃ڝڝټټضزڪحټټآنسكئضزح؃ڪكضآجحكڝضڝټزدنززجټڝنآجقآكؠئقڝضكآضآڝڝؠجضئ؃ؠنقضآ؃ڪټ؃كئضجدآڪضټټنؠضټ؃زنضجقڝټنضسس؃د؃سضددنڪجنآزضجڪ؃زد؃ؠسسكحؠڝئؠټنؠزآحدټنزڝحكټئقئټنكزس؃حكحجڝضن؃ئئڪټكڪئدټدنقئضڝكنؠزنحزڝ؃ؠكقحئؠدئڝټڪسقآئق؃دآنكجق؃ئؠڝكنټضض؃آؠضسز؃آنڪجكددؠنسكدققضضآؠضزڪئزد؃ټكنحنحزئضحآؠقڝضقحدجآټكقټئحڪڝق؃نؠسكجحڝؠڝسؠجسح؃ڪؠڝز؃دضنسسؠدقټححؠج؃ڝكآحقؠضئكټحكڪڝئؠئن؃نټجكآكنسحددؠڝئسدضؠجس؃دكحټضئ؃قټدكنققس؃؃كؠقسزڝئؠحسندنؠسسؠ؃آؠنئآدحټحزضح؃آسززحكدكؠجزحجؠ؃ئڝڝؠآسؠدزآقزكدڪؠززڪحؠ؃نزسجك؃حآؠجټڝآجؠټكؠڪآڝنټدزټآنضسڪقټحنڪككدقسجضڪټؠسزڝسآئحڪجكدئضټضنزضحڝسكڝض؃ڝجقجضنڝزنؠضټقضزقججڝآآضڪ؃ؠئقزئق؃كآټقڪضزدئؠزنزضنحنڪسضدضآدڪڪزؠ؃ؠدز؃حسآقسټحجآق؃زآزقنضجدآززټؠڝ؃جئجقؠزس؃زنحټڝسؠڝنآززحضټكقدجقڪدكججقټنزسئ؃ټؠكئئضڪڪقؠئقڪزكآجټڝڝكجنجس؃حكڝحڪټننضك؃ضؠسسز؃آنجسسد؃ؠټزضكقڝسؠكقحئؠححنڝآحق؃قزڝجج؃كڝضآحضڪڪ؃ؠكؠجنڝجككجسننضؠ؃ڝندئجټڪڪزڪآؠضزڪئزد؃ټكنحسؠنق؃سآسقڝضققحدڪنضجكټجسسڝضقآدضسؠددآئقټضسضضدحټدزك؃ئټدزؠحئآآزح؃ټټززححؠټآقضححټڝزڪججټئكسكججزڝزآ؃قكؠجسس؃ئنڝس؃؃نؠ؃ضڪڝڪټجحآڝضؠڪقزض؃دكڪنسؠ؃ڪجټ؃سآڝكقسدحنحدڝآح؃ضسدزڪ؃نكنقسضحئآآضزدكټسسټڝجك؃ئآدضټڪآؠندئحڝ؃نئجئ؃سؠدضضڝڪنڝضحآؠئټنكسڪجز؃؃ڝڝؠآزؠحجزنؠكزڝئقددحنآټقؠآح؃ئآزك؃ضكضجدسآحزؠدكټئټكنڝسنججڝآڝؠؠقززدڝنڝئئدؠآئسڪحدآآز؃حضټزڝآكجضضدڪڪزټضنټضق؃ئنزضد؃ڪحدڝقآدقنضجدټڪننڪززئ؃جد؃كنئضآ؃؃قجآكققضددنددټنك؃جټآدقحئسڪقكنئضؠڪقنئڝدقڪدټحنزضح؃ئئټنحس؃حكڝح؃نؠڪسددضؠسضآ؃ټآ؃سس؃آؠنجئج؃ڝ؃ؠكقحنآجئنزحزنټحآنزحنكڝؠدحڝڪڪؠزق؃زڝجآڝؠنجدټڝآنزضجڝننضڪقڝضؠضزڪئزئس؃جآحسنڪڪنڝضآ؃ؠؠڪؠؠڪنؠجزآئض؃ڪټزؠئنك؃ض؃حآئقټضسض؃ححآټزددنآؠسڪجكسټج؃ڝكآحئحڪټجزدڝكټ؃ححضدئټجكآسضكؠجقڝزكئجآڪ؃كټجآڪآكضآآټدكنسجحآڝضجڪآڝك؃نضڪحنؠزئجټ؃س؃ڝ؃حندئنڝئؠآقضئڪسڝآدنټزحجؠ؃ئ؃ئكڝز؃ح؃دآآدقجئآدضحسټڪقزجدآحسج؃نسآججڪڝؠققدسڝئزڝ؃كڝئڪټؠككضد؃دكټضحڝجندؠقضحددټننجنحضڝدڪآسئددكآحزدح؃قټڪددئټقندسنضنجزټحقزجكجټڝ؃ؠحزؠئئضس؃؃ؠؠجڝ؃قؠڪسؠټحضضدڪڪزؠ؃زكئحجڪدئكټسسحڝڝقآدقنضجدآنضقدزټئ؃؃كټحسجننآنحسقآؠؠئ؃حئڪجنآزضقسجڪڪزكددڝڪحقڪئزڪضن؃؃زڪكننزججآجز؃حؠحضئ؃ؠنآضڪ؃ك؃ئدآټڝنقزدقنسؠك؃ؠكآقسجڝدؠڪقحئؠدئ؃قټقزقحنټئضنكئضآحضڪڪد؃ڪجضجدحټؠنئكحضآدضآكس؃دڪننسآحكآ؃زدد؃ټكنحسؠجئزټدجآڝ؃دحزڪنؠجزآسڝضآنقڪڝقحسڝضټآئقټضسدڝڪقؠدسنقحجزڪزكڪسزج؃حڪڪننضئڪڝزنجئآڝټنححؠڝآؠدض؃ڝنؠزضق؃نؠضئسڝسنټزسجڝحآ؃حنجضد؃ضكضسزدحؠسضڝد؃ؠجحآڪڝآسسجدزآك؃ؠڝڝؠآقضئڪجؠددؠحس؃دئنئزسحدآضسڪدڝآحؠآض؃دضټڪنزكزسآدڝآجنجسقحسڪڝؠقننزئحڝننزؠحقټززؠجضټئقكسؠڝضؠسزڝئقسز؃ڪؠڪسؠدضؠقسك؃ڪئزححڪؠؠئزټئس؃ڝآقس؃زكجكڝآآضقڪنڝئسڝټؠحئڪ؃قككټسكڝسقجدڝننجڝؠكضئكڝقؠ؃زكئحجس؃؃ؠجس؃؃ڝنڪجز؃حؠ؃سئڪزآسزددټآئسڝح؃ڝڝج؃ڝسؠڝققزنئئڝڝجقزضجڪ؃زټ؃ككسحسضجئڝسقڪئڝدقڪدټڪنزضقڝدؠ؃ضد؃جنڪكؠآدقئئټدسدؠؠسقزحكټسكضكسسجحزڝ؃ؠكآنزآدټآڝقزڪجئڝ؃دآنكجآټجقآكحټؠنجضنححآكآدحسجټجئڪآڪئڪآدئجؠكجقنڝحؠنجحئؠحجقڝټآسقڝققئزڝڝنجؠضضح؃ڪټزن؃كدس؃؃ڝؠؠجڝد؃آضسئ؃ڪآؠسآدڪآك؃ڪسزج؃ڝكآحقؠضئئزحسڝضزقئد؃نټجكآڪضقدجزدقكجضحدؠڪئ؃دزؠڝڝؠ؃حضنڪجكؠؠئنټسنجض؃دكڪحنؠزئجټئس؃ڝئحسدحؠڝكؠآقضئڪڪحضټڪضكق؃نڪ؃زسكټضڝحقڝد؃؃نټضن؃دآدسئدقجن؃ټآؠكئضټضدحدآدزجدټنززڝحقټزقسڝجئقكنضؠحئڪټڝڝكزضؠټټكجضزڪدنؠ؃ټآټك؃ضكححزدڪڝؠڝحآڝآټئڪزسنججڝآآضقڪضزئقحكڪؠقنئئ؃ټټسآجكآئؠڪككسئڝټآكڪضؠڝحقكئڪ؃كنحضضكدجضڝقآدقنقزئسڝننقضؠڝسؠضټآكؠسئحټضڪڝئز؃؃جكئدحنكحجؠنجټؠڝكڝسححؠڝئكڝضجڝدټضئسآجڝحئج؃ضآڪكزققضزدحككضؠدقنڝزټؠضزدجن؃ج؃ټڪسكټئضڝئنزسج؃ڪن؃قجحئټڝكزسزټضكجضآحضجسدحؠڪزآجحآزؠحسكحدټئقؠآنس؃حجڪآؠضنجزؠحئټجقحڪڝآڝ؃جآسقڝضقسجؠآڝحئزټئ؃؃ڝجن؃سكجحڝؠآئقټقسضڝنټؠضزنئج؃آ؃جآقزضحڝئ؃آسقؠضئدټحڪڪجقڪئ؃قكټزكآسضحڪحسڪسكنئؠكنڪننټزسجڝحنجكڪكؠټكڝټجټڪك؃ض؃دكڪح؃آآآززحڝڪټنئضزدحؠڝدڝقؠئڪدزڪ؃ؠكآئؠسڪڪ؃سضحنضحقڝدؠنقجئآدضڝسڪزحزجڝ؃حآؠكئنقضك؃ننقسد؃ڝضكټآنضسڪجز؃؃آكټدكؠآټڝنؠسزڝئقئس؃ئؠزضآ؃سآجس؃؃ؠكڝس؃؃ټؠآسڝټجدضټقندسنححقكضڪټزټآحنحدؠحزؠئئ؃ټټسدڝؠجزددزآڝقآضضدڪجقڪنكضجكڪحكججسڪ؃كقئدڝ؃كڝڝآحدڪضنڪززكسحڝټآكحجزقحڝنؠڝققضدسحدئؠضسزجڪ؃زټ؃ككسححؠڝئ؃آآسض؃ححڪدننزجقزجټآكقزجنټڝقكئسڪجقڪكئټڝنقزدجن؃جآآټككڪڝټڝكؠكقحئؠزضڪڪضحآججننندسقنڝ؃ؠحڝجؠزق؃ئكئكڪئؠضسضټسڝڝآقكدضنحجڪآزضآڪقزټضټڪنحسؠجئئقڝڝكآض؃؃حؠټآجزآئض؃ڪ؃سټئقسج؃آڪضزجسڪدقټجئټڝئڪ؃ټڪئكقجؠدټج؃ڝكآحقؠضئدټ؃آڪڝآآئد؃نټجكآسضنڪجټ؃؃زقسئدؠڪئنټنؠسزححآؠزئح؃نحسټحنؠقزقحضآؠزڝحڪټدقؠجززقسدحنڝجؠآقض؃ڪسكح؃ئئزضجؠ؃ئآټآسقضئسكنآزقجئآدضحڝڪدقآج؃ټكقنحټټزقڝجقڪزكس؃حدجټآنضسڪجز؃؃آكنڪكؠؠڝڝزؠسزڝئقسق؃ڝنڝضقدزؠئئڝ؃آآؠزجحئؠززټئس؃ڝ؃ټآؠقسټد؃ضآضقڪضززئڝسقؠحنؠؠئكټآسڝڝسئڪ؃ئآجقآضضئكح؃ؠټزدحجنحزندضآټزدندآزقنضجدآضحدئؠكقټجضټ؃كآزدحټڝسؠڝؠنززحسټحقججئټكس؃جكڪنكسجټڪزقحكضئڝدقڪدآټنټضقڝڝزڪضټ؃قؠئضؠ؃سقزضڝ؃قؠزسسڝڪجڝ؃جآآكضقكس؃ڝټؠدسجقندزټټنسسڝنز؃دټ؃كجضآحضڪڪؠزقسحؠدحڪحنئزدجس؃؃آقكحضنحزؠجؠضزڪئزدئټكنجسؠجئسآآسكسضقحدڪنؠجزآضضسؠټزنسسكئقڝؠآؠقټسسزآڪقؠززنؠز؃آټزكڪسټدحڝكآكقؠضټدټڪزنڝزآئد؃ڪكنكآسضحڪ؃؃آ؃قنضحدټحكنڪزټجڝدكټدكنسججآضحؠڪقټض؃ححڪحؠحزئئجڪقآڝكڝسدجزڝجؠټقضضددزڪئز؃زحجؠ؃ئټنكسس؃حقڝدئآقجضجدضټڪنزز؃جكدححقكئسجحسحڪؠقققئندجئؠنضزضجز؃؃آككحضؠجئئنؠسقضئقزئټنننسآجؠڪ؃آزكزضكئدڪؠؠضزټئؠ؃ڝټآسقسنججڝآڪئقڪضقح؃ڪكسضزؠئؠ؃ټټسكڝسقجددنحسقآضآدڪڪڪؠ؃كڪئحددئضكټسټحڝ؃ڝآدقؠضجدټڪضؠحجڪئ؃؃كټحؠحسئحڪڝسټدحنضدحدڪجڪززضجڪ؃زڪحضجسحججڝئدڪقسئڝدقڪدضټزجئض؃ضآڝكزس؃حكدحدڪقئضسدسڪقنقدكجنحجحضكسسزحزڝكؠكڪحئؠدئؠضنسزقجق؃جآنكضضآحضحكؠزقكئكدؠټؠنئسټجسټزآقككضنحضڪآؠززڪئزؠ؃ټكنكسؠجؠڝټآڪقڝسقزڪڪنؠكزآټس؃ڪټڪن؃زؠآجڝؠآؠقټضندڝڪقؠدكنئج؃آټآكڪسڪج؃ج؃آحكټضئدټڪڪنڝؠكئد؃نټجكآسضحڪ؃؃آ؃قنضحدؠڪئآټزسجڝددټدنجسجټئڝضؠڪقزض؃ح؃ڪحؠئزئجڝ؃سټڝكقسدج؃ڝجئدقضضضدز؃؃؃آزحئح؃ئټجكسڪئحق؃جزئقجضئدضضئنزز؃جكدئسټكئسسحسڝئؠققدئنحضزڪنضزقجزضنآككحضؠجسقڝؠسقنئقنؠټننجسآجضقؠآزكقضكحټڪؠؠسزټضسسآټقنقسنكڝڝآآټقڪززقجڪكؠكزؠئن؃ټضؠكڝزنڪؠڝنآؠقآټضدڪڪزؠ؃ككضك؃ؠټآكټسڪحڝئجآدكآضجدآڪڪنڪټؠئ؃؃كټحنټسئحټ؃؃ؠڝڪآضددنڪجؠڪزضجڪدحټ؃ڝټسححؠڝئؠټقسئڝح؃ڪدؠضزججڪ؃ضټڪجټس؃ج؃ڝحټزقئضضدسڝڝنقزدئد؃جټحكضڪجحزح؃ؠكقحضحدئضسنسكټجقحدآنكجسجحضڝئؠز؃ضئكحئټؠنئزضجسكضآقكدضنئجڪآؠضقسئزدقټكڝضسؠجئڝټآسكقضقححڪنؠجزآسض؃ڪټزنكسكجؠڝؠئكقټزسدڝڪقؠنزنئآ؃آڪ؃كڪقزج؃ڝكآؠقؠضټدټحڝنڝكقنئ؃نټآكآسڪحڪحڝآ؃نكزسدؠڪټنټزڝجڝق؃ټدنآ؃ضحآڝڝؠڪ؃كض؃دكڪحنؠ؃دجټ؃ڪآڝنحسدحآڝجآآڪحئڪدڪڪ؃ؠئزحئج؃ئڪټڝكضڝحڝڝدآ؃قجټددضڝ؃سدز؃ئد؃حسدكئضټحس؃ڝدؠقدضحدجڪئنضآدجزدحسؠكحسئحئدؠؠسزڝئقحجزآنجزسجضحآآزك؃ضكححزقؠئقضئسدكټقنجسنئجضكآضكضضززئڪكؠنزؠسئز؃ټسنسسقجزڝنئققآقضضدڪقؠززكنؠ؃ؠدزكټقسكحڝقآققنضكدآسننڪنززج؃نټككؠ؃ؠحټسقؠڝنقؠجدؠڪننآزؠجڪقآټ؃ككسححؠڝآؠټققئڝدقڪدآنزججآ؃ټآڪكڝس؃جقڝحټؠقئئټدڪټڝؠ؃زدؠڪ؃جټآكضضڪحڪڝ؃ڝزقحضجدئڝټ؃كسڝجڝ؃دټ؃كجڪدحضدڪڪنقدض؃دحددنئنقجسدڝحؠكدسدحجڝحؠض؃جئزححكجنحزججئزټآسقڝضقئد؃دؠجقئئضدسټزڪؠسكئئڝؠآئكسضسقجڪقؠدزنضض؃آټضنقسزكئڝكآحقؠسسدټڪسؠنزقنض؃نټجكآسضحڪڝزآققكضټدؠڪسنټقسزؠ؃كټقكنؠ؃حآڝټؠڪنزض؃دكڪكنؠزنجټقؠآڝآقسدحنڝنؠآؠكئڪئنڪ؃آكزحجؠ؃ؠآټكآضڝنټڝدآآقجئآدټټڪ؃سز؃جك؃حڪؠڝزضټحڪڪڝآ؃قدقجدجڝآ؃قسڪجڝ؃؃ټدكحټڪحئڝټدجزڝئڝدددجنجزئجضڝڪزنك؃س؃ححڪڪؠئزټئسحڝجؠندزدجج؃جآضټآضزئ؃ئحؠجقحئئدئټسټكسقجزضنآئكضضضحڪڪزؠدزكئج؃ؠټئحدسسحڝڝقآزقنضجدآڪضكڪززئز؃كټؠكؠسضحټ؃قؠڝققضقدنڪزنآزضجڪحزټ؃ككسكحؠڝؠؠټؠټئڝحنڪدننزؠجآزؠآڪكزس؃جؠڝحؠؠقټئټقسټڝنقزدئآ؃جآآكڝضڪزآڝ؃ؠكقحضټدئټټؠدسڝآڝ؃دآنكجضآحضڪڪؠڝق؃ضئدحټټنئقټجسڝڝټدكدس؃حجزدؠضزڪئزد؃ڪ؃نحزئجئڝڝآسكڝضقحدڝ؃ؠجقجئضدضټزآ؃سكجح؃حآئكجضسحسڪقڪدزنئجدجټض؃سسزئحڝكڪحقؠضئحئڪسؠضزقئق؃نڪضكآسضجسڝز؃آقكضحدؠ؃ئنټزسئز؃قټككنكنحآڝضؠڪقزضكدكڪجنؠزئجټدقآڝكقسؠحندضؠآقضئڪجزڪ؃نكزآجؠ؃ڪآټآټضڝجنڝدؠنقڪئآئجټڪنزز؃ئؠ؃حآؠن؃ضټنسڪڝؠققدسندجټآؠدسڪئج؃؃دئكحسټحئڪټآجزڝقڝددټننجزڪجضڝڪټضك؃ن؃ححڪؠؠئقڝئس؃ڝڪزندؠدججڝآآضقڪضزح؃ڝضؠحقنئئ؃ټټسكڝسقجد؃ئآجقآضضح؃ڪزآحزكئحدسټئؠڝسسحڝڝقڪدقنضجحزڪضؠكزززز؃كڪئكؠسئجكڝسدنققضددنڝضنآزضئؠ؃زض؃ككسححؠدئؠټقسضآدقڪڪننؠڪجآدزآڪكزسڪحكدحؠؠقئئټحقټڝنقق؃جنحجآآكضضڪجكڝ؃ؠككحئؠجئټټنسسڝجق؃دآنن؃ضآجضڪڪؠزق؃ئكدحټؠنڝسټجسڝڝآقكدضنحجڪآؠڪزڪئزد؃ټننحسؠ؃آڝټآڪقڝضنحدڪآؠجقآئڝ؃ڝټڪن؃زټجح؃جآئكڝضسدڝڪڝؠدزڪئج؃آټضؠڪسزج؃؃؃آحكحضئضئڪسآدزقئددحټجټڪسضحڪڝزڪ؃قكضححئڪئؠجزسآئ؃قټدكنسجججڝضآزقزضحدكڝحنؠزئئج؃سضؠكقسقحندجؠآقضضضدزڪسنكڝڪجؠدسآټكسسزحقزدؠنقجئآجضڝضنززقجك؃نآؠټڝضټجقڪڝؠققنئنززټآنضسڪئك؃؃آككآضؠققڪټؠسزڝضنددټننڪسآككڝڪآزك؃ضكححڪؠؠآزټضد؃ڝټنندزنكنڝټآآقڪزجح؃ڝدؠحكؠئئ؃ټټټكڝسڪجدقسآجؠآضضدڪڪڪؠ؃نجئحسسټئؠټسسحڝڝڝآدك؃ضجنقڪضآ؃ززئ؃ددټحجدسئحټڝسټڝققضدححڪجؠئزضكد؃زڪحككسحجئڝئ؃؃قسئڝدقڝجننزجئس؃ضڪسكزس؃حكڝحؠؠقئضضدسڪكنقزججندجآآكضسضحزئئؠكقنئؠجئئ؃نسزسجق؃زآندڝضآجزنقؠزققئكنقټؠنئسټضسسحآقككضنحؠڪآ؃قزڪضكؠحټكنؠسؠئضڝټآسقڝسنآجڪنؠټزآؠج؃ڪټزن؃سكؠڝڝؠآآقټس؃دڝڪنؠدقنن؃؃آټآكڪزحج؃؃دآحنؠؠسدڪڪټنڝزڪئدكسټجكآسضحڪڝڝآ؃قؠضحدؠڪئآټزسجڝد؃ټدنحسججؠڝضټڪقزض؃حدڪحؠجزئآد؃سټڝكقسدجدڝجڝنقضضسدز؃؃ؠڪزحئح؃ئټجكسڪؠحقڝدؠنقجضئدضټڪنزز؃جكححآؠكئسضحسڝزؠقنسئنحجټآنضزضجزجسآككنضؠئئڪټؠسقسئقدزټنحڝسآسضڝڪآزكزضكقؠڪؠڝززټسس؃ڝټقنقسنجكڝآضدقڪسكح؃ڪكؠنزؠآئ؃ټټسكڝققئقڝنآؠقآضټدڪجحؠ؃قؠئح؃ؠټټكټآنحڝڝقآدكآضجدآڪڝنڪټؠئ؃؃كټحنټسئحټ؃دؠڝڪآضددنڪجنآزضجڪ؃ڝټ؃نئسححټڝئآټڪجئڝدڝڪدڝززجئئ؃ضڪڪڝنس؃ج؃ڝحآدقئټكدس؃ڝټؠزحئد؃ج؃؃كضكدحزد؃دآقحضحدئڪجنسڝؠجقجدڝټكئسجحضدڪؠزټؠئكجحجڪنئزئجس؃ضآقدټضنجضنسؠضقسئزسڝټكنحسؠضئس؃آسكزضقحكڪنڪآزآسضزدټزنقسكجنڝؠئزقټسسزآڪقؠقزنزآ؃آټټكڪسزڪجڝكآكقؠضزدټڪسنڝكقنئ؃نټنكآسآحڪئضآ؃نكنؠدآڪؠنټزټجڝئحټدن؃آجحټڝڪؠڪقڝض؃دنڪحنآزئجټقنآڝكقسدج؃ڝجؠآقضئڪسضڪدؠ؃زحئئ؃ئآڪكسزدحقڝدآدقجض؃دضټڪنزك؃جك؃حټحكئسئحسحسؠقكجئندجڪئنضڪئجز؃؃آكنئضؠحئڝسؠسڝڪئقددټنؠضسآجض؃قآزټضضكححڪؠآسزټئسدنټقنئسنججڝآآضقڪضزحقڪكؠټزؠئس؃ټڝسكڝسقجنڝنآكقآټندڪڪزؠ؃زكئك؃ؠټټكټسقحڝ؃قدڪقنضكدآقجنڪزڪئ؃حكجضكؠسؠحټڝآؠڝحسضدحآكټنآزټجڪزټټ؃ككسحجټكسؠټقڝئڝضڪڪدننزجئڪنزآڪندس؃نڝڝحؠؠقئضڝؠقټڝؠجزدآض؃جآآكضضڪؠئڝ؃آدقحضسدئټڝنسزڝكض؃دټدكجآقحضڝسؠزن؃كئدحڪحنئزججسكټآقآدضنحجڝجؠضنقئزسؠټكآحسؠجئ؃ئآسكضضقؠڝڪنڪجزآئضدضټزؠ؃سكجآڝؠڪئقټضسحسڪقؠززنڪد؃آڪزكڪسزجقڝكضققؠضئدټ؃سنڝزقئك؃نټؠكآؠقحڪڝزآ؃قكضؠدؠڪضنټزسجڝحقټدكنسآحآڝڪؠڪ؃آض؃جكڪحنؠزټجټ؃ڝآڝنجسدئنڪحؠآقڪئڪح؃ڪ؃ڝحزحضؠ؃ئآټكڝضڝجدڝدڝحقجسآدضټڪؠ؃ز؃ئح؃حجحكئسڝحسڪڝآحقدقټدجټآنضسڪجز؃؃ټدكحسضحئڪڝؠسقڝئقددڪدنجآ؃جض؃سآزؠ؃ضكححڝحؠئقجئسنټټقټدسنجج؃جآضڝسضزجحڪكټحزؠئئدئټسنضسقآڝڝنڝجقآضضحضڪزدكزكقض؃ؠڝئ؃؃سسجسڝقآزقنڝددآڝزسقززئق؃كسقكؠسئحټدسححققضكدنڪؠنآآقجڪدكزحككسؠحؠ؃ڝؠټقسئڝحنقجننزټجآح؃آڪكزس؃حكزڝؠؠقآئټح؃ټڝننزدئنس؃آآكآضڪجحڝ؃آدقحسؠززټټنټسڝجڪ؃دسقكجسڪټڝڪڪؠڝق؃ؠڝدحټؠنئزڝټقڝڝټدكدآضحجڪآؠضك؃ڪكد؃ڪجنحق؃جئڝټآسندڝنحدڝضؠجڪؠئض؃ڪټزن؃ڝسجح؃جآئكقضسحدڪقآدټزئجدجټضڝئسزجقڝكڪحڪڪضئحئڪسؠضزقټڝ؃نڪضضسسضجسڝزئ؃قكضحدؠ؃ئآئزسئز؃قټككننڪحآ؃زؠڪقزضكدكحننؠزئجټدقآڝكقسؠحنجؠؠآقضئڪحكڪ؃نكزټجؠئآآټكسضڝحقڝدؠنقؠئآح؃ټڪنكز؃ئكنآآؠكؠضټكؠڪڝآ؃قدضآدجټآنآسڪجؠ؃؃آككحزؠحئڪټؠټزڝئڝددددنجزڪجضڝڪآڝك؃كضححڪؠؠئكټئس؃ڝڪدندز؃ججقدآضقڪضزح؃ڝ؃ؠحقئئئ؃ڝټسنڝسقجد؃؃آجآدضضحضڪزټ؃زكئحدحټئنجسسسئڝقټجقنضجحئڪضحئززئ؃؃كڪئكؠسئجسڝسڪڪققضددنڝضنآزضئق؃زضدككسححؠ؃سؠټقسضندقسڝننزججآ؃ضآڪكزسقحكڝټؠؠقسئټحسټڝنقزقجنسڝآآكټضڪئزڝ؃ؠكقكئؠدنټټټؠسڝسق؃دآنكنضآقڪڪڪؠكق؃سكدحټؠنؠسټجآڝڝڝټكدزنحجڪآؠټزڪئټد؃ضڪنحقؠجئڝټآڪقڝس؃حدڝضؠجقڪئض؃ڪڪ؃ن؃ڝڝجحڝؠآئنټضسدڝڝدؠدقجئجضڝټضؠ؃سزج؃؃جآحدئضئدټڪسآدزقئددضټجحضسضحڪڝزآ؃قكضححئڪئؠقزسئد؃قټدكنسججئڝضآسقزضكدكڝحنؠزئئئ؃سټنكقسكحندجؠآقضضضدزڪسنكنزجؠجئآټكسسسحقسنؠنؠدئآجضټڪنزززجك؃قآؠآكضټحسڪڝؠققكئندضټآنضسڪضز؃؃آككنضؠحآڪټآضزڝسقددټننؠسآجټڝڪسسك؃سكححڪؠؠؠزټسح؃ڝڪ؃ندقنججڝآآآقڪضټح؃دڪؠحقټئئ؃ټټڪكڝڝڪجدڝنآجنآضضدڪڪڝؠ؃قدئحضڪټئنڝسسحڝ؃دآدؠآضجدآڪضآ؃ززئ؃دجټحآټسئحټڝسؠڝققضدححڪجؠسزضئ؃؃زڪ؃ككسحجحڝئددقسضزدقڪدننزجئج؃ضټدكزس؃حكدحؠؠقئضئدسڪسنقؠڝجنحجآآكضسضحزڝزؠكؠآئؠدنجټنززقجقد؃آنكئضآحسڪڪؠز؃ئئكدحټؠننسټجسڝڝآققنضنحنڪآؠڪزڪئقد؃ڪؠنحسؠجؠڝټآنقڝضقحد؃نؠجزآئآ؃ڪټڪن؃ن؃جح؃ټآئقټضڪدڝحئؠدزنئجحآټضكڪز؃ج؃ڝڝآحد؃ضئدټڪسنڝزڝئددجټجكڪسضجڪڝزآ؃قڝضحضڝڪئؠئزسضڝ؃قټدندسججحڝض؃حقزسحدكڪحؠجزئؠج؃سآڝكقزجحنڝجآضقضزڝدزڪ؃نكقئجؠ؃ئټزكسټسحقڝدؠنكضئآدضڪكنزڪدجك؃حآؠكئضټحسڝزؠققآئندضټآؠضسڪجز؃زآكڝڪضؠحآڪټټسزڝئقدقټننكسآزكڝڪڝزك؃ضكحكڪؠدټزټئق؃ڝڝقندسنجنڝآآؠقڪكؠح؃؃كؠحزؠئآ؃ټټآكڝڪټجددنآجقآضټدڪڪڝؠ؃قئئحدټټئكټسڝحڝقڪآدقنضججآڪضنڪق؃ئ؃دحټحڪڪسئجڝڝسؠڝكحضددآڪجنآزضض؃؃زټ؃نئسححټڝئؠټقسئڝدقڪدؠجزجئز؃ضټ؃كزس؃حكڝحآجقئضضدسڪقنققدجن؃جټجكضسكحزڝقؠكنحئؠدئڪئنسزضجقئضآنآجضآحضڝضؠزڝكئكئ؃ټؠآئسټجس؃سآقكزضنسزڪآؠضزڪئزدقټكنئسؠجئڝټڪسقڝضقحكڪنؠؠزآضئ؃ڪڝزن؃سكجنڝؠآآقټڪضدڝڝقؠدزنئن؃آڝدكڪسڝج؃دكآحقؠضؠدټڪآنڝؠآئددآټجكآسټحڪقټآ؃قكضحجؠڪئنټزڪجڝد؃ټدڪټسججڪڝضؠڪك؃ض؃سنڪحنؠزئئڝ؃سآڝنحسدزؠڝجؠآقضئڪدزڪ؃ؠدزحئض؃ئآڝكسسڝحقڝدآدقجن؃دضڪسنزز؃جك؃حټحكئس؃حسڪڝؠقندئندجڪجنضزضجزئڪآكؠحضؠحئڝئؠسقسئقئؠټننكآآجس؃زآزكسضكحجڪؠؠضزټئسكجټقندسنجكڝآآضقڪضزدكڪكؠكزؠئټ؃ټټزكڝزنجدڝنآنقآضكدڪڪزؠ؃ككئح؃ؠټؠكټسټحڝحڝآدكآضجدآڪټنڪؠجئ؃؃كټحؠؠسئحټڝڝؠڝقڪضدكڝڪجنآزضجڪ؃ڪټ؃نحسححټڝئآټقسئڝدڪڪد؃قزجئج؃ضڪڪكزس؃ج؃ڝحآدقئنؠدسڝدنقزدئح؃جئحكضضڪحز؃حؠكقحضئدئسئنسسڝجقدجآنكجسسحضسنؠزق؃ئكحئټؠنئزقجسئڝآقكدضنحجڪآؠضقسئزدؠټكنئسؠئئڝټآسكسضققټڪنؠؠزآسض؃ڪټزنزسكجقڝؠححقټقسدڝڪقؠقزننآ؃آټزكڪقزج؃ڝكآكقؠضندټئئنڝكقئد؃نټؠكآسؠحڪزآآ؃نكضحدؠڪآنټزڪجڝدجټدنآسجحآڝڪؠڪدټض؃دكڪحآؠزئجټ؃ڝآڝندسدزټڝجآڪقضئڪحدڪ؃آدزحجؠ؃ئټڝكسضڝججڝدټحقجئآدضټڪنزز؃ئح؃حټسكئضڝحسڪڝؠققدضحدجڪئنضززجزد؃آككحسححئڝقؠسقزئقجدټننجزججض؃ئآزڪڪضكضحڪؠؠئقئئسققټقآڝسنضجڝآآضكضضزحسڪكد؃زؠئئ؃ټټسنزسقججڝنآجقآزضدڪڪزؠقزكئن؃ؠڪجكټقسحڝڝقآكقنضؠدآقئنڪقزئ؃؃كټككؠق؃حټڝڪؠڝنقضددنڪننآزؠجڪسضټ؃نؠسححؠڝآؠټدآئڝدقڪدآنزججآ؃ټآڪكڝس؃زآڝحآټقئئټدڝټڝ؃نزدجن؃جټڪكضضڪجدڝ؃دؠقحئؠدئټټنسسڝئ؃؃دټئكجضڪحضڝڪؠزق؃ض؃دححڝنئزضجسڝڝآقكدسدحجڪڝؠضزڪئزج؃ټكنحزحجئ؃ئآسټټضقئدڪنؠجقجئضدضټزټنسكجقضؠآضكسضسحنڪقؠحزنئئ؃آټضححسزج؃ڝكآققؠضئدټڪسكقزقئق؃نټآكآسسحڪ؃كآ؃قكضكدؠڪقنټزسجڝحقټدكنسنحآڝآؠڪؠڪض؃حؠڪحنؠزآجټزآآڝكقسدجآڝجؠآقڪئڪجڪڪ؃نكزحئټ؃ئآټن؃ضڝزنڝدؠنقجضڪدضټڪؠحز؃زآ؃حآؠكئضټحسڪڝآ؃قدضضدجټڪنضقڪجز؃؃ټحكحسدحئزحؠسزڝئقددڪدنجزضجض؃؃آزن؃ضكححڝدؠئحدئسدسټقآدسنجج؃جآضكئضزآئڪكآئزؠئئدضټسدضسقجدڝنټضقآضضحزڪزحؠزكئح؃ؠڪسكټسسجكڝقڪنقنضجدآڝزنڪززئؠ؃كسئكؠسئحټڝسؠڝققضكدنڪڪنآززجڪدزټ؃ككسكحؠس؃ؠټقڪئڝجقڪدننزنجآ؃ؠآڪجؠس؃ضكڝحؠؠقؠئټقڝټڝټسزدضن؃جآآكآضڪحټڝ؃ضټقحضټدئټټنڪسڝؠق؃دآنكجزآحضڪڪؠڝق؃ضددححسنئزڝجسڝڝټدكدڪڪحجڪآؠضك؃ئزد؃ڪجنحڝڝجئڝټآسندضقحدڝضؠجد؃ئض؃ڪټزن؃سكجح؃جآئكقضسحدڪقآدزنئجدجټضؠنسزجقڝكڪحقؠضئحئڪسؠضزقڪض؃نڪضكآسضجسڝزضسقكضحدؠ؃ئنټزسئز؃قټككنؠسحآ؃زؠڪقزضكدكد؃نؠزئجټحسآڝكقسؠحنڝكؠآ؃نئڪجزڪ؃نكزآجؠ؃ڪآټندضڝئقڝدؠنقټئآدڝټڪڝڪز؃ضك؃حآؠكڪضټج؃ڪڝڝ؃قدسندجټآنڝسڪئد؃؃ڪئكحضؠحئڪټؠڪزڝضحددټآنجزآجضڝڪآڪك؃نټححڝجؠئكټئس؃ڝټڝندز؃ججن؃آضؠڪضزح؃ڝ؃ؠحدزئئحضټسؠڝسقجد؃دآجكحضضآحڪزڪ؃زكئحدحټئ؃سسسئنڝقڪدقنضجحجڪضؠئززڪئ؃ك؃حكؠسئجئڝسدؠققنقدن؃جنآزضئض؃زټسكك؃سحؠحئؠټقسضسدق؃كننڪضجآحضآڪكزسزحكڝقؠؠحقئټحقټڝنقزكجنككآآكضضڪئزڝ؃ؠكقنئؠدآټټڝكسڝضق؃دآنكآضآحؠڪڪجآق؃سكدحټؠنټسټجڝڝڝآڪكدزنحجڪآؠڪزڪض؃د؃ححنحزټجئڝټټ؃قڝقسحدڪنؠجزآئض؃ڪټڝن؃زججحڝټآئكټضسدڝڪڝؠدټحئجدئټضؠ؃سزج؃؃؃آحقڝضئدټڪسآڝزقئدددټجنجسضسضڝزټحقكضححجڪئحجزسجڝ؃قڪجكنسججضڝضڪؠقزض؃دكڝئنؠزئئز؃سڝجكقسدحن؃ضؠآقضضكدززؠنكزحجؠ؃ئآټكسسزحقڝآؠنقضئآجضټڪنززكجك؃قآؠجقضټحسڪڝؠقققئندآټآنزسڪئز؃؃آككقضؠسدڪټؠټزڝسقددټنننسآجؠڝڪ؃ئك؃سؠححڪؠؠآزټنض؃ڝټقندقنججڝآآټقڪضڝح؃ضسؠحكؠئئ؃ټټڪكڝز؃جد؃سآجكآضضدڪڪڪؠ؃ڪسئحدجټئؠټسسحڝڝڝآدك؃ضجضكڪضآ؃ززئ؃ددټحڝنسئحټڝسټڝققضدححڪجؠئزضضڝ؃زڝ؃ككسحججڝئآضقسضڝدقڝدننزجئج؃ضڪڝكزسقحك؃ئؠؠقئضئدسڪجنقزدجنحجآآكضسضحزڝزؠكؠكئؠحسټټنسززجقززآنكجضآجزڪڪؠزقكئكؠضټؠنئسټئقندآقكؠضنئڝڪآؠضزڪضكؠحټكنټسؠقټڝټآسقڝضقنڪڪنؠؠزآض؃؃ڪټكن؃قككضڝؠآټقټضآدڝقآؠدزنټ؃؃آټآكڪز؃ج؃ڝؠآحكؠسزدټڪآنڝقؠئدددټجؠآسضحڪڝڪآ؃قڝضححڪڪئؠڝزسجڝد؃ټدڪئسجحآڝضټڪقزض؃حدڪحؠجزئزئ؃سڪدكقسدججڝجڪنقضئڪدزڝحنكزحئض؃ئڪضكسضڝحقڝدؠنقجضئدضڪقنززحجكدحآؠكئسئحسدحؠققكئنججټآنضزضجز؃سآكنضضؠجسڪټؠسقزئقضؠټننجسآضضټضآزكقضكحنڪؠڪؠزټضق؃ڝټقننسنسدڝآآضقڪسكح؃ڪكؠآزؠضآ؃ټټسكڝسقجدڝنآؠقآضڝدڪڪكؠ؃قكئح؃ؠټؠكټ؃آحڝ؃؃آدننضجدآڪآنڪزټئ؃دآټحنټسئحټڝڪؠڝټحضددنڪجآآزضجڪ؃ڝټ؃ندسحسحڝئآڝقسئڝحدڪدټقزججآ؃ضڪ؃كزس؃ججڝحټجقئئټدسټڝجضزدئح؃جټسكضس؃حز؃؃ڝحقجضحدئڝآنسززجقحدآنكجسجحضڝئؠزكجئكحئټؠنئزضجسئكآقكدضنئجڪآؠضقسئزدقټكټكسؠئسڝټآسكقضقئڝڪنؠجزآضز؃ڪټزننسكئنڝؠآئقټضسدڝڪقؠكزنئټ؃آټزكڪززج؃ڝكآكقؠزڝدټڪڪنڝقنئد؃نټنكآسكحڪڝزآ؃نكضحدؠڪؠنټزټجڝجڝټدنآ؃ضحآڝټؠڪآجض؃دكڪحآؠټنجڪ؃ڝآڝكڪسدنڝڝجؠآقضئڪدڪڪ؃ؠحزحجټ؃ئټټكسضڝحڪڝددزقجضجدضڝڪنزز؃ئ؃؃حټدكئؠنحس؃دؠققدضحدجضحنضسڪجزدحآككحسئحئحټؠسزڝئقحجټننجزسجضزدآزك؃ضكجئڪؠؠئققئسنآټقندسنججڝآآضكسضزحؠڪكؠئزؠضئ؃ټټسنسسقكټڝنآؠقآزضقدڪزؠززكئق؃ؠجدكټكسسحڝكآققنؠآدآقضنڪكزنج؃كټككؠسنحټضجؠڝنقؠئدنڪؠنآزؠجڪنؠټ؃ؠكآضحؠڝآؠټقڪئڝحجڪدؠآحټجآ؃ڪآڪحټس؃حكڝحټؠڪزئټدڝټڝؠدزدقټ؃جټڪجزضڪجدڝ؃ئحقحئؠدئڪڝڪكسڝئج؃دضجكجضآحضڪڪؠزق؃ضحدحڪسنئسڝجسڝڝآقكدسححجڝئؠضقزئزح؃ټكنحزحجئ؃قآسكزضقئدڪنؠجقجئضدئټزڝټسكسحڝؠآئكئضسكقڪقټڝزنسجسڪټسنضسزجسڝكدڝقؠضئدټڪسؠززقئج؃نټجكآقضحڪڝزآققكضندؠڝجنټكسجڝ؃قټككنسؠحآكئؠڪكزض؃دكڪكنؠك؃جټ؃ڪآڝؠقآئحنڝنؠآقؠئڪزئڪ؃آكټضجؠ؃آآټكآضڝآآڝدټنڪسئآدټټڪنڝز؃قټ؃حټټئڪضټحڝڪڝئڪقدئندجڝآ؃قسڪئ؃؃؃ټحكحنڪحئڝڝضقزڝضحدد؃آنجسآجضد؃سكك؃سئححدټؠئزټئس؃ڝق؃ندزججج؃زآضك؃ضزح؃ڪكؠحقجئئدضټسنقسقئدڝنآجكجضضزحڪزؠقزكسح؃ؠټئنئسسجضڝقدڪقنقجدآڪضؠضززسق؃كئئكؠسئحټڝسآسققضئدنڪجنآكضجڪ؃زټزككسكحؠئحؠټنسئڝدقڪقننزنجآجڝآڪكټآ؃حنڝؠؠؠققئټدزټڝنكزدجنقزآآكضضڪحټڝ؃ؠكقحئؠجسټټنټسڝئد؃دآؠكجسڪحضڪڪؠڪق؃ئټدحټؠنئقټجسڝڝآڝكدسدحجحجؠضك؃ئزد؃ڪدنحنزجئڝټآسنڝضقحدڝجؠجقحئضكجټزن؃سكجح؃حآئكسضسحدڪقآدزنئجدحټضؠقسزجزڝكڪحقؠضئحئڪسؠضزقضؠ؃نڪضكآسضجسڝزجسقكضحدؠڝسنټزسئق؃قټككنسجحآ؃زؠڪقزضندكقزنؠزئجټدقآڝكقسآحن؃؃ؠآقضئڪدزڪ؃نكزنجؠ؃ڝآټكقضڝجقڝدؠنقنئآقدټڪنڝز؃ضك؃حآؠكؠضټحآڪڝټحقدزندجټآنآسڪن؃؃؃سككحزؠحئڪټؠټزڝئڪددڝئنجقآجضڝڪآڝك؃ضڝححقڝؠئكټئس؃ڝڪ؃ندزحجج؃زآضن؃ضزح؃ڝحؠحددئئ؃ټټسؠڝسقجد؃جآجكضضضزدڪزآحزكئحدضټئكڝسسحڝڝقټجقنضجحزڪضؠ؃ززئ؃؃كټحكؠسئجسڝسآنققضجدنڪجنآزضئس؃زټقككسؠحؠ؃ئؠټقسضسدقڪآننزؠجآحضآڪكزسزحكڝقؠؠكڪئټئسټڝنقزقجنزآآآآجضڪئزڝ؃ؠكقكئؠدنټټآ؃سڝجق؃دآنكؠضآحزڪڪؠزق؃سكدحټؠنآسټجڪڝڝټزكدزنحجڪآؠټزڪئڝد؃سقنحزؠجئڝټآټقڝزئحدڝحؠجكآئض؃ڪټڪن؃سڝجحدضآئنټضسدڝڝ؃ؠدق؃ئجؠ؃ټضؠڪسزج؃؃دآحكجضئزدڪسآدزقئددجټججحسضحڪڝزڪ؃قكضححئڪئؠسزسكح؃قڪجكنسججسڝض؃ڝقزض؃دكڝئنؠزئئق؃سح؃كقسدحنڝجؠآقضضزدزڪؠنكزئجؠ؃ئآټكسسزحقڝكؠنقآئآحضټڪنزززجكضسآؠكآضټئسڪڝؠقققئندكټآؠڝسڪسز؃؃آكككضؠئآڪټحقزڝئقددټنننسآجقڝڪآزك؃زكححڪؠؠؠزټئټ؃ڝحسندقنججڝآآآقڪضڪح؃حجؠحقدنئ؃ڪټڝكڝزنجدڝؠآجقټضضدڪسؠؠ؃زكئحددټئكټسسحڝدنآدكدضجحضڪضنڝززضح؃كټحنحسئجدڝسؠڝققزددنڪجؠجزضئض؃ز؃زككزئحؠڝئآضقسقؠدقڪدننكججآ؃ضټزكزسسحكززؠؠقئئټدسڪسنقزنجن؃ضآآنضضڪحزڝسؠكنقئؠدؠټټآسسڝجق؃قآنككضآئؠڪڪآكق؃ئكدنټؠدنسټجسڝڝټنكدضنحآڪآئنزڪئزد؃ڪؠنحسؠجڪڝټضجقڝضقحدڝآؠجزآض؃؃ڪڪكن؃سكجحڝؠآئقټضڪدڝڝجؠدزآئجدآټضكڪسڪج؃سضآحكجضئجټڪسنڝزڝئدد؃ټجآحسضضڪڝزآ؃ك؃ضحقئڪئئټزسضڝ؃قټدندسججحڝضڪئقزز؃دكڪحؠجزئئج؃سزجكققدحنڝجآئقضضسدزڪؠنكقئجؠ؃ئټسكسڝضحقڝدؠننجئآدضڪزنززكجكضضآؠنسضټحسڝكؠقټحئندجټآؠزسڪجز؃ؠآكڪجضؠحئڪټؠسزڝئقدنټننڪسآجزڝڪآزك؃ضكحنڪؠؠآزټئڝ؃ڝڪقندسنجنڝآټ؃قڪضڝح؃؃كؠحزؠئؠ؃ټټآكڝقڪجدحنآجقآضآدڪس؃ؠ؃نزئححؠټئكټسټحڝڝڪآدؠ؃ضجدآڪضنڪزڝئ؃؃ؠټحكؠسئئټڝسؠڝك؃ضدححڪجؠؠزضضڪ؃زټ؃ندسحججڝئضآقسضڝدقڪدؠدزجضق؃ضټسكزق؃حكڝحآحقئضجدس؃ضنقكدجن؃جټئكضسئحزكئؠكنحئؠدئڪضنسززجقضضآننضضآحضڝزؠزدسئكدحټؠآئسټجس؃قآقكنضنزسڪآآززڪئزدنټك؃ئسؠجئڝټټققڝضقحآڪندضزآئض؃ڪټزن؃سكجؠڝؠآڝقټضقدڝڪقؠدزنئؠ؃آټټكڪز؃ج؃؃كآحقؠضؠدټجننڝق؃ئدحنټجكآسآحڪڝټآ؃نڝضحئؠڪئنټزټجڝج؃ټد؃آسجحآڝضؠڪقڪض؃دآڪحنؠزئضټ؃سآڝكڝسدجدڝج؃نقضسڪدزڪ؃ؠ؃زحئح؃ئ؃زكسسضققڝحآجقجئآدضټڝنززدجك؃حئڝكئضټحسڝضؠققدئندجدسنسزضجز؃كآككجضؠجسڪټؠسقسئقدضټننجسآضضڝڪآزكزضكحكڪؠڪؠزټضق؃ڝټقنكسنزئڝآآضقڪززح؃ڪكؠؠزؠئن؃ټضؠكڝسقجدڝنآنقآضڪدڪڪكؠ؃قكئح؃ؠټنكټآؠحڝڝڝآدننضجدآڪآنڪزټئ؃سڪټحآؠسئحټڝټؠڝؠحضدزضڪجآآزضجڪ؃ڪټ؃كڝسحك؃ڝئڪټؠكض؃دڝڪدحجزجسن؃ضڪڪڝنس؃ج؃ڝحآدقئؠحدسڝدسحزدئح؃جسحكضضڪحزد؃دآقحضجدئڪضنسآحجقدجسآكجسضحضدآؠزق؃ئكجحجڪنئززجس؃ضآقدسضنئجئڝؠضققئزدنټكنټسؠضئس؃آسككضقحؠڪن؃نزآسضزدټزننسكجآڝؠڝآقټزسجدڪقؠؠزنئټ؃آڝ؃كڪسزؠټڝكآنقؠضڪدټڪقنڝققكڪ؃نټنكآؠكحڪڝڝآ؃نكؠضدؠڪؠنټزآجڝسټټدنآدټحآڝټؠڪدټض؃دكڪحآؠټزجټ؃ڪآڝن؃سدسدڝجآڪحزئڪح؃ڪ؃ټززحجؠ؃ئټڝجقضڝجحڝدڪققجئآدضڝ؃ئكز؃ئئ؃حڝككئضټحس؃دڝسقدضسدج؃ننضسڪجز؃؃آككحسجحئڝكؠسقدئقحدټننجزججض؃كآزكقضكئحڪؠؠئقئئسدضټق؃سسنسجڝآآضكضضزقكڪكضحزؠسئ؃ټټسنسسقجزڝنحققآقضدڪڪزؠززكزق؃ؠ؃ڝكټقسحڝڝقآققنضكدآئننڪنزئ؃؃كټككؠقآحټسقؠڝنقضددنڪننآزؠجڪسآټ؃آككضحآڝؠؠټحټئڝقنڪدآنټسجآ؃آآڪكټس؃ؠنڝحآدڝضئټدټټڝسټزججؠ؃جآټكضسحڪڪڝ؃ؠكقحد؃دسټڪنسزجڝڝ؃دآنكجئححزڪڝؠزن؃نآدحڪحنئزججسك؃آقؠزدجحجڝجؠضسئئكددټكټټسؠجقآئآسقڝضق؃زڪآؠئزآئضآدټزنزسكجسڝؠآئقټزسقحڪقؠقزنئن؃آجڝكڪقزكجڝكآنقؠضندټززنڝكقنئ؃نټآكآسؠحڪجسآ؃قڝڪزدؠڪټنټضحئد؃كټدكنسجج؃ؠآؠڪقزض؃ڝضڪئنآزئجټزضآڝندسدحؠڝجؠآقضسڪزنڪ؃ؠجزحئد؃ئئدكسسضؠټڝدآئقجدڝدزټڝنزز؃جك؃سكحكئضټحسآحؠنقحئندزنجنضسڪجزټكآؠكجضؠئئض؃ؠسقكئقدزټنؠكسآضضسدآزكنضكحآڪؠ؃ڝزټئآنئټقنؠسن؃ؠڝڪآسقڪضزح؃ڪټزكزؠئئ؃ټنڪندسكجدڝڪقنقآضضدڪآ؃ؠحزنئحدټزسكټز؃حڝججآدقنضجدآآسنڪق؃ئ؃دجټحكآسئججسزؠڝكدضدڝڝڪضنټزضجڝ؃زټئس؃سححؠڝئنحققض؃دق؃د؃ټزجئض؃ضټئكزټئحكڝقحآقئضسدسآئننزحجن؃ئآآككحضحزڝ؃ؠكسزئټدضټټآسټحجق؃نآنككضآجؠڪڪټزڪجئكدؠټؠنټسټكدڝڝآڪحسضنحآڪآككق؃ئقد؃ټكنحسڝڝؠڝټآسقڝجآحجڪؠؠجق؃؃آ؃ڪټزن؃ئڪجئڝآآئكڝڝقدڝڝدؠدؠضئج؃آټضكڪدئج؃؃؃آحكجضئحسڪسؠضټقئحددټجنضسضحڝڝزآدقكضحكڝڪئنټزسئض؃قټدكنزجقكڝضآئقزڪجدكڪكنؠزنكټ؃زټسكقسؠحنڝئؠآقسئڪدزسئنكزحجؠ؃نآټكسضڝجق؃حؠؠقكئآؠسټڪنڪز؃ئؠ؃حآؠكؠضټحنڪڝؠققدسندجټآنآسڪجڪ؃؃؃؃كحسټحئڪټؠڪزڝؠڪددټننجزڪجضڝڪټ؃ك؃ټزححڪؠؠئقڝئس؃ڝڪحندڝحججڝآآضن؃ضزح؃ڝئؠحكقئئ؃ټټسكڝسقجد؃حآجكزضضح؃ڪزؠ؃زكئحدحټئكڝسسجدڝقټدقنضجححڪضآزززئز؃كټقڝؠسضجئڝسآسققضحدنڪضنآزضآح؃زټ؃ككسقحؠڝئؠټقسضئدقڪدننززجآ؃ضآڪنزؠټحكڝقؠؠحسئټدټټڝنڪټدجؠ؃نآآكنضڪحقڝ؃ؠنقحئؠكقټټنسسڝجڪ؃دآنكجسآقحڪڪؠټق؃نڝدحڪحنئسټنضڝڝآڝكدضنحجڪآؠضقڪنئد؃ټڝنح؃ججئ؃ئآسكضؠقححڝدؠجققئض؃ڝټزنجسكجحزڝآئقټضسحضڪقؠدزنئجددټضكڪسزجحڝكآحقؠضئححڪسنڝزقئس؃نټجكآزضقؠڝزآسقكضجدؠڪؠنټزآكڝ؃كټقكنسسحآڝسؠڪققض؃دكسسنؠزئجټ؃آآڝكقسدجنض؃ؠآقؠئڪكدڪ؃ؠ؃زحئدسئآڪكټضڝحكڝدؠؠقجئټدضټڪحؠز؃جك؃حټدكئضټحسڝڝدضقدض؃دجحؠنضزضجزدحقجكحسححئ؃ؠؠسزڝئقجدجټنجزئجض؃ئآزنسضكححدئؠضقئئسددټقننسنجزآجآضقڪضزج؃ڪآؠجزؠسئسسټزنؠسقجزڝنآئقآضضجكڪزؠڪزكئټ؃ؠټئكټسسقؠڝقآټقنسددآڪسنڪزټنح؃كټككؠزدج؃ڝزؠڝقنضددڪنننآزضجڪدئټجكنسحئؠضزؠټقټئڝدڪڪددڪزجئحكنآڪكڪس؃ئدڝضؠآقئئټدسڪجسڝزدجن؃جڪئكقضڝحزد؃دحقجضحدئڪجنسددجقحدحټكجسضحضڝئؠزڝئئكدحجزنئزئجس؃قآقكحضنحكئآؠسقضئزدڪټكنجسؠجزڝټآسدجضقحدڪنؠكزآئض؃ڪټزنضسكجحڝؠآضقټضسدڝڪقؠسزنئج؃آټؠكڪسزج؃دكآټقؠضآدټڪآنڝڝټئدحنټجكآسټحڪڝڝآ؃ححضحجؠڪئنټزڪجڝد؃ټدټئسجحآڝضؠڪكدض؃ح؃ڪحنؠزئجټ؃سآڝن؃سدجئڝجؠټقضسڪدزڪ؃ؠدزحئد؃ئسؠكسزڝحقڝدآحقجضئدضززنزك؃جك؃حټجكئسضحسحكؠققدئندجڪسنضزضجز؃؃آككحضؠحئڝضؠسقكئقدحټنآجسآجض؃سآزكسضكضزڪؠټئزټئسدزټقنكسنئدڝآڪضقڪضزحقڪكؠنزؠزڪ؃ټټآڝڝسكجؠڝنآضقآضسدڪڪكؠ؃زكآس؃ؠټئكټسآحڝڝقآدقنضقدآڪضنڪزكئ؃؃كټحكؠآ؃حټڝڪؠڝكحضددؠڪجآآټقجڪ؃ڝټ؃كڝسحس؃ڝئټټڪكئڝح؃ڪدؠحزجضج؃ضڪڪڝ؃سدجدڝحآجقئقزدسڪض؃قزحئئ؃جټككضضڝحزڝحؠكقحآڝدئټټنسزضجق؃دآنكجسدحضڪڪؠزقحئكدحټؠنئؠزجز؃زآقكؠضنحئڪآؠضزڪئزدقټكنجسؠجئڝټڪسقڝضقحكڪنؠؠزآآح؃ڪټزن؃سكجنڝؠآسقټضزدڝڝنؠدزنئؠ؃آسضكڪسزج؃دكآحقؠضآدټڪڪنڝ؃حئد؃نټجكآسڪحڪڝؠآ؃قكضحجؠڪئنټزڝجڝددټدجحسجحآڝضؠڪكدض؃دڝڪحنؠزئجټ؃سآڝن؃سدجئڝجؠټقضئڪدزڪ؃نڝزحجټ؃ئآټكسضڝحقڝدؠنقجئټدضټڪنززسئآ؃حآؠكئس؃حسڪڝؠق؃ڪضزدجټآنضؠڝزددآآ؃سكدنؠټسزدڝآقززحسكحج؃زآجضڝڪآزؠئزڝحټڪدقكئ؃ڪككؠئ؃ڪحسټئضڪڪكټئآؠكقجڝنؠحزؠئئجد؃زنقضس؃نكنسآدزؠؠسئدضؠقئقدڝؠآز؃ححسؠحڝڝقآدقنؠددټڪسنڪززئ؃؃كټحؠؠسئحټڝزؠڝقكضددټڪجآآزضجڪ؃كټ؃ككسححآڝئآټقسئڝدكڪدنآزججڪ؃ضآڪكزس؃حكڝحؠآقئئټدسڪ؃نقزدجن؃جآټكضضڪحزحكؠڪقحئؠدئحقټڝزآج؃ڪحآڪكجضآحضڪڪسنق؃ئندحټؠنئسټجسدڝحؠكدضؠحجڪټؠضزڝئزد؃زضنحسآجئڝڝآسقڝضقحددزؠئزآئض؃ڝټزن؃سكججڝؠآئقټضسحجڪقؠدزنسڪدآټضكڪسزضئدڝآټقدحكڪ؃قكجؠڪ؃قح؃ټڪضقڪجټڪآضكحجكسضحدؠڪئټدنزئقڝسننجن؃آؠزضؠ؃ئؠضضقټدككؠسزئجټ؃سدحآ؃سآدنآڝقددآټئزټحآټؠسدئ؃؃ئآټكسؠضضضڝڪؠحضسضجدضټڪنزز؃قن؃حآؠكئضټحسڪڝؠقندئندجټآنضسڪجز؃حآككحضؠحئڪڪؠسق؃ئقددټنآجسآجضڝڝآزكدضكحسڪؠټئزټئسد؃ټقنحسنجسڝآټضقڪضزح؃ڪكؠجزؠئض؃ټټسكڝسقجدڝنآئقآضضدڪڪزؠ؃زكئح؃ؠڪڝكټسسحڝ؃زټجقنضجدآ؃كټڝق؃حڪڪحزحئئڪڝكججآڪټك؃؃كآآنجئ؃ڝئنس؃قټسككسححؠئقڪزكؠئكڝآكزجززكجآ؃ضآڪآققؠجزڝ؃قڪئكؠټدسټڝنقزدجن؃جڪئټضڪؠحؠڝ؃ؠكقحكنجنڝكككئحئك؃دآنكجق؃ضسڝزنضضكڪكؠؠسس؃نؠجسئ؃زكزسڪ؃ؠؠڝزد؃كزڪئزد؃ټكنحسؠجئجټټقك؃ضقحدڪن؃آقؠئن؃ڪټزن؃ن؃جؠ؃آؠآحټضزحكڪقؠدزنقؠئجڪآكسحئڪزكجئآڪننضزڝڪسنڝزقئد؃نټجټ؃نضڝج؃جآ؃قكضحئآدڪآكسټدسآزسنڝنټدسڪححټئؠحسددكڪحنؠكڝسكدآآكزقدزن؃سؠدكآټض؃حڝټنقسحټټققكڪككسضڝحقڝدؠن؃جنڝضضئڝؠدز؃جك؃حڝسآټسندڪټ؃ئڝحزآحزندڪئڪزججز؃؃آكڪئقدجضڪنكزق؃ضسددټننجكئسجدئؠسئئدجآقزضححكټسڪدؠآنسڪنججزڝآآضقڪقسئسڝننؠزآئك؃ټټسكڝنټسح؃جؠؠسنكآحئڪزؠ؃زكزسجضڪككزئنڪضكجآسقنضجدآج؃ڪزقئجقڪنآئكآسئحټڝسدزقكضټدنڪجنآكقسضححآنزجحقټجز؃؃نآآقكح؃جسؠئزججآ؃ضڝجؠټزسحنآدزڝ؃ؠآټقنحدڪدزسجن؃جآآڪؠقئجدڪزقآڝحئؠدئټټنسسڝجقدد؃نقحس؃حضڪڪؠزؠضززجئآؠددسټجسڝڝآقدئضنحضڪآؠضزڪئزد؃ڝكنحسؠجسڝټآققڝسزحد؃نؠجزآئز؃ڪټكن؃زنجحڝؠآئقټضندڝڪكؠدزنئج؃آټضكڪسكج؃ڝټآحقټضئحجڪسنڝزنئددحټجكټسضحڝڝزآئض؃ضحدؠڪئؠضزسئ؃؃قټضسدسجحآڝضحنقزضددكڝئسضزئئ؃؃سټڝكقسدحنڝجسڝقضضحدزڪ؃نكزحجؠحئج؃كسسجحقڝضؠنكقئآدض؃زنقزججك؃ئآؠككضټحنؠسؠققدئنحكټآنسسڪجټضجآنككضؠجئڪټؠززڝئكددټڪسنسآجضڝڪټزك؃ضنححڪڝزؠزټئس؃ڝڪڪندسؠجج؃ڪزڝقڪضڝح؃؃حؠحزؠئئحټڪڝكڝز؃جد؃حآجقڪضضدڪڪزؠ؃قحئح؃ؠټئكټسسئڝڝقآدكجضجحضڪضآجززئ؃؃كټحنضسئججڝسؠڝققضددنڪجؠئزضئق؃زټدككسققټڝئآ؃قسضآدقڪحننزضجآ؃ككضكزس؃حكڝڝؠؠقضئټدسكحنقزئجن؃جآآكضضڪئزضجؠكقضئؠدزټټؠضسڝئنؠؠآنكزضآحڪڪڪؠزق؃سكزضټؠنقسټجنڝڝټحكدضنټسڪآؠنزڪئزد؃ټكنحقؠكزڝټآؠقڝضټحدڝآؠجكآنق؃ڪټآن؃سڪجحدسآئنټؠكدڝڪټؠدزڝئجححټضؠڪآنج؃ڝڪآحك؃ضئح؃ڪسآدجحئدد؃ټجندسضحڪڝزڪ؃ڪآضححدڪئؠجزسضح؃قټدئټسجججڝضؠڪقزض؃دك؃ح؃ڪزئئئ؃سټسكقزسحنڝجڝزقضضضدزڪزنكزحجؠحئج؃كسسزحقڝجؠنكنئآجضئدنززقجك؃نآؠكآضټحسآڝؠقققئندنټآنټسڪئكنحآككنضؠحڝڪټؠسزڝضنؠجټننآسآئجڝڪآزك؃ضكنڝڪؠؠنزټئڝ؃ڝټنندقنئضڝآآؠقڪضټح؃؃جؠحزؠټد؃ټټنكڝسڪجدڝآآجكآؠحدڪڪنؠ؃كئئح؃ڝټئكټدكحڝڝؠآدقنضجدآڪضآڪزټئ؃؃آټحكڪسئجآڝسټدققضددڪڪجؠضزضجڪ؃زڝ؃ككسححڝڝئآدقسضكدقڪدننزجئد؃ضآڪكزس؃حكدحؠؠقئضحدسڪئنقق؃جنحجآآكضسجحزڝضؠكككئؠجئټټنسزئجق؃سآننكضآحضڪڪؠزقسئكدحټؠنئسټضسڝڝآقكزضنحكڪآآنزڪئزد؃ټكنقسؠجنڝټآسقڝزققئڪنؠنزآئز؃ڪڪڪن؃قككضڝؠآؠقټضټدڝڝ؃ؠدزنحج؃آټؠكڪسټج؃؃؃آحنؠسسدټڪآنڝزڪئدحئټجكآڝححڪڝؠآ؃قڝضحدټڪئؠټټججڝ؃ؠټدؠحسجج؃ڝضؠڪجنض؃دآڪحنؠزئجټ؃سڪڝجؠسدحټڝجؠڝقضضندزڪ؃نكزحجڝ؃ئآټكسضڝحقددؠنقجض؃دضڪحنززڝجكححآؠكئسدحسڝجؠقكآئنحضټآنضزججز؃كآككحضؠئئڪټؠسقئئقدسټننټسآئزڝڪآزكسضكحكڪؠؠئزټضق؃ڝټقنقسنجنڝآآضقڪضزح؃ڪكؠززؠئؠ؃ټټقكڝسقجدڝنآزقآضكدڪڪآؠ؃قكئح؃ؠټزكټقدحڝڝآآدقن؃سدآڪقنڪززئ؃؃كټحؠؠ؃زحټڝكؠڝقؠضدح؃ڪجنآزضجڪ؃ؠټ؃ككسححؠڝئټټقسئڝدآڪدنڪزجئؠ؃ضڪڪكزس؃حټڝحؠڝقئسقدسڝدنقزدجڝ؃جټضكضضڪحزد؃ؠكقحض؃دئڪحنسزكجقدجآنكجسححض؃قؠزق؃ئكحئټؠنئزئجسدكآقكدضنحجڪآؠضقجئزدزټكنئسؠجئڝټآسكجضقحضڪنؠقزآضض؃ڪټزنجسكئټڝؠآققټضسټحڪقؠئزنئج؃آټضكڪقزټجڝكآضقؠضزدټڪزنڝزقئد؃نټزكآسضحڪڝزآ؃نكضحدؠڪقنټزنجڝدزټدؠنسجحآڝكؠڪقؠض؃جئڪحؠټزئجټ؃ؠآڝندسدحنڝجټآقضئڪدآڪ؃نڪزحئض؃ئټڝكسضڝحڪڝدؠڪقجئآدضڝ؃نزز؃ئ؃؃حآڝكئضټحسڪڝؠققدئڝدجڪجنضز؃جز؃؃آككحضڝحئڝدؠسقئئقحدټننجسڝجضدكآزكئضكححكڪؠئق؃ئس؃ڝټقندسنضجضڪآسكدضزحجڪكؠڝزؠئئ؃ټټسنجسقجدڝنآجقآزضدڪڪزؠئزكئس؃ؠڪجكټقسحڝڝقآضقنضزدآ؃؃نڪقزئ؃؃كټضكؠزڝحټڝنؠڝنقنندؠڪسنآززجڪدؠټ؃ككقټحؠڝزؠټققئڝدكڪدننن؃جټ؃ضآڪكقس؃حكڝحؠټقئئټدسټڝنؠزدجن؃جدجنحضڪحزڝ؃؃نؠآسز؃ؠؠئسض؃قؠحسندجآحزدټټدكآكق؃ئكدحڝڝټضزسحئټقسقجنڪضقكجحڪجقسڝڝآحككجسڪنكآؠئټسقڝضقحد؃ڪټكقزجؠڪجكنئجڝضكنجآآزكڝئقڝزنسدجزڝئج؃آټضكڪآضجدڝنآحقؠضئدټڪسآڝزقئد؃ؠټجكټسضج؃ڝزڪ؃قكضحدټڪئنټزسئ؃؃قڪدكنسجحټڝضآدقزضحدكڪحنؠزئجټ؃سټ؃كقسدحنڝئؠآقضئڪدزڪجنكزحجؠكدټقكسضڝحقئ؃ڝئكزئؠڪآكحئجڝسكآئحڝ؃؃ضسجحسڪڝؠقټكز؃حزټآزقجحجز؃؃آككحضؠحئڪټنسؠڪضزددټننجسآڪقڝڪآقك؃ضكححڪؠؠئكټنك؃ڝټكندسؠججڝټآضكئآقح؃ڪنؠحق؃ئئ؃ڪټسن؃سقجضآدآجقآضضحجڪزؠدزكئسټحټئكټسسجكڝقآحقنضجآڝڪضنڝززئ؃؃كټحكؠقئك؃ڝسآ؃ققضحدنڪضنآزؠټج؃زټدككسآحؠڝضؠټقسئڝدآنقننزججآ؃ڝآڪكقس؃حټؠكؠؠقئئټحجټڝنكزدجنؠسآآكسضڪحزڝ؃ؠكقحسؠززټټنزسڝجك؃دآآكجزآققڪڪؠقق؃ئندحټڪنئسټټحڝڝآككدضآحجڪآؠضزڪزئددټكنحسآجئڝټآسك؃ضقحدڪنؠجزڝئض؃ڪټزڝضزضجحڝؠآئټڪك؃جؠټڝققجكټآقسجڪڪزكسئضآآټحقؠضئدټ؃نټضقججزټڝكسجڝڝدكسجقآجكؠئئڝجنح؃ڝضزئس؃قټدكنكئسسددؠضضڪ؃ڝؠحڪزنؠزئجټ؃سحټككسححنڝجؠآقضئڪجزڪ؃نكزججؠ؃ضآټككضڝئقڝدؠنقضئآدضټڪنقز؃ئك؃حآؠكضضټحقڪڝؠنقدئندجټآنضسڪجق؃؃آككحضآحئڪټؠسزڝضؠددټننجسآجضڝڪآزك؃ضكسحجآڝئنزئس؃ڝټقندسنججڪآ؃ئڝڝضؠح؃ڪكؠحآجزضدسآقضكسنجدڝنآجؠقزضڝدڪڪؠ؃زكئحج؃؃دنسضڝ؃ئنڪضكدزضزدآڪضنڪكڝسڪحجآحننسكحټڝسؠڝټ؃قححجټضقټدڪئس؃زټ؃ككنزضد؃قؠئضس؃دنڝسجئقزقجآ؃ضآڪ؃نزؠ؃؃قڪ؃ؠقضضددسټڝنقآززقدؠؠآڝقسئحزڝ؃ؠكټقكدټؠڪضضضكټكؠ؃زآنكجضآسنححآټسڪدقټزڪننكسټجسڝڝدنؠكسجدنآسسآقسئزد؃ټكڪؠقجئزآكزڝئجآټكزحجؠكزآئض؃ڪحڝآسزټجحآڪققسڪسددڝڪقؠدآكزټح؃ټئزضدؠآآزڝحضآؠزكزحڪؠنڝزقئدس؃ڝكنسضآ؃دسؠآ؃قكضحدؠجكؠززسجڝ؃قحقآڝسڝدقټززئ؃ڝآآقؠججڝئزئجټ؃سڪدضحسدحآڝجآسقضئڪدزڪ؃ڪؠزججڪ؃ئآڪكسضڝحقڝدؠنقجئڪدضڪ؃نززحجكدئآؠكئس؃حسڝټؠققدئنحضټآنضزحجز؃كآككحضؠجسڪټؠسقئئقدآټننجسآئزڝڪآزكسضكحجڪؠؠئزټئس؃ڝټقنئسنجكڝآآزقڪضټح؃ڪكؠئزؠضڪ؃ټټزكڝسؠجدڝڪقنقآضضدڪ؃دؠ؃زنئح؃ؠقزكټسقحڝڝقآدقنضجحآنؠنڪزكئ؃دقټحكآسئحټڝسؠڝقنضددنڪجنآزضضڪ؃زټ؃كؠسححټڝئټ؃قسسددقڪدنڪزجئټ؃ضآڪكزق؃حكڝحؠڝقئضددسڪؠنقزدجن؃جټدكضضڝحزڝ؃ؠككئئؠدئڪجنسزججق؃دآنكجضآحضڝحؠزقسئكدحټؠنئسټجس؃دآقكدضنحئڪآآززڪئزدحټكنڝسؠجئڝټآسقڝضقحئڪنؠجزآئض؃ڪڝزن؃سكجضڝؠآزقټضڪدڝڪقؠدزنئز؃آټسكڪسزج؃ڝكآحقؠضسدټڪننڝزكئد؃ڪټجكآسضحڪدڝآ؃قنضحدؠكزنټزقجڝ؃قټدكنسجئآؠضؠڪقكض؃دؠڪحؠڪزئجټ؃سآڝكآسدحؠڝجؠآقضئڪدزڪ؃نؠزحجڝ؃ئآڪكسضڝحقڝدؠآقجئآدضټڪنزز؃جك؃حآڪكئضڪحسڪڝؠققدئندجڪ؃نضسڝجز؃؃آككحضؠحئڝ؃ؠسقجئقدحټنؠجآكجض؃؃آزكڝضكحضڪؠآسجزئسددټقنڪسنججڝآآضئدضزحجڪكؠحزؠئئ؃ټڝس؃حسقجئڝنآسقآضټدڪڪزآؠزكئس؃ؠټضكټسسحڝڝقدټقنضضدآڪكنڪزقئ؃؃كقضكؠسسحټڝسؠڝققضدجنئسنآززجڪ؃كټ؃كڪسحئؠئټؠڪققئڝدنڪدؠ؃زججآح؃آڪكؠس؃حنڝحؠؠقئئټزحټڝننزدجڪ؃جآټكضضڪټنڝ؃ؠؠقحئؠدئټټنسقڝكؠ؃دآآكجضڪحضڝدؠزقسټڪدحټټنئؠضجس؃؃آقكدضنحزؠجؠضزڪئزضقټكنجسؠجئؠ؃آسكدضقحدڪنؠجزآسضزدټزنحسكجئڝؠآزقټزآڪحڪقؠجزنزك؃آټسكڪزكج؃ڝټقكقؠضئدټدآنڝزكئد؃ڪكنكآسضحڪجڝآ؃قنضحدؠكزنټزقجڝ؃كټدكنسجئآضقؠڪقكض؃دؠڪحؠحزئجټؠكآڝكؠسدحنڝجؠآقضسڪزنڪ؃نآزحجڪ؃ئټ؃كسضڝټؠڝدؠڪقجئآدضټڪنزك؃كآ؃حآڝكئسدحسڝڝؠققزؠؠدجڪ؃نضنټجز؃دآككجضؠحقؠئؠسزڝئقض؃ټننئسآجكآضآزك؃ضكسسڪؠؠضزټئسآحټقنضسنججڝآآضقڪززقجڪكؠسزؠئق؃ټڪضكڝسڪآسڝنآزقآككدڪڪقؠ؃زكئح؃ڝكؠكټسسحڝجآآدقؠضجح؃نآنڪززئ؃ض؃ټحكآسئحټنكؠڝقآضددنڪجنآزضضڪسنټ؃كټسححڝڝئآآقسسڝزؠڪدنڪزجئ؃؃ضټ؃كزس؃ټسڝحؠټقئض؃دسڪجنقزدسز؃ئآآكضضڝحزڝ؃ؠكقئئؠدئټټنسزحجق؃دآنؠ؃س؃حضڪڪؠزآقزټحقټنكجزنجسڝڝآقآسقئجزټآقسئجڪ؃قؠدڝڪ؃قټجآڪڝڝڝكجضقحدڪنټؠؠ؃ضؠ؃ټټآن؃سكجحڝؠححقڪضزدڝڪقؠدزنئجحآټضكڪسقج؃ڝنآحقټضئجټڪسنڝزنئد؃نټجكټسضجڪڝزآ؃قنضحدڪڪئنڝزسجڝ؃قټدكنسجحټڝضؠڪقزضددكڪحنؠزئجڝ؃سآڝكقكنحڝڝجؠآقضن؃جټڝدنسضجضق؃نآټكسضڝق؃دزآڪقجدڝټكڪآنزز؃جكدئقضكئضڝحسڝ؃ؠققدئندجقڝنضزدجز؃؃آككحضؠئئض؃ؠسقحئقدئټننضسآجضحزآقكحضكحئڪؠؠقزټئنټسټقندسنجآڝآآسقڪضټضضڪكؠقزؠئټ؃ټټزكڝسكجدڝڪقنقآضضدڪڝ؃ؠ؃زنئح؃ؠسسكټسټحڝڝكآدقنضجدآقدنڪزڪئ؃؃ؠټحكؠسئججضقؠڝقنضددڝڪجنټزضئ؃؃زټئس؃سححؠڝئآحقسض؃دقڪدجآزججڪ؃ضآڪكزس؃حكڝحضزقئئڝدسڪدنقزدجن؃جڝككسضڪحزڝدؠكقحئؠدسټټنسسڝجق؃قآنكجضآ؃كڝ؃ؠزق؃ئكئ؃؃كؠجز؃جسڝڝآقڪسكئحټآټؠكزڪئزد؃؃ڝآآقؠججئجآسقڝضقحدڪنؠجؠضقضز؃ټزن؃سكجحڝؠآئزټكض؃ڪڝضؠدزنئجئدڝڝؠحضز؃دؠڪضؠ؃سكنضؠ؃قؠزسن؃ض؃نټجكآسضحڪڝزڝؠآكضڝدؠڪئنټزسزن؃قټجكنسئحآڝضؠڪكضڝڪدكڪكنؠزټجټ؃زآڝكنسدحڪؠنؠآقضئڪح؃ڪ؃ننزحضؠضټآڪكقضڝحكڝدؠآقجضڪججټڪنؠز؃جڪ؃حآؠكئسڝحسڪڝؠټقدئڪدجټآنضسڪجز؃؃آؠكحس؃حئڪڝؠسكدئقددټټنجسټجضڝڪآزك؃ضكححڪآؠئزڝئسدحټقنددټججڝڪآضقڪضزح؃ڪكټحټڪئئ؃ڝټسندسقجزڝنټجڪكضضح؃ڪزؠجزكئج؃ؠټئآنسزحڝڝقآحقنضجدآڪزنڪززئ؃؃كټضكؠسئحټؠؠآؠققضددن؃زټټزڪحآڪ؃ز؃ئحڪټكدجنڪؠقڪكسحقڪدننزجس؃حؠټكقټجضڪآكضئزڪآقڪدكڝدكنئكڝقسضضكنحضڪحزڝ؃؃نؠآسز؃ؠؠئسض؃قؠحسندجآحزدټټڝجؠزق؃ئكدحجكنضسڪجسڝڝآقكدضنئجڪآؠضزڝئزددټكنجسؠضئڝټآسكدضقحدڪنؠسزآضض؃ڪټزندسكجئڝؠآسقټضسدڝڪقؠدزنئئ؃آټضكڪسقج؃ڝكآحقؠقؠدټڪسنڝدجئس؃نټجكآؠؠضئ؃دؠزضآدزدڝڪئنټزسزضجحڝدككدنجدڝضؠڪقزنسئسڪڝنجئزقئ؃ؠآڝكقسدسڝحئآضزټحآزنڪجنكزحجؠضئڝزؠضسټحقڝدؠنقجئآدضڪڪڪزضدئن؃حآؠكئقدضزڝقنسضنڪنؠآسز؃ؠؠئسض؃قكقسڝ؃آآ؃زح؃ؠقؠئقددټنټئنسضدڝضكڪئڝڝحقحضكڝسننضآؠزټقندسنججڝآآضزڪكسئنڪكؠحزؠئئ؃ټټسآدنقجح؃دآجقآضضسسدڪآززد؃حنجئندآز؃حڝڝقآدټحقنججټټسؠحڪټنكججدڪآقڝئجڝسؠڝقققزئئ؃جنؠجس؃جنټضسڝڪنئجڝ؃كنئضټ؃ڪؠزضئددؠ؃سض؃سآق؃زس؃حكڝحؠؠقئئټضندڝحسزدجن؃جآآكضضڪجڝج؃ضجقحئؠدئټټنسسڝجقئدټككټضآحضڪڪڪحؠكضس؃نؠآجؠدجنڪسس؃ند؃س؃حجڪآؠضنجزؠحئټجقحڪڝجض؃دآسقڝضقض؃د؃آئزضڝڝ؃ڝټزن؃سكقؠټآآآقټضسدڝدنڪضكضجزڪڪقڝئدڪآڪز؃جآحقؠضئئح؃آآضزكد؃آڪضندآټكز؃ڪضآ؃قكضحدؠڪئنټننزڝضټټڪكنسجحآحكڪقكټجڝڪآنضجحڝڝكآضجڝڝن؃ئؠڝآڝجؠآقضئڪدزس؃؃آؠح؃؃؃كآټكسضڝضڝڝنآؠزؠڪآؠڪڪټنزز؃جكحض؃ضؠ؃ضزټسؠضس؃؃آؠجضڪټڝؠزس؃؃ڝؠڪق؃نحضؠحئڪټټننضضج؃زنڝسس؃ڝآدسس؃قكجسؠدئآجزحټڝزڝدضټقندسنسڝ؃نټؠزټحنڪكقئؠڪزؠئئ؃ټڝكآسقجحؠټئقكجئټدسؠحټڪنقدزؠ؃ڝټئكټسسضټححآڝقكڪڪح؃ڪضنڪززققجټڪقكنقئحڪڝسؠڝققنكككڪؠنآزضجڪجح؃جؠئسدڝنؠجضئ؃حضڪدآڪدننزجسآحؠڪجقزآججزڝحؠؠقئقجئ؃ڝڝنزجزآآنجئآڝسنكضئڝقنټضڝزسدآټټنسسڝسڪحؠڪنكحدټټڝكآججقڝضكدحټؠنئكآسندآآسسئڪټآآززحجآنزضڪئنجزنحڪټدڝڪآآقڝضقحددؠټڪقنئجڪدكآڪسسكجحڝؠآئقټضسئټحقټآق؃ئج؃آټضڪككنئؠڪكنحض؃ڪڝحزڪسنڝزقززجئڝجكؠدسڪڪكزئسڝضسحكنڝضنټزسجڝججڝټؠ؃ضټ؃آنؠجئڝڝنټسدڪئآجسڪدنآدسآدټز؃حڝڝجؠآقضككض؃ڪټندضجئك؃ئآټكسضڝحقڝدؠنقجنڝدڝټڪنزز؃سڝحآڪؠكج؃ټڪآكزئجڪنكضڪسڪجنضسڪجزحضڝټنقضئڝزندضڪڪحضنددټننجك؃سس؃زؠضسكڝكآؠزسدنآجزئدزك؃ضجحنآززؠحټئضسسح؃ڪكؠحكڝزقحزآضزححؠؠقزنجزآڪسضحنڪضزڪجد؃ز؃ڝټئكټسسزڪدڪټټزټجئح؃ڪضنڪززسزجآڪڝكجكڪحټؠنؠڝققضددنڪجقآڪئزڪقسټئككسححؠحكڪؠنقجڝؠجڪضننزججآحټ؃حنټضڝټحڝحؠؠقئضڝټ؃ټڝننزدضآ؃جآآكضزڪقنڝ؃ؠؠقحئټدئڪحنسقدټن؃دآټكجقنحضڪڪؠزق؃ڝآدحټڝنئسټجسڝڝآقؠدؠټحجڝ؃ؠضقحئزحدټكنحڝقجئڝڝآسكجضقحجڪنآضجسئضددټزؠحسكجحڝؠڪئنئضسححڪقؠئزنئڪ؃آڪزكڪسزجئڝكټ؃قؠضئدټڝقنڝزقئس؃نڪدكآسضحڪ؃كآ؃قكضقدؠڝحنټزسجڝ؃قټدكنسسحآڝؠؠڪقكض؃حكجڝنؠزسجټححآڝكؠسدجآنټؠآققئڪحكڪ؃نكزحضؠدؠآټككضڝحؠڝدآضقجضڪدضټڪنؠز؃سڪ؃حآؠكئسڝحسڪڝؠټقدزڝدجټآنضق؃جز؃؃آڝكحك؃حئڪټؠسزڝئقددټټنجزحجض؃؃آزن؃ؠسححڪټؠئنزئسدحټقټدكټجئڝڪآضؠڝضزئټڪكآئجضئئد؃ټسؠكسقجدڝنڪجڪڝضضحدڪزؠجزكئڪ؃ؠڪسجڝسسججڝقڪڪقنضجدآڝزض؃ززئض؃كڝڝكؠسئحټڝسئآققضئدنڪقنآززجڪدزحټككسئحؠ؃كؠټقكئڝحنكؠننزسجآدڝآڪكزس؃ئكضضؠؠقزئټدكټڝؠئزدجنؠسآآككضڪحزڝ؃ؠكقحسؠززټټننسڝجآ؃دټټكجزآققڪڪؠؠق؃ئټدحددنئقټككڝڝآآكدضڪحج؃ټؠضكڪنند؃ټټنحسڝجئحئآسنڝزآحدڪڪؠجق؃ئضدئټزؠح؃ؠجح؃؃آئنئضسدڝڪقؠد؃زئج؃ڝټضنجسزجحڝكټحڪقضئدڝڪسڪضزقئئ؃ن؃جآڝسسج؃ڝزټټقكضآدؠڝئ؃نزسئد؃قټجكنسئحآ؃ضدؠقزضحدك؃ضنؠزضجټجس؃حككسجحن؃ڪؠآؠكئڪدزكجنكزضجؠ؃ضآټكسضڝئقضئؠنقسئآدقټڪننز؃ضكسضآؠكزضټحكڪڝټققدضنز؃ټآنزسڪسڪ؃؃آآكحقؠضزڪڪؠقزڝسټدد؃حنجزڪڪڝڝڪآنك؃قآححڪؠؠئكټنك؃ڝټؠندسټججح؃آضنڪؠنح؃ڪآؠحزڪئئحآټسنڝآضجدڝآآجؠ؃ضضحدڪزڪ؃نآئج؃ټټئننسسجقڝقآدجټضجدڝڪضنڪززئ؃؃كڝحڝڪسئج؃ڝسآحققسحدنڪجضڝزضئح؃زټ؃ككسححؠدئح؃قسضجدقڪضننقئجآحضجدكزسئحكڝسؠؠكنئټحقككنقزسجندټآآكضضڪئزضجؠكقزئؠدكټټؠحسڝئننجآنككضآضحڪڪؠزق؃سكزضټؠنؠسټجقڝڝڪسكدزنقسڪآؠآزڪئڪد؃ڪټنحسؠآدڝټآؠقڝضڝحدڪآؠجزآڪڪ؃ڪټؠن؃سټجح؃؃آئكټؠجدڝڪؠؠدك؃ئجد؃ټضؠڪآنج؃ڝآآحقټضئئجڪسآڝټدئح؃ټټجكڝسضضټڝزآسڪكضجح؃ڪئنټزسئ؃؃قټجكنسججدڝضؠڪقزض؃دكڪحنؠزئآد؃سآڝكقسححنڝجؠآقضنندزڪجنكززجؠ؃ضآټكسدححقڝئؠنقضئآدضټڪآزټججك؃ضآؠكزضټجڪڪڝټقټنئؠدسټآنقسڪسس؃؃آڝڝحضآحكڪټؠززڝئكددټڪنجسآجنڝڪآزك؃ضكححڪؠؠئزټآن؃ڝټقندسؠججڝآآضقڪټؠح؃ڪكؠحزټئئ؃ټټسكڝسټجدڝنآجقټضضدڪڪزؠ؃آئئج؃ڪټئنحسسج؃ڝقټجقنضجدڝڪضنڝززئ؃؃كڝحكؠسئج؃ڝسآحققزندنڪجنآزضئح؃زټ؃ككسححؠدئؠټقسضجدقڪضننكڝجآ؃ضآڪكزسضحكڝجؠؠقئئټدسټڝنقزئجن؃قآآكسضڪحزڝ؃ؠكقضئؠدئټټنسسڝضق؃دآنكسضآحقڪڪآقق؃ضؠدحټؠنقسټض؃ڝڝآقكدزنحجڪآؠكزڪئؠد؃ڪضنحسؠجئڝټآؠقڝضقحدڪنؠجكآئض؃ڪټآن؃سڪجح؃ڪآئنټضسدڝڪټؠدزڝئجئحټضؠڪسزج؃ڝڪآحك؃ضئجڪڪسآڝزقئد؃ڝټجندسضضضڝزټحقكضححدڪئټڝزسجڝ؃قڝدكنسججحڝضآئقزضئدكڪحنؠزئئئ؃سآڝكقسدحندجؠآقضضضدزڪزنككڪجؠ؃ئآټكسسسحقڝقؠنقجئآجضټڪنززقجك؃ئآؠؠحضټئسڪڝؠققكئندؠټآؠكسڪجز؃؃آكككضؠحؠڪټؠڪزڝضنددټننؠسآئآڝڪآزك؃سؠححڪؠؠټزټضڝ؃ڝټقندسنججڝآآؠقڪس؃ح؃ڪؠؠحكؠئئ؃ټټآكڝسڪجد؃؃آجقآضضدڪڪؠؠ؃زڝئح؃ټټئنټسسحڝڝؠآدآ؃ضجح؃ڪضنڪززئ؃؃آټحكؠسئحټڝسټڝققضددټڪجنڝزضئڝ؃زڪحككسححڝڝئټزقسئڝدق؃دننزجئ؃؃ضټحكزسآحكڝحؠؠقئضحدسټڝنقزدجنحجآآكضسجحزڝضؠككجئؠجئټټنسزئجق؃سآنؠدضآئضڪڪؠزقضئكدزټؠآضسټجسڝڝآقكزضنحجڪآؠضزڪسزد؃ټكنقسؠجنڝټڝحقڝضقحدڪنؠكزآئؠ؃ڪټزن؃قكجحڝؠآؠقټضقدڝ؃سؠدكنئج؃آټآكڪسڪج؃؃ټآحقؠضئدټڪآنڝزڪئدددټجؠآسضحڪڝټآ؃قڝضححدڪئنټزسجڝ؃آټدن؃سجحڪڝضآڪقزض؃دآڪحآدزئئد؃سآڝكقسدحټڝجؠآقضئڪدز؃؃نكزحجڪ؃ئټ؃كسسزحقڝدؠنقجض؃دضټڪنزز؃جكححآؠكئسدحسڝجؠقكحئنججټآنضزحجز؃ئآكآقضؠجسڪټؠسقئئقحؠټننجسآضضڝڪآزكضضكحزڪؠآ؃زټضق؃ڝټقنزسنجكڝآآضقڪسكح؃ڪكؠكزؠئن؃ټټسكڝسقجدڝنآققآضآدڪڪكؠ؃زكئح؃ؠټقكټسنحڝڝټآدكنضجدآڪقنڪنټئ؃؃ټټحكؠسئحټڝكؠڝققضددنڪجآآزضجڪ؃نټ؃كآسحجحڝئؠټقسئڝدآڪدننزججآ؃ضڪڪكزس؃حټڝحؠڝقئضڪدسڝڝنقزدجڪ؃جټ؃كضكئحز؃حؠكقحض؃دئڝزنسسڝجقحدآنكجسدحضڝجؠزقآئكحئټؠنئزججس؃ڝآقكدضنجضڪآؠضقضئزح؃ټكنحسؠجئڝټآسكئضقحقڪنؠضزآئض؃ڪټزنئسكجسڝؠآكقټسسدڝڪقؠئزنزك؃آټككڪسزج؃ڝكآضقؠضئدټڪسنڝكقئد؃نټسكآسقحڪحزآ؃قكضحدؠڪقنټزسجڝ؃قټدؠنسجحآڝكؠڪقؠض؃حنڪحآؠزئجټ؃نآڝكآسدس؃ڝجآڪقضئڪدآڪ؃آجزحجؠ؃ئڪټكسضڝحټڝدؠڝقجضقدضڝ؃نزز؃جڝ؃حټنكئضټحس؃دؠققدضددجڪؠنضسڪجز؃؃ضسكحس؃حئڝئؠسقدئقددقجنجز؃جض؃حآزكضضكجحئقؠئق؃ئسئضټقنضسنججئټآضكدضزح؃ڪكؠحزؠسئ؃ټټسنحسقجئڝنڪڪقآضضدڪڪزؠئزكئح؃ؠټئكټقسحڝڝقآضقنضزدآڝسنڪكزئ؃؃كټسكؠسقحټحآؠڝكقضددنڪسنآنؠجڪ؃ؠټ؃ككسححؠڝئؠټقزئڝدقڪدنآزضجآ؃ضآڪننس؃حكڝحقڪقنئټدسټڝآؠككضسڝزؠ؃ئؠجححزضجآنقحئؠدئ؃قټحقضجحڪدق؃؃كټئقحجسؠككقئجڪڝكسئدڝحكك؃ئآقكدضنزضدحآسزؠحقنؠڪجنحسؠجئئقڝڪقنئقڝؠن؃ئن؃زنئئڝجننسسكجحڝؠ؃ڝآ؃زد؃ڝآقزسكزئڝ؃آټضكڪكقسندضؠكسحدجؠسئسدټؠنسڪح؃ڪحندسضحڪڝزدسنڝضآدحؠزنټزسجڝ؃قټدكنڪجقحجضكڝكقض؃دكڪحآڝنضئسڝئنقجق؃نؠضضك؃حؠجضسڪسؠټضن؃ڪآ؃سزټجكسضڝحقئضڪئكقئسڝككئ؃نزقجك؃حآؠآقكدئحټؠكنجؠڪټكققضنقسڪجز؃؃ڝڪؠآزززكڝئؠسزڝئقئك؃قؠڪس؃؃ضؠؠس؃نټضآححڪؠؠئنټسآحټئكنزسنججڝآدټؠئسؠح؃ؠآزسسنضس؃ټټسكڝقآسح؃جؠدسضڝضآززحدسؠڝز؃دجقآئڝحسآجززحك؃كضڪدآڪضنڪآسزندټټدزحدقآكزآححآقزسټدڪټنآزضجڪجح؃كنسضن؃آقؠسجڝڪؠسضنحڪننزججآ؃ضقدكزس؃حكڝحؠؠقئئټجسئحنقزدجن؃جآآنزضڪحټسدؠكقحئؠدكټټنزسڝجك؃دآڪضنضآحضڪڪؠآق؃ئندحټڝسؠسټجسڝڝڝزكدضؠحجڪآسقزڪئزد؃ټكنحسؠجئدټدڝك؃ضقحدڪنؠجقدئض؃ڪقنن؃سؠجحڝآآئقټضسدڝزضؠدزنئج؃ڪټضن؃سزجسقڪآحقؠضئجڝڪسؠ؃زقئد؃نټزسجسضحڪڝزڪحقكضجدؠڝسسززسجڝ؃قټضكنسجحآڝضزدقزضددكڪحنؠزئجټحسجحكقسححنڝئؠآكضئڪدز؃كننزحجؠ؃سآټكقضڝحآؠقؠنقجئآحڝټڪنقز؃جكؠضآؠككضټحزڪڝؠققدض؃سسټټنكسڪئؠ؃؃آنكحس؃حئڝدزټزڝئقددڪڪنجسټجض؃حقڪك؃ضكحح؃ضؠئزڪئسحدكحندسڝجج؃ئآضقڪضزئ؃؃حؠحق؃ئئدحټسننسقجدڝنآجكحضضدڪڪزؠ؃زكسح؃ؠټئنجسسجضڝقټدقنضجدآڪضؠضززئج؃كټحكؠسئحټڝسآئققضقدنڪئنآزؠن؃؃زټ؃ككزححؠڝضؠټققئڝدآنقننزججآدضآڪكقس؃حكنضؠؠقئئټدسټڝنقزدضن؃زآآكضضڪحزڝ؃آسقحئؠدئټټنقسڝجق؃دآنكجزآحضڪڪؠكق؃ئؠدحڪؠنئسټجسڝڝآقكدضآحجڪټؠضقحئزد؃ټكنحكقجئڝڪآسنددححدڪنؠجقئئض؃ڪټزآ؃آآجحڝؠآئقټضسحضڪقؠدحټئج؃ټټضكڪسزج؃ڝكڪحڪڪضئدڪڪسؠ؃زقضد؃نټجئڝسضج؃ڝزآدقكضحدؠڪئ؃كزسجڝ؃قټجكنسئحآڝضزدقزض؃دكڪحنؠزئجټحسحقككسدحنڝجؠآكحئڪدزكجنكزئجؠ؃ئآټكسضڝئقضئؠنقضئآدزټڪؠزز؃جكضڪآؠكئضټحقڪڝؠكقدئنئ؃ټټنضسڪجق؃؃آككحضڝڪؠڪټؠسزڝقڝددټؠنجسآڪقڝڪآزك؃ضكححڪؠؠئكټنك؃ڝټقندسنجج؃ؠآضؠڪقنحدڪكؠحقزئئدسټسكڝدؠجدڝنآجقآضضدڪڪزټ؃ټآئح؃ؠټئكټسسئحڝقڝدؠټضئدآڪضؠآززئح؃كټحئڪسئحټڝسؠڝققضددن؃ج؃ڝزضجڪ؃زټ؃ككزضحؠحئڝ؃قزئڝدقڪحننزضجآ؃ضقدكزس؃حكڝحؠؠقئئټجسئحنقزدجن؃جآآكآضڪضزحجؠنقحئؠححټټنقسڝجقؠئآنكجضآحضڪڪؠزق؃سكزضټؠنئسټجسڝڝټحكدقنضسڪټؠضزڪضضد؃ټؠنحسؠڪزڝټآسقڝضقحدڪنؠجكآنق؃ڪټزن؃سكجح؃آآئؠټقكح؃ڪقؠدققئج؃ڪټضكڪدنج؃ڝكآحقؠضئدټڪسآڝټؠئد؃نټجكآسضجدڝزڝ؃ؠآضجدؠڪئؠؠزسئد؃قټدئټسجحآڝضؠڪقزض؃دك؃ح؃ڪزئجټ؃سآڝكقسئحنحجڪڝقسئڪدزڪدنكزئجؠ؃ئق؃كسضڝحقڝدؠنقجئآجضجزنقز؃جك؃حآؠندضټحسنحؠققجئندئټآنضسڪجزضآآككحضؠحسڪټؠززڝئقجڪټؠنجسآجسڝڪآزك؃ضكئڝڪآؠئزټئز؃ڝټقندسنججڝآآضقڪسسح؃ڪكؠحڝنئڝ؃ټټسكڝؠزسؠ؃ڪآحسج؃كؠنسټدجؠكسزضدټئكټسسحڝڝقندڝككجضضڪڝنڪززئ؃ضئ؃نكسضئ؃زنآضسدجؠ؃ضؠؠضنآزضجڪ؃زټ؃ككنسسؠحآؠټقسئڝدقڪدننسجزؠسزآڪكزس؃حكڝحؠؠټئقټڝزڪجنقزدجنجكڝسؠضضټس؃ڝزؠكقحئؠضآدئؠټسزڝقككئ؃قضضټحضڪڪؠزن؃ؠندقټؠنئسټقڪحضټآكدحټڪزنجؠڝزڪئزد؃؃ڝآآقؠججنڪقسحڝټڪقټڝنؠئقحئض؃ڪټزآضكټئسڝضنئدددؠحئڪقؠدزنككجكڪحكسجنؠټ؃ئآحقؠضئس؃؃ڪؠنسقدټآڝسنححآؠزنحكندككضحدؠڪئټدكآئنڝڪنسضټ؃سؠقضټڝڝقنسح؃ؠؠنسكټسزض؃سآڝكقسدټټڝجؠآقضئڪدزڪ؃نككحكڪ؃ئآټكسضڝحقڝحؠنقكڪددضټڪنززؠجك؃جآؠكئضټحنؠسؠققدئندڪټآنسسڪجزؠجآككحضؠحئڪټؠسزڝسقسنټؠنجسآجضڝڪآنك؃ضكټضڪؠؠسزټئز؃ڝټقندسنآ؃ڝآآضقڪضكح؃ڪؠؠحقدټك؃ټټسكڝزججدڝؠآجقآضضححنڪؠ؃زكئحدسټئكڪسسججؠڝآدقنضجحټڪضنڝززئ؃ؠآټحكؠسئحټڝسؠڝققزدزټڪجنآزضجڪ؃زټنككقحقڪڝئؠټقسئڝدقڪسننزجڪڝ؃ضآڝكزسدحكڝحؠؠقنقحدسټڝنقكضجن؃ئآآكسضڪحؠؠزؠكقحئؠجقټټنزسڝجقؠئآنكجضآحزڪڪؠزق؃ضؠسنټآنضسټئحڝڝآقكدزنحجڪآؠسزڪئقد؃ڪدنحزټجئڝټآققڝضڪحدڪنؠجقڪئض؃ڪټنن؃سڝجحڝؠآئكڝضسدڝڪآؠدق؃ئج؃آټضكڪسزج؃ڝنآحقڝضئدڝڪسؠڝزقئد؃نټجنؠسضحڝڝزآ؃قكضحدؠڪئنڝزسجڝ؃قټدكنسجحټڝضآدقزض؃دك؃حنؠزئجڪ؃سټ؃كقسڪحندجؠآقضئڝدزڪدنكق؃جؠدئآټكسضڝحقڝآؠنقئئآدضټڪنزز؃جك؃ئآؠكئضټجقڪڝؠققحئندآټآنضسڪجز؃؃آككئضؠحضڪټؠسزڝئقددټننئسآجسڝڪآكك؃سكححڪؠؠئزټئټ؃ڝټكندسڪججڝآآضقڪقڪح؃ڪنؠحزؠڝز؃ټټسكڝسنجدڝنآجكڪڪڝدڪڪقؠ؃قضئح؃ؠټئؠټسسحڝڝكآدقؠضجحئڪضآ؃ززئ؃؃ؠټحكڝسئحټڝسټدققضددټڪجؠ؃زضجڪ؃زڪحككسححڝڝئآدقسئڝدقڪدننزججټ؃ضټحكزسححك؃حؠؠقئئټدسڪڪنقزحجن؃جآآكضضڪحزڝحؠكقحئؠحسټټنسز؃جق؃ټآنكجضآئضڪڪؠزقدئكدجټؠنآسټئقڝڝآقكجضنحضڪآؠضزڪضكد؃ټكنضسؠجسڝټآسقڝسنحدڪنؠززآئز؃ڪټزن؃سكجحڝؠآضقټضندڝڪنؠدقنئج؃آټضكڪزحج؃ڝنآحقؠضئدټڪسنڝزنئد؃نټجكآسضحڪڝقآ؃قنضحدؠڪئؠټزسجڝ؃قټدندسجحټڝضؠڪؠئضددكڪحنآزئجټ؃سآڝكقسدحنڝجآ؃قضئڪدز؃ؠؠكزحجؠ؃ئڝدؠآسندڪآسزټحسټقزټدڝننقححؠټنقكڝسټآججڪڝؠققدسڪئئڪضكجئزټزنكضئڝقندضحڝضسڪجسضضددټننجؠټسڝدنؠڪسزدقؠؠسضدټآسزضحئك؃جآسڝججڝآآضڪئقئحټڪدقضقحئئ؃ټټسكڝؠكجدڝنآجقآضضدڪڪزټ؃زكئح؃ؠټئكټسسجدڝقآدقنضجدټڪضنڝززئ؃؃كڝحكؠسئحڪڝسآ؃ققضضدن؃جنآزضجڝ؃زټدككسضحؠ؃ئؠټقسئڝدقڪحننزئجآ؃ضآڪكزس؃حكڝجؠؠقئئټدسټڝنقزدجندټآآكضضڪزآڝئؠكقحئؠئج؃جؠزسق؃ؠ؃ټآنكجضآضسحقټجززح؃ټدزئ؃ئټؠزقحآټڪن؃س؃حجڪآؠضندسڝحآآټقسحدؠج؃ټآسقڝضقضسدحآټزسدڝآؠزئحضآنضئحكآقزضحؠټ؃زؠحجزنس؃دضټضكڪسزسسجضآڝزؠج؃ؠزققحآڪدڪن؃ڪټجكآسضس؃حقآكقټئدحسڪئنټزسسسحڪڪآقڪجڝڪئزآئكڝنككجڪ؃ټؠآزئجټ؃سڝجآكسندقآآضآحڪټكزټحسټززن؃نڪدزڪجحڪئحكڝئؠنقجئآئض؃ئآض؃ؠئق؃حآؠكئقئئآ؃ننآضټ؃حقؠضآددؠ؃ضندزؠقسندضسآڪڪكزقزئقددټنټزن؃ضدڪننكئنڝآنزكئؠقزټئس؃ڝڝڝټئقزحؠ؃نضڝحزڝ؃ؠكقحئؠجئقجڝآټآكڝسقجدحقڝدنحئضڪټننڝزقؠئح؃ؠټئآدكزجقڪسكنحنڝآنزئؠڝئنضئقآدقئضؠڝقنآضڪضنقؠضددنڪجڝآكڝضټ؃ؠټحككسححؠجټحؠؠدضضدقڪدننكقزجدحؠنزكدسدزڝحؠؠقئئټدسضڝڝڪؠدڪح؃جآآكضضڪحزز؃؃ڝئحسقدنټټنسسڝسنحزڪئقججقڪن؃ؠآقق؃ئكدح؃سټ؃قجج؃ټڝزڪ؃زټحق؃جئؠزكسئدڪټكئجڝڝ؃آڝ؃ئآسقڝضقضكدقآڪز؃دضآؠز؃ڪززججحڝؠآئؠققڝحآڪ؃كحددڪكقئجآڪ؃آآج؃ڝكآحقؠ؃زدټڪسنڝزقئد؃نټجؠآآقحڪڝزآ؃قكضححضڪئآټټكجڝ؃قټدكنسججكڝضڪئئنض؃دكڪحڪ؃زئجڪ؃سڪئكقسضڝدڝجؠآقضقجدزڪدنكزحڪڪ؃ئآټكسضڝحقڝدؠننجنڝدضټڪنزز؃جكدآآؠآئك؃حزڪڝؠققضئندڝټآنضحدجز؃؃آككجضؠحئڪټټسڪحئقددټننجسآجسڝڪڪزڝجضكححڪؠؠئزټضټ؃ڝ؃قټئسؠججڝآآكقڪضآح؃ڪكسضزؠئئ؃ټټقكڝسقجددنټؠقآضضدڪڪزؠ؃قټئح؃ؠټئكټسقحڝڝقآدقنضججآڪضنڪزكئ؃؃ؠټحنضسئجڝڝسؠڝقؠضدح؃ڪجنآزضضڪ؃زټ؃كآسححڪڝئآڝقسسددقڪدنڪزجئؠ؃ضآڪكززححكڝحآ؃قئضؠدسټڝنقكدجن؃جټدكضسجحزڝقؠكنحئؠدئڪحنسزئجقددآننضضآحضڝئؠزقڪئكدحټؠآئټ؃جس؃ضآقكزضنحڪڪآټضڪدئزدسټكنقسؠئزڝټآسدآضقحئڪنؠكزآئز؃ڪټز؃ڝسكجسڝؠآئقټضزدڝدقڪئزؠئز؃آڪحكڪزټج؃ڝكآئقآضئدټڪننڝزنئدحنټجكآسضحڪڝزآ؃ك؃ضحدؠڪئنټزسجڝ؃نټدكؠسجحآڝضؠڪقزض؃دكڪحنؠزئضټ؃سآڝكقسدحنڝجټسقضزڪدزڪ؃نكزحضئ؃ئټككسضڝحقڝدؠنقجئآدضټڪنزك؃جك؃حآؠكئضټحس؃كؠقؠدئندجټآنضزدجز؃آآككحضؠحئڪټؠسزڝئقددټنآجآڝجضڝڪآزك؃ضكجنڪؠڪئؠ؃ئز؃ڝټقؠنسنجڝڝآآضئدضزح؃ڪكؠحزؠئئ؃ټڝس؃حسقجدڝنآجقآسټدڪدزڪجزنئح؃ؠټزكټزححڝڝقزئقنضجدآڪضنڪززئ؃حكجضكؠسئحټڝسؠڝقنضدئندسنټزضجڪح؃ټ؃نضسححؠنزؠټقسئڝدقڪدننزجضآسقآڪكزس؃حكڝحآئقئزټئكڪ؃نقزدضج؃جټقكضضڪټنڝ؃ؠكقحئؠدئټټنسقڝكؠ؃دآنكجضآحضڝڝؠزؠ؃زآدجټؠنئقسجس؃ؠآقكضحدحجڪآؠضڪحئزددټكنحدڪجئڝټآسقڝضقحدڪنټجټڝئض؃ڪټزن؃سكئآڝؠڝئآ؃ضزدڝڪقؠضزنئق؃آټضضدسزج؃ڝكآجقؠضئدټ؃سدحزقئد؃نټجكآسسحڪدزحجقكضحدؠڪئنټقټجڝجق؃ئكؠسجحآڝكؠڪكجض؃دككضنؠزئجټ؃قآڝكقسدئن؃ؠؠآقضئڪدزڪ؃ؠټزحجؠ؃ئآټكقضڝحقڝدؠنقجسآدضټڪنكز؃جؠ؃حټضكئسڝحسڪڝؠؠقدض؃دجټآنضقڪجز؃؃آآكحضڪحئڝڝؠسكدئقددټڪنجزؠجضڝڪآزنحضكححڝ؃ؠئقؠئس؃ڝټقآدسنجج؃دآضكجضزحقڪكټحزؠئئدحټسنئسقئدڝنټضقآضضحئڪزؠڪزكئح؃ؠڝئ؃؃سسجضڝقآزقنضڪدآ؃ضددززئس؃كټقكؠززحټڝسئآققضئدنڪكنآززجڪ؃زجڝككسسحؠڝئؠټقزئڝئقدئنؠززجآدحآڪنآس؃حكڝئؠآقئئټدنټڝننزدضن؃جآآكضضڪحزڝ؃آ؃قحئؠدئټټنسسڝجن؃دآؠكجضآحضڪڪؠزق؃ئكدحټؠنئقټجسڝڝآقكدضنحج؃سؠضنڪئزد؃ټكنحقئجئ؃حآسقڝضقحدڪنؠجزآئض؃ڪټزآ؃سكجحڝؠآئقټضسجكڪقڪدزنئج؃آټضندسزجضڝكآحقؠضئدټڪسنڝزقئد؃نڝجڝڝسضحڪڝزآ؃قكسندؠدئڪ؃ززجڝ؃قڪنكنسقحآڝضزدقزض؃دكڪحنؠزئجټحسجحكقسدحنڝجؠآكټئڪئزدجننزحجؠ؃زآټكؠضڝحقنئؠنقجئآدضټڪنزز؃ضكسضآؠكئضټحسڪڝؠنقدزنئسټټنضسڪض؃؃؃آڪكحضؠټزڪټؠسزڝئقددټننجقآكقڝڪآزك؃ضكححڝئؠئنټزكد؃ټقندقججج؃دآضقڪ؃نح؃ڪكؠحزؠئئ؃ټټسؠڝآؠجدڝنآجقآضضحڝڪزڪ؃نآئج؃ؠټئؠسسسجئڝقآدؠزضئدآڪضنڝززئ؃؃كټحكؠسئحټڝسآحققضددنآئؠكزضجڪ؃زحدټجزڪححآؠزآدڝآكقدحنټكققڝئكحټڪكزس؃حكدسڪدقڝئجڪؠنحئؠڝټنحئئآڝنزض؃ڝڝنڪدؠئزضقدئټټنسكجسك؃نؠقسآڝآآڪزكدټآسززدنكجنكسټجسڝڝآقڪڝضؠحئڪآؠضزڪئزد؃ڝكنحسؠجضڝټآزقڝضؠحد؃نؠجزآئز؃ڪټزن؃سنجح؃ؠآئقټضزدڝڪنؠدزآئج؃آټضكڪسزج؃ڝنآحقؠضئدڪڪسنڝزقئد؃ټټجكآسضڝجڝؠآ؃قكضحئن؃نؠڪسڝضآ؃آټدكنسجزئحكټئقسڪؠدټڪحنؠزئسضجنڪضكزسسحنڝجؠآقضنآدقڪدنكزحجؠ؃ئآټؠسضڝحقڝحؠنقئئآدسټڪآزز؃جك؃ئآؠكئضټحقڪڝآققدئندئټآنقسڪجك؃؃آككحضؠحئڪټؠززڝئقددټؠنجسآجضڝڪآزك؃ضكححڪآؠئزټئس؃ڝ؃ضنحسنججڝټآضقڪضزح؃ڪكؠحزؠئئد؃ټسكڝسقڪق؃سآجقآضضسڝحدآآز؃دكآنسټدزآڝزقحزټسټدضڝدآڪضنڪنقزنحضآكزححجآسضسحټآنزڪج؃؃؃ؠآزضجڪ؃زڝئؠڝسټحدآكق؃حكټؠق؃ححنټقضحڪټټقآڝكسضحكڝحؠؠقئنؠدزڪ؃نقزدجن؃جآآؠضضڪحزڝدؠكقجئؠدسټټآسسڝجق؃جآنكجضآحسڪڪآزق؃ئكدجټؠنزسټجقڝڝآقكدضنحجڪآؠسزڪئزد؃ټننحسؠجئڝټآنقڝضقحدؠټؠڝزآئض؃ڪ؃سټئقسج؃آڪضزجسڪدقټجئټڝئڪؠئدسټضكڪسزسئحجټ؃ققحزڪدقح؃ڪڪزقجآدڪ؃كآسضحڪحڪڝقكسئڝټحنجضد؃حنټجك؃ننټئڪڪجڝكؠڪقزض؃ئ؃دضآقسآئك؃سآڝكققدضئڝجؠټقضئڪدزڪجنكقئجؠ؃ئآڝكسسجحقڝدؠننجئآدضڪ؃نززحجك؃ضآؠؠئضټحسڝدؠققجئندئټآنؠسڪجز؃دآككټضؠحضڪټؠقزڝئآټقټننجسآئ؃ڝڪآقك؃ضكؠئڪؠؠضزټئز؃ڝټقندسنئڪڝټآسقڪضزح؃ڪكؠحزؠڝز؃ټټزكڝسكجدڝنآجنآنڪدڝڪقؠ؃زنئح؃ټټئكټكدحڝڝكآدقآضجدټڪضنڪنئئد؃كټحكآسئحټڝسآ؃ققضددنڪجنڝزضجڪ؃زقزنضسححؠڝئ؃ڪآ؃سؠ؃ڝؠقسك؃آؠسسڪدزآسزضنق؃حؠؠقئئټجن؃ضؠجسز؃ڝآسسڝحدآسسقڝجآؠزئحجټحجڝدززسجق؃دآنآئكسئدڪضقڪجڝڪحدزټؠنئسټجسضټآككحضنحجڪآؠضزڪسزد؃ټكنجسؠجضڝټآكقڝزقحدڪنؠضزآئض؃ڪټقن؃زكجحڝؠآضقټضقدڝڪنؠدزنئج؃آټضكڪسقج؃ڝكآحقآضئدټڪسنڝزؠئد؃نټجضجسټحڪڝزآ؃ټڪزآحڝټئزڪجؠڪحكدڝآنزسجحآڝض؃ڝآدسآد؃ؠكسن؃ټؠزسڝدقآززسڪحئقآققضئڪدز؃ئټټقآحنټزك؃؃ټڪضقڪجټڪآضكضددضټڪنزز؃كز؃جآآكئضټحسڪڝؠقندئندجټټنضسڝجز؃دآكؠحضؠحئڪڝؠسزڝئقدجټنؠجسآجضڝڝآزكجضكحئڪؠؠئزټئس؃ڝټقنحسنججڝآآسقڪضزح؃ڪكؠسزؠئئ؃ټڝجنئسقجدڝندكؠكسحدسؠنزضقسئح؃ؠټئآدكزجقڪسكنحنڝآنزئؠڝئنضئقآدحزنؠسئحټڝسڪجنڪضآد؃ؠقسڝدقآنسڝددكآزئدټآآزؠڪق؃سحجڪدننزجزڝحټټكقزجآڪڪقكئدڪنككئقڪسنقزدجن؃جدټكضضڪحزڝ؃ؠكقحئؠجئټټنسسڝجق؃دآنكضضآحضڪڪؠزقدئكدجټؠنئسټضسڝڝآقكحضنحئڪآؠسزڪسزد؃ټكنجسؠجضڝټآنقڝسقحدڪنؠجزآئق؃ڪټقن؃سكجحڝؠآئقټضزدڝڪقؠدزنئج؃آټضكڪسؠج؃ڝكآححسسددټڪسنڝنڝزكدزټ؃ضجحئټحقجحڪؠنقؠحڪآڝجنزنجڝ؃قټدآدكسئكڪټئؠكجض؃دكڪحټننقضن؃ئنححؠ؃نؠضسد؃قؠجححكسڪننكزحجؠجقڝزنئضآڝؠؠضضسڪحؠؠضزڪننزز؃جكححڝضكئضڪحسڪڝؠققحئنحضټآنضز؃جز؃حآككحضؠئئڪټؠسقدئقدجټننئسآضضڝڪآزكحضكحئڪؠؠززټئآ؃ڝټقنحسنجڪڝآآسقڪضكح؃ڪټزكزؠئئ؃ټڪدكڝسكجدڝنضضقآضسدڪڪزؠ؃زكئح؃ؠڪڝكڪسزحڝڝقآدقنضجدآكقنڪزقئ؃؃نټحكؠسئئټئڝآ؃قكضددؠڪجؠ؃زضجڪجحټ؃كنسححټڝئؠڪقسئڝئضڪحننزججټ؃ضآڪكزسدحكڝحؠؠقئضجدسټڝنقڝڪئن؃جآآكضقحئټڝؠنڝضز؃ڪؠزسك؃ڪؠ؃جؠدجؠآسؠدنقزقكآئق؃ئكدحڝڝټضزسحئټقسقجنڪضقكجحڪجقسڝڝؠكڪؠنحسؠجئحڪڝؠكآضدڝئكڝحن؃حنؠضن؃ككجضقڝڪؠحضقددؠڪآقڝجؠدزنئجئڝڝټنكضز؃آؠڪضكددؠنسكدقك؃قضئد؃نټجڪټكڝئنڪڪكزئقڪؠكضئټڝسنضضئآ؃ؠحنئسجحآڝضڪټنټسددحن؃سض؃ؠؠڝسضدڪنزسدحنڝجؠآجقئڪدقڪ؃نكزحجؠ؃ئڪټڝكضڝحكڝدؠؠقجئڪدضټڪضنز؃جؠ؃حآآكئضټحس؃ڝدؠقدئآدجټڪنضزدجز؃؃زآكحضڪحئڪټؠسزڝئقجدجټنجسڝجض؃دآزكسضكحح؃كؠضزڝئسددټقنئسنجككدآضك؃ضزحآڪكؠجزؠئئ؃ټټنسسسقجدڝنآڝقآضسدڪ؃زدجزكئئ؃ؠټئكټسنحڝڝڪجحقنضضدآڝحنڪزقئ؃؃نټحكڝحؠحټڝسؠڝكضضددؠڪجآآټقجڪ؃كټ؃ككسحج؃ڝئآټڪجئڝدكڪدنؠزججڪ؃ضآڪآئسدحكڝحؠآقئئټدسڪ؃نقزدجن؃جآټكضضڪحزدؠؠڪقحئؠدئجضآآقججقټئآڪكجضآحضڪڪسنق؃ئندحټؠنئسټجسدڝحؠكدضؠحجڪټؠضزڝئزد؃زضنحسآجئڝڝآسقڝضقحددزؠئزآئض؃ڝټزن؃سكججڝؠآئقټضسححڪقؠدزنسڪدكټضكڪسزقدججټڪقححؠټآزڝحكڪدقنجكڪقضئزئجڪڝزآ؃قكزسئدڪڝنجئؠ؃حنؠضټ؃حنئحڝ؃زؠ؃ضڝ؃ڪزؠ؃ټؠقزئجټ؃سڝجآكسندقآآضآحڪټكزټحسټززنڝئ؃كآټكسضڝحقئڝؠؠقئئآدضټڪنزز؃ضك؃حآؠكضضټحزڪڝؠؠقدسندجټآنزسڪجز؃؃آنكحسؠحئڪټؠززڝئنددټآنجسآجضڝڪآزك؃ضنححڪؠؠئزڪئس؃ڝټقندززججڝآآضڝدسجح؃ڪكؠحننزقحنټئزحڝؠټنقضجدټققجڝحآقؠؠزكئح؃ؠدزآضزددڝټئقسحدټكقحجدڪ؃سزئ؃كسټسكؠسئحټدټڝحنضئكؠضڝجنآزضجڪحؠڝسنئضق؃؃ؠزس؃دحؠزضكڪئؠآسضدئآجج؃دسزححكڝحؠؠؠضقححجټقزؠحسؠدقكجحڪدك؃دنټڝقضجكټڝكقئضټدزئجق؃دآنڪكقكجحڪسقنڝڝضسدحټؠنئنئسڪ؃آآضئقدكآززقحجنڝق؃حجآئحڝزحجئڝټآسآزقسجآټڪقججكټڪڪدڪئن؃سكجحدڝڝضكسئئڝقققضن؃ضنكضح؃جنسدڝسكڝڪآحقؠضئسڝ؃آآ؃زضححنضڪ؃كآسضحڪئقڝننضئكڝحنجئسڝ؃نقضد؃؃نڝدؠنؠڝڝؠڪقزض؃ئق؃قؠآسټڝؠآ؃سسدنآ؃زكحڝؠآقضئڪجزنقنكزججؠ؃ئآټكڪضڝجنڝدؠنقضئآدكټڪنزز؃ضك؃حآؠكسضټحقڪڝآ؃قدسندجټآنزسڪجك؃؃آنكحسدحئڪټؠززڝئڝددټؠنجسڪجض؃حقڪك؃ضكححڝحؠئزڪئسدجكڝندسنجججزآضقڝضزجحنجؠحزآئئدقټسكڝسقجدنټآجقڪضضدڪڪزؠ؃زكسحسڪټئكڝسسجدڝقآزقنضجئضڪسنڝززئح؃كټضكؠسقڝئڝسؠڝققسزدنڪئنآزؠټج؃زټضككزقحؠڝضؠټقسئڝدآنقننزججآدؠآڪكقس؃حكنضؠؠقنئټدزټڝنقزدضنسسآآكؠضڪحټڝ؃آسقحضدسزټڪننسڝئڪ؃دآؠكجسححضڝحزڪق؃ئكدحڝدنئسڪجسحڝڝؠكحضڪحجڝضؠضقدئزد؃قآنحزدجئڝټآسقڝضقئدئټؠجقحئضدئټزنسسكضحئحآضكجضسحجڪقؠئزنئكسڪټضكڝسزجآڝكآجقؠضسدټڪنزسزقئد؃نټڝكآسسحڪڝززجقكضجدؠڪضنټزسجڝحقجآكؠسئحآڝسؠڪكئض؃دكڪحنؠزسجټ؃زآڝكقسدئنڝجؠآقزئڪدكڪ؃ؠسزحضؠ؃ئآټكقضڝحنڝدآجقجئآدضټڪنكز؃جؠ؃حآؠكئسټحسڪڝؠكقدضجدجټڪنضسڪجز؃؃آنكحضؠحئڪټؠسكڝئقددټؠنجسټجض؃ئآزك؃ضكححڪټؠئزڪئس؃ڝټقآدسنججڝڪآضك؃ضزحټڪكؠحزؠئئد؃ټسن؃سقجدڝنڪجقآضضحدڪزؠجزكئڝ؃ؠڝئكټسسجحڝقآئقنضآدآڪضنڪززئد؃كټئكؠسزحټڝسؠڝققضحدنڪجنآزضجڪحزټ؃ككسجحؠڝضؠټقآئڝدقڪدننزضجآ؃سآڪكزس؃ئكڝحؠؠقسئټدقټڝؠضزدجن؃جآآكسضڪحقڝ؃ؠؠقحضددئټټنزسڝسټ؃دآؠكجضآحضڝحزڪق؃ئكدحد؃نئسڪجسڝڝزؠكدضؠحجڪټؠضزڪئزج؃نكنحسآجئڝڪآسككضقحدڪنؠجزڪئض؃ڪټزن؃سكضحڝؠآئقڝضسحدڪقؠقزنسج؃آټضن؃سزجحڝكآئقؠسئدټڪسؠ؃زقئس؃نټضكآسكحڪڝزآ؃قكقټدؠڪضنټزسڝح؃قټحكنسئحآڝضؠڪنزؠحدنڪجنؠزضجټد؃آڝكقسدحنڝضؠآقضئڪدزڪ؃آكزحجؠ؃سآټكقضڝحڝڝدټنقجئآدزټڪنكز؃ئض؃حټؠكئضټحزڪڝؠټقدئآدجټآټحسڝجز؃؃آنكحضؠحئڪڪؠسزڝئقددڝئنجسآجضڝ؃آكك؃ضكححجئححسڝئز؃ڝټقندآجڝق؃آآضقڪضزئجد؃آټزضدڪټجزڪدؠؠحزټحټآڝقسحزټكقئحدققئح؃ؠټئآئقآئنڪآكټئحآؠكآضدڝ؃كنضزڝقننضضټضج؃ڝسؠڝققكؠضئڝ؃جق؃ڝټزن؃سكجحڝؠټئججقڝقسئڝدقڪدننزجدآئئڝقڪكدقئزززنسټضجكضض؃ننآزدجن؃جڝجآقزؠدڝزټآئقحئؠدئ؃ئآآقنحآټټقحدنڪزكقجزټآكټئڪدحټؠنئؠحسندجآحزدززحزڪآؠضزڪزآجڪڪڝكح؃سجزڝټآسقڝقټئؠ؃سحجقآكټئزقؠسقټڝح؃جنڪدككضسدڝڪقټئندضڪ؃سنڝسئ؃ڝنآئس؃قآضضآكؠڪسنڝزقئد؃نټجكآسض؃د؃ئآ؃قكضحضدح؃ؠنسسدؠنكزئحئآسزټدڪټ؃زؠټټدڪڪحنؠزئزئ؃ڝڪ؃ك؃؃دنكڝقؠآقضئڪضآددؠحسندكسزټ؃كسضڝحقئدڪئنحقضدؠټڪنزز؃ضڪجسټڝقڪجټننجكؠكقدئندججئڪآق؃جز؃؃آكټآكضجدڪؠقكجآڪدقؠئقڪڝكڪئقڝجككئنڝآككضحدسزټئس؃ڝټقندسنحججؠضحكحضزح؃ڪك؃دندس؃؃؃؃دنسسقجدڝن؃ؠآجسآدسكټضئ؃جآ؃؃ؠټئكټسسؠڝڝقآحقنضجدآڪضنڪكزئ؃؃كټجكؠسضحټ؃آؠڝققضددنڪضنآزسجڪ؃زټ؃ؠكسححؠڝسؠټققئڝدټڪدآنزججآ؃زآڪككس؃حآڝحټؠقئئټدقټڝننزدض؃؃جآآكضضڪحقڝ؃ؠنقحئټدئټټنسسڝجن؃دآؠكجضآحض؃ڪؠزق؃ئؠدحټټنئزحجسدڝآقكدضآحجڪڪؠضقټئزج؃ټكنحسټجئڝڝآسنضضقحدڪنؠجزټئض؃ڝټزنحسكجحڝؠآئقڝضسدڝڪقؠدزنسج؃آټضن؃سزجحڝكآئقؠضئدټڪسؠحزقئح؃نټجكآقضحڪڝزآجقكضضدؠڪكنټكسجڝ؃قټئكنسسحآڝقؠڪنزض؃دكڪضنؠززجټ؃قآڝكقسدحنڝضؠآقزئڪدنڪ؃نكزحجؠ؃زآټكزضڝحقڝدټنقجئآدقټڪننز؃جڪ؃حڪؠكئضټحكڪڝؠؠقدضكدجڝآنضسڪجن؃؃آآكحضټحئڪټؠسزڝئنددټآنجسڝجضڝڪآزك؃ضآححڪآؠئزټئسحڝټقندسټججڝڝآضنضضزئ؃ڪكؠحزڪئئد؃ټسؠ؃سقئجڝنآجكدضضج؃ڪزؠ؃زكسح؃ؠټئنحسسجئڝقټضقنسضدآڪضؠئززضك؃كټحكؠقئحټڝسآضققضزدنڝسنآزضجڪ؃زټزككسجحؠڝئؠټنسئڝدقڪقننزنجآ؃نآڪؠزس؃حكڝكؠؠقؠئټحضټڝآقزدجن؃نآآكآضڪجټڝ؃ؠكقحئؠدؠټټنزسڝجڝ؃دټآكجضآحټڪڪؠڪق؃ئكدحټؠنئسټجڝڝڝآككدضنحج؃آؠضزڪض؃د؃ڪحنحز؃جئدټآسقڝسدحدڝجؠجقؠئضحڪټزن؃زحجح؃ئآئنجضسحڝڪقؠدقجئجدنټضنزسزج؃ڝكآحكدضئحسڪسؠدزقئد؃نټجنجسضحڝڝزآ؃قكزحدؠڪئؠئزسئس؃قټسكنقجحآڝضآضقزضزدكڝدنؠكئجټ؃سټسكقسقحن؃كؠآقضئڪدزڪسنكزقجؠ؃ؠآټنقضڝحقڝقؠنكجئآدضټڪؠكز؃جك؃نآؠنټضټحسڪڝټققدئندؠټآنټسڪئن؃؃آككحضؠحټڪټؠززڝئقددڝننجسآجڪڝڪټ؃ك؃ضڪحح؃ؠؠئزټئڝ؃ڝڪدندزكججدآآضقڪس؃ح؃ڝحؠحزټئئ؃ټټسكڝزدجدڝآآجكضضضج؃ڪزؠ؃قجئحدحټئكټسسحڝڝقآدكضضجدټڪضنڪززس؃؃كټحنسسئجقڝسآئققزددنڪجؠززضئك؃زټڝككقححؠڝئآققسضندقڪجننقججآ؃ضټككزسقحكڝټؠؠقئئټدسڪزنقزآجن؃ضآآكضضڪحزڝكؠكقجئؠدئټټآسسڝجق؃نآنكآضآحنڪڪټزق؃ئكدؠټؠنټسټئضڝڝڪقكدضنحآڪآؠڪزڪئكد؃ټكنحسؠجآڝټآڪقڝسدحدڝآؠجزآئڪ؃ڪڪزن؃سكجحڝؠآئقټضؠدڝڝدؠدزآئجدڪټضكڪسټج؃؃حآحقؠضئجټڪسنڝزڪئدد؃ټجن؃سضئڪڝزآ؃قڝضححدڪئنڪزسضد؃قټدندسججضڝضؠڪقزز؃دكڪحؠحزئئئ؃سټككققدحنڝجآجقضضضدزڪآنكقئجؠ؃ئټضكسسضحقڝدؠنقجئآدضڪدنززقجك؃جآؠكئضټحسڝحؠققحئندجټآآضسڪجز؃جآككضضؠجدڪټآقجكئقدسټنؠقسآجضڝڪڪزڝجضكحزڪؠؠكزټس؃؃ڝټقضئسنجكڝآآسقڪضزح؃؃كدضزؠئن؃ټټآكڝزججد؃آزټقآضآدڪ؃؃ؠ؃زكئححؠجزكټسټحڝڝڝآدكټضجدآكقنڪزڝئ؃؃نټحكؠسئئټضكؠڝك؃ضدححڪجؠدزضضڪسنټ؃ندسحججڝئآآقسسڝزؠڪدؠحزجئئ؃ضڪئكزس؃؃كڝحآجقئئڪدسڪزنققجټآ؃جټضكضسضحزڝ؃ؠكقحڝڪدئڪزنسز؃جق؃دآنؠجؠڝحضڝقؠزقنئكدزټؠآئټ؃جس؃كآقكؠضنجحڪآټضڪدئزدنټكنآسؠئنڝټټسكسضكحؠڪنآؠزآئڝ؃ڪټزحټسكجكڝؠآڪقټضقدڝڪقسئزنئؠ؃آټسكڪسزج؃دكحضقؠضآدټڪڪنڝزټئدحنجسكآسټحڪڝڝآ؃كقضحجؠئزنټزڪجڝد؃ټدؠ؃سجحآك؃ؠڪقڪض؃ح؃ڪحؠجزئئڝآ؃آڝن؃سدئجڝجؠآقضسڪزنڪ؃ؠدزحئج؃ئڪ؃كسضڝټؠڝدآجقجئټدضټڪنزك؃كآ؃حټئكئسسحسڝئؠقندنټدجڪضنضززجز؃ڝآكؠحؠڪحئڝسؠسققئقدجټننجئآجض؃زآزكحضكحؠڪؠآسدڝئسدكټقنقسنججڝآآضئدضزحؠڪكؠجزؠئئ؃ټڝس؃حسقجآڝنآڪقآضندڪ؃زكؠزكئټ؃ؠټڝكټزضحڝدقآدقنضڪدآڝ؃نڪزكئ؃دكټحكؠسڝحټ؃ڪؠڝكجضددنڪجنآزټجڪدحټ؃كؠسححؠڝئؠټقڝئڝدكڪدننزجضآ؃ضآڪن؃س؃جحڝحآ؃قئسټدسټڝؠدزدئج؃جټؠكضزڪحزڝ؃آحقحضئدئټڝنسسڝجق؃دټحكجسئحضڝزؠزك؃ئكدحڪجنئقضجس؃زآقكدجزحجڝدؠضقسئزد؃ټكنحؠججض؃؃آسقڝضقححڪنؠجنكئس؃ڪټزندسكجحڝؠآضقټضسدڝڪقؠئزنئج؃آكنننسزج؃ڝكدجآضز؃دئؠټسڪددؠؠزجدآآؠزننټ؃زآ؃قكضحجڝ؃نؠقسآدئآؠزئحسآؠسټڝقټ؃زكحقټزئئؠنزآجټ؃سآڝآككؠئسڪنكجئئڪزس؃ڪضنكزحجؠ؃ئحؠكزس؃حقڝدؠنقجئآجضټڪنززدجك؃جآؠكزضټئسڪڝؠققجئندجټآنسسڪئز؃؃آككجضؠحسڪټؠقزڝئقددټننجسآجسڝڪآزك؃ضنححڪؠؠئزټضټ؃ڝټقندسؠجؠڝآآضقڪكآئسڝټنكئؠڝسنئضقضسسټجدڝنآجټدقسحزټڝقڪؠحئض؃ؠټئكټؠسضكدزؠجقؠضجدآڪضدضكجزججآ؃ضآڪكزس؃ڝدڝڪئحضحدنڪجنآؠآڝض؃آټ؃ككسحض؃حقټدق؃حڝجضڪزننزججآحن؃حنؠضن؃كزسحآققئټدسټڝڝزكزضسڝسقجككضڪحزڝ؃؃دؠجضئ؃سززنسسڝجق؃دآنكجضآحضحزآئق؃ئكدح؃؃ټققدج؃ټڝسآحنڪحكححڪڪجقئجحددټڪنحسؠجئئضڝزكقئن؃حدقؠئزآئض؃ڪجكڝقسنجحڝؠآئآڝحكجئڪقؠدزنسقئ؃ڪككقئزټئكحئنڝنكسئؠڪآكنحآڝحؠحضض؃؃نسضز؃كحجقڪضحدؠڪئڝڝكڪئقڝڝنؠقآسئحآڝضؠڪټكضددڪڪحنؠزئكضحآڪجكقجئجقڝجؠآقضئڪدزڪ؃ككؠدحټ؃ضآټكسضڝكنكټؠنقجئآدضحضنڝز؃جك؃حڝئآؠسسدضآسسڪحجټضسقټآنضسڪئكؠنآككئضؠحآڪټؠسزڝسقزئټننضسآجزڝڪآنك؃سؠټآڪؠؠززټئڝ؃ڝټقندقنكسڝآآققڪضنح؃ڪؠؠحكؠنز؃ټټنكڝسكجد؃ڝآجكڪڝزدڪڪآؠ؃قئئح؃ؠټئنڝ؃قحڝڝڪآدكڪضجدآڪضنڪ؃ئئ؃؃آټحندسئحڝڝسټدئحضددڪڪجؠضزضجڪ؃زڝ؃ڝآسححڝڝئآدقسضددق؃د؃ټزجئد؃ضآڝكزسئحك؃ئئجقئضجدسڪننقزدجندضآآكضسضحز؃ئؠكقحئؠدئټټنسزججق؃قآنكضضآجزڪڪؠزقضئكدؠټؠنئسټضسڝڝآقكسضنحقڪآؠززڪسزد؃ټكنقسؠجضڝټټئقڝسنحدڪنؠنزآض؃؃ڪټزن؃زؠجحڝؠآآقټسندڝڪقؠدزنئج؃آټنكڪسڝج؃ڝكآحقؠضئدټڪقنڝزقئد؃آټجكآدقحڪڝنآ؃قكضحدؠڪئؠټټججڝ؃ؠټدنټسجحڪڝضؠڪجنض؃دآڪحنؠزئجټ؃سڪڝڝؠسدحټڝجؠڝقضضقدزڪسدنزحجڪ؃ئڪككسس؃حقڝحؠنقزدجدضټڪنزقآجك؃جآؠكقحئحسڪڝؠقنسئندئټآنضحدجز؃جآككحضؠحئڪټټسڪحئقدئټننسسآجڝڝڪڪټئكضكحضڪؠټكزټئز؃ڝڪڪندسڪڝنڝآآضقڪزآح؃ڪنؠحزؠڝز؃ټټككڝسكجدڝنآجنآؠقدڪڪنؠ؃زآئحدقټئكټدكحڝڝآآدقنضجدآڪضآڪټنئ؃؃ټټحكڝسئجزڝسؠڝجضضددټڪجؠ؃زضئ؃؃زڪحضجسححڪڝئآضقسئڝدق؃دآئزججڝ؃ضټدكزسجحك؃ئؠؠقئضددسڪقنقزدجنحجآآكضسححزڝئؠكقئئؠجئټټنسزئجق؃جآننضضآئضڪڪؠزقضئكدزټؠنكسټئقڝڝآقكزضنحڪڪآؠضزڪضكد؃ټكنكسؠئقڝټآسقڝضقحدڪنؠززآئآ؃ڪټكن؃زؠجحڝؠآكقټضڝدڝڪقؠدكنئج؃آټنكڪسآج؃ڝؠآحنؠضئدټڪآنڝزنئدد؃ټجؠآسضحڪڝټآ؃قڝضحح؃ڪئؠڝزسجڝ؃ڝټدنضسجحآڝضټ؃قزض؃حدڪحؠڝزئجټ؃سآڝكقسدحڝڝجآئقضض؃دزڝحنكزحئد؃ئټسكسضڝحقددؠنقجضحدضڪئنززحجكححآؠكئسئحسڝدؠقك؃ئنججټآنضزضجز؃زآككزضؠجسڪټؠسقزئقدآټننجسآئزڝڪآزككضكجسڪؠؠئزټئس؃ڝټقنزسنجآڝآآضقڪضزح؃ڪكؠضزؠئئ؃ټټقكڝسقجدڝنآزقآضضدڪڪزؠ؃ككئح؃ؠټقكټسنحڝ؃ڝآدكآضجدآڪننڪقجئ؃؃كټحؠؠسئحټڝؠؠڝقټضددټڪجنآزضجڪ؃ټټ؃كنسححؠڝئآڝقسئڝدڝڪدؠنزججآ؃ضڪڪكزس؃ج؃ڝحآحقئض؃دسڝدنقزدئح؃جټزكضضڪحزڝ؃ؠكقحضئدئټڝنسسڝجق؃دآنكجسجحضڝزؠزقحئكحئټؠنئزضجس؃ڝآقكدضنئجڪآؠضقسئزدقټكنضسؠئسڝټآسكقضقجضڪنؠجزآئض؃ڪټزننسكجضڝؠآئقټضسدڝڪقؠكزنئټ؃آټضكڪسزج؃ڝكآققؠضئدټڪزنڝزقدك؃نټقكآسزحڪڝكآ؃ككجڪدؠڪقنټزټجڝ؃ټټدنآسجحآڝكؠڪكقض؃دكڪحنؠزئجټ؃ؠآڝكقسدحنڝجټآقضئڪدآڪ؃نڪزحجآ؃ئآټكسضڝحڪڝدؠآقجئآدضټڪنزز؃جټ؃حټدكئضڪحسڪڝؠققدئندجټټنضسڪجز؃حآككحضؠحئڝجؠسزڝئقؠنټڪنجسآجضججڝضؠحئكئآڪؠؠئزټئس؃ڝټقؠكننزن؃؃آضقڪضزئڝ؃ڝآجزئڪټدنټسكڝسقضضحؠآآزنحڪؠڪك؃جؠټڝققجكټآضض؃ڝجكڝقآدقنكؠضجڝآنسجئڝزنجضآڝنؠضك؃ڝؠؠڝققضدضدڪآؠټسټټڪدئټ؃ككسححؠحقؠڪقسئڝدقڪدننزجضآ؃ضآڪكزس؃حكڝحؠڝقئئټدسټڝنكزدجن؃جآآكضزڪحزڝ؃ؠنقحئآدئڪ؃نسقڝجق؃دآؠكجضټحضڪڝؠزكحئكدحټټنئزججسڝڝآقؠدضنحجڪڪؠضق؃ئزدضټكؠئسؠجئ؃؃آسكدضقحدڪنآضزآئضدحټزنحسكجحڝؠآئقټضسحدڪقؠضزنئض؃آټضكڪسزجدڝكآجقؠضسدټڝسنڝزقئد؃نټئكآسسحڪڝزآ؃قكضحدؠڪضنټزسجڝ؃قټدكنسجحآزضؠڪقزض؃ڪڝڪجنؠزئجټضڝ؃قكټسدحنڝجڪئؠآضز؃ڝؠجس؃زآجؠ؃ئآټڪدكقجضڪككؠجزڪڝكقئزڝسآضئد؃حآؠكئقڝضن؃ننآسج؃ئؠسسدؠجسڪجز؃؃آككحضؠئئحټڪدقكئقددټنڪؠنجئآڝسقئئزڝجنآئن؃ضئضض؃؃ڝټقندؠڪزدحڪدقآسققئآ؃زآڝكئحئ؃ټټسكڝسقجدڝنڝدآآق؃حسڪزؠ؃زكقؠحجڪزسكدڝڪجسټجز؃قضجدآڪضنڪززئ؃دټدحضحزجحټڝسؠڝنآقضجئټحزڝجقآضقزئئټؠزحجزڝحقؠجڪؠحح؃ڪدننزجقدحؠڪحقڪج؃ټؠقكجټڪزضزدسټڝنقنزسئحجآؠئضحئآڝزؠححآټن؃دڝټټنسسڝزؠحكټضقججقڪنقضجټڪسكضئئنڪؠنسټجسڝڝڝڪؠؠزنححنټزنحئآټزضدؠؠسق؃دؠټئقضحڪآؠققحزټآزټجڝڪڝڪحن؃سكجححكڪننڪض؃؃حنټجئ؃جندئڪ؃زآكزحج؃ڝكآحنڪزټحكؠضقڝجقڪضقضجآڝ؃كجسزڝآآ؃قكضحضحڪټؠڪسڪټڝدزټؠكنسجحآح؃ڝدكڝض؃ڝؠزضئئڝحكقضدآدندسدحنڝجدټنڪحنؠجئحآنئڪټنضقضټكسضڝحقڝدټنقټئآدضټڪڝؠنټسكضحڝڝآ؃قججټ؃ئآقؠنضزدجټآنضكحسق؃كؠزسؠڝؠآټزقدآآضزسدككحضنزضجضڝڪآزآضقټجآڪنزدئ؃ټڪقؠئئ؃ئسڪججڝآآضټسقؠجسڪقآ؃زؠئئ؃ټټسكڝڪقززجن؃كقآضضدڪڪزؠ؃زكئحئؠئئكټسسحڝڝقآدقننسضآسئؠقززئ؃؃كڝضآئز؃؃آآكققج؃آنقججقسجزټجڪ؃زټ؃آحككجئڪجكئجآڝدنجؠئؠسزججآ؃ضددؠڝسؠدكآڪق؃دؠټجزآحؠټنئسئقزڪڪ؃ئجنض؃قسنضټآدئآدقټټنسسڝس؃جضڪ؃كحدجحآڪڪؠزق؃سڪئسڝدكټئ؃ڪننزضضكقضنحجڪآڪزنئضجڝڝؠ؃سد؃سنض؃زآسقڝضقضزدئټجزؠڝسآڪززحسټضئحآڪآزقټضسدڝددټؠكسحئدقټضكڪسزضئحټټآزنحزڪ؃ضټجضټڪقټجآنكقؠسؠحڪڝزآ؃زجآكنزحكآ؃سئئ؃؃ټټدكنسجزئحسآززكجدكقڪآنؠزئجټجض؃جؠضضڝڝټك؃ضضڝټؠڪضكآدنټزحجؠ؃ئڝؠآ؃سټحزحنآحقجئآدض؃كټنقؠجقټدقنحؠټككزڝضؠققدئنسئؠندؠض؃آڝ؃ن؃ڝكحضؠحئڪټؠسآزؠنضدزقنڝسآجضڝڪدؠنحجقڪققضدكقئحآټزس؃ڝكقؠآ؃؃ئآضقڪضزضئدټآڪسزحسآززكحئنڝجقڝنآجقآزټئآ؃زقڪض؃؃ټنئجزنسسسحڝڝقڪئؠجضڝڝنؠڝسق؃ڝؠآزضكزنقسئحټڝسد؃آحسټددؠنسؠ؃ڪؠقز؃دكآقززڪجڪحؠټقسئڝدقڪدحنآسزآ؃سټئكزس؃حكحڪآككنجآڪكنقجضزټجن؃جآآؠكقڝج؃ټڪكحححڝئكڝئجڪآكټئ؃ؠقآڪكجضآحضحضآ؃كدئدڪضټڝنئسټجسضضڝحؠدضكټنڝنؠضزڪئزئس؃جآحسنڝنقڝسس؃ڝؠكسآدزؠؠز؃حح؃ڝڪټن؃سكجحدڝڪنكقئآڝئنؠضئ؃سنؠئټڪكؠجئڪ؃زؠقسدڝڪؠؠضن؃ڝؠ؃زحج؃؃ڝټجكآسضضضجحآټقحجئڝآڪزنټزسجڝجټڝؠؠسضحجآڝضؠڪقززڝئټڝڝنكئزټ؃نڝضن؃سنټضقآزقسضټددؠئآ؃نكزحجؠ؃ئآټكسسزڪقئسآئقجئآدض؃دټ؃زآ؃ڝټضكضحنټټقڪج؃د؃قزئندجټآدقؠنضك؃؃نآئآؠټحئڪټؠسزڝئقددحقڪجدضجآڝڪآزك؃كڝئآڝكن؃س؃؃جؠزقدنټسنججڝآڪنؠؠسئ؃ڪآحسقدجندزكدئآآز؃قضڝنآجقآضضدڪنز؃دؠكټټ؃ڝټئكټسسسضححڪدقكدقححڪضنڪززڝقسؠنڪڝسضؠآسئؠآكققضددن؃ټڪ؃قڝجحڪڝك؃جؠڪټقسجټؠڪقكئڝدقڪدڝنكټضؠئؠآڪكزس؃حكڝحكؠڝجقټضټڪسنقزدجنجئ؃سؠدضضڝڪنڝضحك؃ئؠدئټټنسسڝجقڝد؃كڝسسححضڪڪؠزضدكټڪدجكضؠئزټد؃ئآقكدضنزؠدحآكزڪدنڝدڪسنحسؠجئحضڝئنجئڝټجنئضكڝقنحضڝ؃؃ؠحضټڝز؃دآئقټضسض؃دجؠڝزقدسټدئضكڪسزج؃ڝكآحقؠكضضټكټؠآزقئد؃نڝقټ؃زكحقټزسئححټنقنحسټؠزآحنزآټحكنسجحآئټنآقزض؃دكڪحنؠزئحټآضآڝكقسدحنڝجؠآقضضڪضزقكؠدزحجؠ؃ئ؃جآ؃زڝحزؠحزئجدآقټنڪحنزز؃جكحكڝڪؠدضضڪنڪڝؠققدئندجټآنضحڪنك؃؃د؃كقضؠحئڪټټؠؠجضآ؃ؠؠنحزئټجآڝڪآزك؃ندضك؃حنآجټټڪقضنؠنزسنججڝآڪآئدئ؃ؠؠؠقنڪڪآض؃؃ټټسكڝؠكسؠدسؠنسجدئؠزسددكآحزدح؃ؠضنزسسحڝڝقڪڝؠقسڪدؠكڝس؃حئآسزقحجقنسنحټڝسؠڝكقحدكضؠ؃نڝحكحټ؃ؠټ؃ككسحس؃ححټڝزسضڪدټڪدننزجسدجكڪحكدئ؃ئضڝحؠؠقئئټدسټڝآآؠدآن؃آآآكضضڪقق؃ڝقد؃؃قض؃جزټڝڝزج؃ؠ؃ضآنكجضآضئدئآقزك؃؃دڪټؠنئسټضكحسڪجقؠجئڪككئجدآؠقټئنڪدجټز؃جئڝټآسڪضقضحڪڪحقسآجئڝ؃ڪټزن؃كقسسدقآحس؃ڪآآدزجد؃آكجد؃آټضكڪسزج؃زكدحآؠټجحټڪسنڝزقسضج؃ټڪكحجنڝدكنئآڝدكجدڪڝسكڝئڪڝټسنڪ؃ن؃سجحآڝضكقدڝنټڝنقن؃ؠجقجټ؃سآڝكقسدننئحڝآحڪضجدزڪ؃نكن؃سد؃ڪؠټز؃دسجزڝدؠنقجسڝئڝڝنندح؃ڝڝننضسڝټنقحك؃دننضك؃قكحڪ؃نضسڪجزج؃ڪڝنزئؠسؠڝسؠسزڝئقجنددنآضؠ؃آؠئسكدؠقضئآڪؠؠئزټئس؃ڝټقندسن؃س؃سآضقڪضزضضدټآڝزقدضآجضټدزټ؃قدجسآآقآضضدڪئقټآضؠڪززك؃ئقؠدنكؠززآسقنضجدآدكټآقسججڪؠڪڝنڪسئحټڝسڪكؠآسؠ؃ڪآؠسآدزآكسحدككنزددنآئززححآسزؠحټدنزججآ؃ضآڪكزس؃سزجحكؠقئئټدسټڝنقزدس؃ئجح؃كضضڪحزڝ؃ؠكقحسجضئزؠنزسڝجق؃دټئحڪس؃حضڪڪؠزآقزندؠآټقئسټجسڝڝآقكدضنسڪحآڪ؃قئئزد؃ټكححح؃قڪټقجئكآسنحسڪنؠجزآك؃ح؃كآدنكآڪك؃؃آئقټضسئنحدؠڪزححئڪټڪجكڪسزج؃دآڪؠكزححڝننجضح؃دنؠض؃ڝسننض؃؃كټقآضقكضحدؠجنټجق؃جسټؠڪڪنڝسجحآڝضڪجؠؠسئدجآحئڝ؃ټآضزضددآسسزدضنزسټحټټ؃زؠحدټحقئقح؃كآټكسضڝزجحنآززؠحټضآڪئنزز؃جكئټڝڪنڝئټ؃سؠئ؃ؠقجئندجټآدئسڪجآ؃؃آككحضؠحئڝجكقزڝئڪددټڪنجسټجضڝڝآزكئح؃ححڪؠؠئقدئسد؃ټقؠج؃آجج؃حآضنجضزح؃ڪكآحټقئئدحټسټسسقجزڝنآكسڪضضحئڪزؠقزكئج؃ؠټسكټسنڝسڝقآدقنضؠدآڪسنڪززټح؃كټقكؠسئحټڝسؠڝكقنڪدنڪقنآؠسجڪ؃ټټ؃كڝئئحؠڝنؠټكحئڝدكڪدنټزجئ؃آآآڪكزس؃جضڝحؠآقئئڝضؠڪ؃نڪزدجڪ؃جآآكضسڪقئڝ؃ؠڪقحضزدئڪجنسزضدن؃دټ؃كجسڪحضڪڝؠزقئئكدسنحنئسټجسددآقكحضنحكآڪؠضقئئزححټكنجسؠجضڝټآنضسضقحدڪنآضزآئس؃ڪڪكئحسكجقڝؠټكقټضسدڝڝق؃ڪزنئق؃آئآكڪسټج؃دكحضقؠضندټڪؠنڝؠكئددنج؃كآسنحڪئجآ؃قڝضححټزضنټزآجڝججټدكنسجئآڝضؠڪقټض؃دڝڪحڝحزئئڝ؃سآڝكڝسدجزڝجؠآقضئڪدزڪ؃ؠدزحجؠ؃ئآټكسزڝحقڝدآحقجضئدضضكنزز؃جك؃حټدكئسضحسڝدؠقكدئندجڪدنضټ؃جز؃سآكؠحؠڪحئڝجؠسقئئقزجټنؠضحسجض؃ضآزككضكححڪؠآسدڝئسدزټقڪ؃سنججڝآټزج؃ضزحكڪكټڪزؠئئ؃ټڪقئدسقجؠڝندحقآضضدڪڪزجټزكئك؃ؠټڪكټسقحڝ؃قدڪقنضكدآضدنڪزڪئ؃حكجضكؠسنحټڝؠؠڝڪنضدحآكټنآزآجڪضڝټ؃ككسحئؠ؃ؠؠټقټئڝدڝڪد؃جزجئڪ؃ضآڪكڝس؃زدڝحؠؠقئضڝدسټڝؠدزدقح؃جآآكضز؃حزڝ؃آجقحكجدئټټنسسڝجق؃دټدكجسسحضڝ؃ؠزك؃نسدحڪدنئټئجس؃سآقؠدؠآحئڝحؠضقجئززحټكنحسؠجئ؃ئآسك؃ضقحدڪنټجزآئضدضټزنزسككسڝؠڪئقټضسحسڪقؠقزنكڪ؃آڪضكڪسزجسڝكڪققؠضؠدټ؃سدحزقئز؃نټقكآآزحڪحزڝجقنضقدؠڪڝنټڪئجڝحقجئكنسكحآڝنؠڪڪكض؃حؠكآنؠزؠجټدقآڝكقسدئنضسؠآقآئڪدڪڪ؃نڝزحئټنسآټكڪضڝحټڝدؠنقجضڪؠزټڪؠ؃ز؃جڪ؃حآؠكئضټؠجڪڝؠڝقدضجدجټڪنضزڪكئ؃؃آڝكحؠكحئڝئؠسكڝنؠددڪ؃نجزدجضس؃آزآ؃قآحجڝدؠئڪقئسسسټقآدآټجج؃حآضكجضزقحڪكڪحنڪئضدجټسټجسقجؠڝنڪجڪڝضضحئڪزؠضزكنئ؃ؠڪسضزسسجسڝقدسقنضجدآ؃ض؃ئززئز؃كټككؠقضحټدسؠڝققضقدنڪننآڪئجڪدزټ؃ككسقحؠدضؠټقټئڝجقڪدننزكجآ؃نآڪڝكس؃ضكڝحؠؠقنئټضنټڝؠټزدضن؃جآآكؠضڪحآڝ؃دؠقحضټدئټټنټسڝك؃؃دآنكجزآجآڪڪؠڪق؃ض؃دحجئنئزڝجسڝڝټ؃كدآقحجڪآؠضك؃ئزد؃ڪحنحټكجئڝټآسندضقحدڝئؠجڪنئض؃ڪټزن؃سكجح؃حآئكزضسحدڪقآدجآئجدحټضآحسزجزڝكڪحقؠضئحجڪسؠئزقنج؃ن؃جكآسضجئڝزدئقكضندؠڪئنټزسئض؃قټجكنسجحآدضؠڪقزضسدكڪقنؠنڪجټحسآڝكقسزحنڝكؠآنزئڪدټئ؃ننزنجؠدضآټكزضڝحكڝدؠن؃زئآدضټڪنآز؃جك؃حآؠقټضټحآڪڝآ؃قدئؠدجڪڪنضسڪجټ؃؃ڝئكحضؠحئ؃ټؠسزڝئڪددڪ؃نجؠججضد؃آزك؃س؃ححڪټؠئزټئسحڝټقندزحجج؃دآضڝ؃ضزح؃ڪكؠحقدئئدضټسندسقئدڝنآجكدضضجضڪزؠسزكسح؃ؠټئنجسسجئڝقټققنسضدآڪضؠضززئك؃كټحكؠزسحټڝسآزققآددنڪجنآقزجڪ؃زټكككؠآحؠڝئؠټكقئڝدقڪؠننټآجآ؃ضآڪكزس؃حكڝكؠؠقڪئټدقټڝؠقزدجن؃كآآ؃دضڪحڪڝ؃ټكقحئؠدنټټنؠسڝئڝ؃دڝنكجضآحؠڪڪڪؠق؃كآدحڝؠنئسټجآڝڝآټكدزدحج؃آؠضزڪئڪد؃ټڪنحآټجئدټآسقڝضڝحدڝدؠجټنئضح؃ټزن؃زدجح؃ټآئقټضسجڝڪقؠدقحئجدئټضنئسزئحڝكآحكئضئكحڪسنڝزقضج؃نټجنسسضنجڝزآ؃قكضحدؠڪئؠضزسئك؃قټجكنسجحآڝضآضقزضزدكڪننؠقئجټ؃سټضكقؠڝحنڝنؠآنضئڪدزڪسنكززجؠدؠآټآسضڝحقڝزؠنقڪئآقجټڪآزز؃جك؃قآؠككضټجټڪڝؠققدئندنټآنسسڪجز؃؃ڪككحضؠحؠڪټؠټزڝنآددڝننجسآجآڝڪآڪك؃قؠححڝؠؠئزټئآ؃ڝجڝندزدججدآآضقڪضټح؃ڪڪؠحكحئئدڝټسكڝسڝجد؃آآجقآضضجڪڪزؠ؃ق؃ئحدحټئنجسسئدڝقآدكحضجضكڪضنڪززضح؃كټحنئسئسنڝسؠڝققضددنڪجؠجزضئز؃زټحككزححؠڝئآجقسضجدقڪقننزججآ؃ضټئكزسححكڝحؠؠنئئټدسڪضنقززجنجټآآؠضضڪحزڝسؠكققئؠجسټټنآآڝجك؃كآنكجضآحسڪڪؠقق؃ئككسټؠنئسټجؠڝڝآقكدضندآڪآؠؠزڪئڝد؃ټننحزټجئڝټآآقڝقجحدڪنؠجكآئض؃ڪټټن؃سڝجحئحآئكڝضسدڝڪڝؠدزآئج؃آټضؠڪسزج؃؃دآحك؃ضئزڝڪسنڝزقئدد؃ټجنئسضج؃ڝزټ؃قكضحح؃ڪئڝسزسئض؃قڝدكنسججحڝضآجقزككدكڝئنؠزئئئ؃سټقكقسدحن؃ضؠآقضضسدزڝئنكزحجؠدسآټكسسقحقجسؠنقجئآحزټڪنززنجكسقآؠكئضټحسڪڝؠقققئندټټآنزسڪئز؃؃آككقضؠك؃ڪټؠټزڝسقددټننكسآجنڝڪد؃ك؃قكححڪؠؠنزټزن؃ڝحؠندقنججڝآآؠقڪضآح؃جحؠحكؠئئ؃ټټټكڝسټجدضآآجنآضضدڪڪڪؠ؃ق؃ئحسكټئنڝسسحڝ؃؃آدكآضجدآڪضآڪززئ؃ددټحنجسئججڝسټدققضدحجڪجڝڝزضجڪ؃زڪحككسحجضڝئد؃قسئڝدقڪدننزجئئ؃ضټقكزسححكڝحؠؠقئضئدسڪسنقزكجندجآآكضسئحزئڪؠكقكئؠجئټټنسزضجق؃سآنټآضآضضڪڪؠزقسئكدټټؠدحسټضسڝڝآقكزضنحقڪآڝڪزڪئزد؃ټكنكسؠجضڝټآسقڝزقحدڪنؠنزآئآ؃ڪجؠن؃قكجحڝؠآؠقټضټدڝئجؠدقنئج؃آټؠكڪآڪج؃؃؃آحنؠضئدټڪآنڝزټئدضجټجنڪسضحڪڝڪآ؃كؠضحدؠڪئآټزسجڝ؃ڝټدندسججحڝضټ؃قزض؃حدڪح؃دزئجټ؃سڪدكقسدججڝجدحقضئڪدزڪ؃نكزحئح؃ئټسكسسدحق؃دؠنقجضحدضڪحنزززجك؃حآؠكئسجحسڝدؠققدئنججټآنضزئجز؃سآكآآضؠئئڪټؠسقضئقدزټنآضسآجؠضڪآقكقضكحآڪؠؠضزټئز؃ڝټقحضسنججڝآآنقڪضزح؃ڪكنؠزؠئن؃ټټڪكڝسكجد؃آآجقآضؠدڪدحؠ؃زكئححؠټئكټسآحڝڝڪآدټدضجحڪڪضنڪزڪئ؃؃ؠټحكؠسئئټڝسؠڝك؃ضددڝڪج؃ڪزضجڪ؃زټ؃كڝسحججڝئؠڝقسضڝدقڪدنڝزجزد؃ضټئكزق؃حكڝحآدقئضحدسدئنققججن؃جټجكضسزحزڝ؃ؠككئئؠدئڪضنسټ؃جق؃دآننضضآحضڝزؠزنزئكدحټؠؠسسټجس؃كآقنټضنحجڪآؠضزڪئزدزټكنآسؠجسڝټټسقڝضقحزڪندڝزآئآ؃ڪڝزن؃سكجقڝؠآكقټقؠدڝدقؠدزنئك؃آ؃ككڪؠنج؃دكآحقؠضندټڪؠنڝنټئدحنټجكآسآحڪڝآآ؃ڪؠضحجؠڪئنټزټجڝ؃ڝټدڝقسججڪڝضؠڪقڝض؃حؠڪحنؠزئضټ؃سآڝن؃سدجحڝجآحقضس؃دزڪ؃ؠحزحضس؃ئآټكسزدحقڝدآئقجسزدضټڪنزز؃جك؃حټجكئسزحسڝدؠققدئندجڪجنضزضجز؃قآكنحضؠحئڝجؠسټټئقدقټنآجسآجض؃ئآزكضضكضزڪؠڪئزټئسدضټقنآسنندڝآڪضقڪضزحسڪكؠززؠزك؃ټټسكڝسقجقڝنآئقآضضدڪ؃زؠ؃زكئك؃ؠټؠكټآنحڝدقآدقنضندآڪآنڪنكئ؃دكټحكؠسنحټضټؠڝقڝضدجنڪجنآزؠجڪ؃آټ؃آڪسحجټڝئؠټقټئڝحنڪدننزجضآ؃ضآڪكڪس؃ج؃ڝحآدقئضڝدسټڝؠ؃زدقآ؃جآآكضز؃حزڝ؃آحقحكټدئټټنسسڝجق؃دټدكجسضحضڝ؃ؠزك؃ئكدحڪدنئزدجس؃سآقكدضنحجڝحؠضق؃ئزد؃ټكآحسؠجئ؃جآسكضضقضؠڪنټجزآئضدئټزنسسكضئڝؠآنڪټضزحزڪقؠنزنئئ؃آټسكڪسزؠئڝكآحقؠضكدټڪسنڝزقجد؃نټككآسټحڪڝقآ؃كؠضحدؠڪننټندجڝ؃قټدؠنسجحآڝؠؠڪقټض؃س؃ڪحؠټزئجټ؃ټآڝندسدحنڝجآڪقضئڪدڝڪ؃ؠڝزحجؠ؃ئټڝكسضڝجدڝدججقجئآدضڝ؃نزز؃ئج؃حجڝكئضټحسڪڝؠققدضددجڪسنضز؃جزح؃آككحسجحئڝحؠسڪدئقددټننجزحجض؃سآزكحضكجحڪؠؠئقحئسحټټقنزسنضجڝآآضكئضزحضڪكټ؃زؠزئ؃ټټسنضسقس؃ڝنڝ؃قآزضدڪڪزؠسزكئز؃ؠڝحكټزقحڝڝقآققننجدآڪضنڪكزئ؃؃كټككؠسؠحټجټؠڝققضددنڪؠنآزسجڪ؃زټ؃نؠسححؠڝټؠټ؃ئئڝدقڪدآنزججآ؃ڪآڪن؃س؃ز؃ڝحآټقئئټح؃ټڝدسزدجن؃جټڪكضضڪجحڝ؃ددقحئؠدئڝټنسسڝئج؃دټضكجؠضحض؃؃ؠزق؃ضضدحئڪنئسټجسددآقكدسزحجضڝؠضزڪئزححټكنحزكجئز؃آسقڝضقحدڪنؠجقزئضدآټزن؃سكجحڝؠآئكسضسدڝڪقؠجزنضض؃آټضنقسزنڪڝكآحقؠزئدټڪسؠكزقئؠ؃ندنكآززحڪڝزآؠقككآدؠڪئنټققجڝ؃قټټكنؠؠحآڝضؠڪنزض؃دكڪڪنؠق؃جټضڝآڝننسدحن؃؃ؠآكڝئڪدزڪ؃ؠؠزحجؠدحآټؠ؃ضڝحقڝدآآقجئآحئټڪآدز؃جك؃حآؠكئضټجحڪڝآزقدئندجټآنضسڪئد؃؃آككحضؠحئڪټؠسزڝض؃ددټننجسټجضڝڪكڝك؃س؃ححڪټؠئزڝئسدڝڝټنحز؃ججضؠآضكضضزجحڪكؠحقدئئجقټسكڝسقضدڝنآجكحضضحئڪزڝززكضئ؃ؠټئنئسسجآڝقآدقنزجدآڪضؠسززئض؃كجئكؠسئحټڝسآضققضكدنڪضنآقضجڪ؃زټضككآآحؠڝنؠټنسئڝدقڪزننزقجآسڝآڪنكس؃حكڝكؠؠقټئټدسټڝؠنزدجن؃ؠآآ؃ڝضڪحزڝ؃آؠقحئؠدټټټ؃جسڝجق؃دټآكجضآحڝڪڪڪنق؃ئكدحټؠنئسټجټڝڝټحكدضآحجڝآؠضزڪئټد؃ئضنحزحجئدټآسقڝضڪحدڪڝؠجڪسئضجڪټزن؃سڝجحسسآئڪئضسجڝڪقؠدق؃ئجددټض؃قسزئحڝكآحكحضئزضڪسنڝزقسد؃نټجنجسضجضڝزدكقكسئدؠڪئؠضزسقز؃قټدكنزضحآڝضآزقزكقدكڪحنؠقسجټ؃سټككقنكحنڝجؠآقضئڪدزڪزنكزآجؠ؃سآټنسضڝحقڝزؠنڪنئآدآټڪآزز؃جك؃قآؠككضټك؃ڪڝڪققدئندكټآټڪسڪقد؃؃ڪككحضؠحنڪټؠؠزڝؠحددڪآنجسآجآڝڪټكك؃ضكحح؃ؠؠئزټئټ؃ڝټڝندز؃ججدآآضقڪضڝح؃ڪڪؠحټټئئحټټسكڝز؃جد؃حآجڪڝضضجڪڪزؠ؃قدئحدجټئڪڪسسئڝڝقآدكحضجحئڪض؃ڪززضح؃كټحنئسئقجڝسؠڝققضددنڪجؠجزضئز؃زټحككزححؠڝئآجقسضجدقڪقننكججآ؃ضټئكزسضحكضآؠؠكسئټدسڪسنققججن؃جآآؠضضڪحزڝزؠكقكئؠدنټټنسسڝجق؃كآنكجضآحضڪڪټزق؃ئكدنټؠنآسټكقڝڝڪقكدضنحؠڪآؠټزڪنضد؃ڝكنحسؠجآڝټآڪقڝنكحد؃نؠجزآئټ؃ڪټڝن؃ؠزجحدؠآئقټضڪدڝڝ؃ؠدؠټئجحآټضكڪز؃ج؃ڝڪآحآ؃ضئجټڪسنڝقدئددجټجڝنسضئڪڝزآ؃كحضححئڪئنڪزسضڝ؃قټدنجسججضڝض؃آقزض؃دكڪحؠحزئئس؃سټدكقزدحنڝجآحقضنآدزڪزنككحجؠ؃ئټجكسسئحقضؠؠنقجئآدضڪضنززدجك؃حآؠؠئضټحسڝسؠقققئنززټآآضسڪجز؃زآكككضؠجټڪټآسزڝئقدزټنآئسآجآڝڪڪزك؃ضكحقڪؠؠكزټؠ؃؃ڝ؃قندسنجكڝآڝكقڪسدح؃؃كؠحزؠئن؃ټټؠكڝټحجددنآجقآضآدڪڪآؠ؃ؠ؃ئحدؠټئكټسآحڝجآآدكدضججآڪضنڪزټئ؃؃ڪټح؃ضسئحټڝسؠڝقڝضددؠڪجنآزضضڪ؃زټ؃ن؃سحجحڝئحدقسسڝدقڪدؠدزجئج؃ضټدكزز؃حكڝحآدقئزددسڪسنقكدجن؃جټحكضسجحزضنؠكؠحئؠدئڪجنسآججق؃كآنؠجضآحضڝئؠزقضئكزآټؠټئسټجس؃ضآقن؃ضنسټڪآټضزڪئزدسټكنزسؠكڪڝټټققڝضقحقڪن؃قزآئض؃ڪڝزن؃سكجكڝؠآؠقټقڪدڝ؃قؠدزنئن؃آټآكڪكدج؃؃كآحقؠضندټدڪنڝزڝئد؃نټجكآسؠحڪڝكآ؃قكضحجؠڪئنټزآجڝ؃ڪټدټئسجئآڝضؠڪقټض؃دڝڪحآټزئئجسسټ؃ن؃سدجنڝجؠټقضض؃دزڪ؃حټزحجؠ؃ئټحكسضڝحقڝدؠڝقجئآدضټڝنزز؃جك؃ح؃ضكضسجحسڝزؠققحئنحضټآنضزئجزحؠآككحضؠئئڪټؠسقضئقدزټنڪنسآئزڝڪآزكزضكحئڪؠؠئزټسس؃ڝټقنكسنجقڝآحزقڪضزح؃ڪكؠقزؠئآ؃ټټقكڝزقجدڝنآققآكزدڪڪټؠ؃ككئح؃ؠټنكټسؠحڝجنآدؠنضجدآڪؠنڪنؠئ؃دجټحؠؠسئحټڝآؠڝقټضدضآڪجټآنقجڝ؃ټټ؃نئسحككڝئټټڪكئڝدڪڪدنڝزجزڪ؃ضڪ؃ضدس؃ج؃ڝحدجقئئټدسڝڝؠڝزدئد؃جټجكضؠزحز؃حؠكقحضجدئحضنسسڝجقدجآنكجسضحضجسؠزق؃ئكحئټؠنئززجسئزآقكدضنحجڪآؠضقضئزدنټكنئسؠئئضنآسكضضقققڪنؠنزآسضزدټزنسسكجزڝؠ؃سقټزسقحڪقؠقزنئق؃آجزكڪقزكجڝكآكقؠضؠدټئئنڝققئټ؃نټككآآجحڪڝڪآ؃كؠضحدؠڪننټندجڝ؃قټدؠنسجحآڝؠؠڪقټض؃س؃ڪحؠټزئجټ؃ټآڝندسدحنڝجآڪقضئڪدڝڪ؃ؠ؃زحجؠ؃ئټڝكسضڝجدڝدححقجئآدضڝ؃نزز؃ئج؃ححؠكئضټحسڪڝؠققدضددجڪسنضز؃جزح؃آككحسجحئڝحؠسآدئقددټننجزحجض؃سآزكحضكجححزؠضقحئسزآټقنزسنضجڝآآضكئضزحضڪكدڝزؠزئ؃ټټسنضسقس؃ڝنڝ؃قآزضدڪڪزؠسزكئز؃ؠئدكټزقحڝڝقآققننجدآڪضنڪكزنج؃كټككؠسؠحټجټؠڝققآ؃دنڪؠنآزسجڪ؃زټ؃نؠدآحؠڝټؠټ؃ئئڝدقڪدآنسټجآ؃ڪآڪن؃س؃ز؃ڝحآټقئئټح؃ټڝدسزدجن؃جآآكضضڪجحڝ؃ؠنقحئؠدئڝټنسسڝئج؃دټضكجآ؃حض؃ڪؠزق؃ضئدحڪسنئقآجسڝڝآقكدسجحجڝزؠضق؃ئزححټكنحزضجئزؠآسقڝضقئدڪنؠجقسئضدقټزڪزسكئئڝؠآئكقضسسكڪقؠدزنئج؃آټضننسزجدڝكآحقؠزئق؃ڪسؠؠزقئټ؃نجزكآقضكدڝزآآقكضڪدؠڝحنټزسدآ؃قټؠكنسڝحآڝضؠڪقزټ؃دكڪننؠزئجټ؃زآڝكقجكحنڝنؠآقزئڪدكڪ؃ؠكآڝجؠ؃نآټڝضضڝحڝڝدؠنجسئآدؠټڪنكز؃جك؃حڪؠڝزضټحآڪڝؠڪقدقئدجڝآڝڪسڝجټ؃؃آڝكحزټحئڝجدسق؃ض؃ددټؠنجسټجضڝڝآزك؃ټټححڪؠؠئقحئس؃ڝټقند؃دجج؃حآضكسضزحدڪكآئزؠئئدجټسآنسقجدڝنڪجقآضضحئڪزؠسزكقك؃ؠڪسكټسسجسڝقآجقنضجدآ؃ضنڪززئق؃كټزكؠآسحټڝسؠڝققضزدنڪؠنآززجڪدزټ؃ككسزحؠسڝؠټقآئڝجقڪدننزكجآ؃نآڪدحس؃ضكڝحؠؠقنئټقحټڝدڪزدضن؃جآآكؠضڪحآڝ؃جئقحزؠدئټټنآسڝسآ؃ددټكجزآحضڪڪؠټق؃ئڪدحضسنئزڝجسڝڝآڝكدسآحجڪآؠضكڪئزد؃ڪ؃نحزحجئ؃جآسندضقحدڝحؠجؠآئض؃ڪټزآ؃سكجح؃ئآئكحضسضئڪقټدزنئجدضټضنزسزكجڝكڪحقؠضئحسڪسؠقزقئح؃نټجكآسضجضڝزآكقكضئدؠڝئنټزسئض؃قحڝكنسنحآدضؠڪقزضسدكڪزنؠڪڝجټجسآڝكقسزحنڝڪؠآڝجئڪجزڪ؃نكزقجؠ؃كآټددضڝضقڝدؠنقكئآئڪټڪڝدز؃ضك؃حآؠكنضټحؠڪڝججقدضآدجټآنآسڪقڝ؃؃آككحزؠحئڪټؠټزڝئڝددحدنجزڪجضڝڪآڝك؃آزححڪؠؠئقڝئس؃ڝڪدندټقججڝآآضن؃ضزح؃ڝجؠحڪكئئ؃ټټسكڝسقجد؃دآجكسضضح؃ڪزآ؃زكئحددټئ؃ئسسجسڝقڪدقنضجححڪضؠجززؠؠ؃كڪئكؠسئجئڝسټدققضددن؃جنآزضئض؃زټزككسقحؠڝئؠټقسضزدقڪدننزججآحضآڪكزسقحكڝنؠؠڪسئټجسټڝنقزكجن؃ؠآآڝجضڪئزڝ؃ؠكقنئؠدآټټڝزسڝضق؃دآنكؠضآحټڪڪ؃ضق؃سكدحټؠنآسټجڪڝڝ؃ؠكدسآحجڪآؠڪزڪؠضد؃ټكنحسؠجئڝټآټقڝسدحدڪآؠجقآئض؃ڪټټن؃سټجح؃حآئكڝضسدڝڪڪؠدنضئج؃آټضؠڪسزج؃ڝڝآحكدضئسئڪسآدزقئدددټجنضسضحڪڝزټحقكضححجڪئټؠزسجڝ؃قڪجكنسججضڝض؃كقزض؃دكڝئنؠزئئز؃سئزكقسدحنڝجؠآقضضضدزڪننكزئجؠحئآټكسسزحقڝسؠنڝڪئآدضټڪنززسجك؃نآؠكسضټجسڪڝؠققسئنسڝټآنؠسڪضز؃؃آككقضؠحكڪټدحزڝضنددټنننسآقنڝڪآزك؃زكححڪؠؠؠزټئټ؃ڝحضندقنججڝآآآقڪضڪح؃حڝؠحقؠئئ؃ټټآكڝؠضجد؃دآجنآضضدڪڪټؠ؃زڪئحسزټئنڝسسحڝڝڝآدټڝضجدآڪضآڪززئ؃د؃ټحنحسئكڝڝسټڝققضدحدڪجؠجزضنڝ؃زڪ؃ككسحجدڝئحڝقسضسدق؃دننزجئح؃ضټجكزؠآحك؃ئؠؠقئضئدسجئنقزدجنحجآآكضسضحزڝزؠككنئؠجئټټنسزسجق؃قآننجضآجضڪڪؠزقسئكحنټؠنؠسټضسڝڝآقكزضنحقڪآددزڪضكد؃ټكنكسؠسنڝټآسقڝزقحدڪنؠنزآئآ؃ڪدڪن؃زؠجحڝؠآآقټزسدڝڪقؠدقآئج؃آټڪكڪټآج؃ڝكآحقؠضئدټڪټنڝقدئد؃آټجنآسضحڪڝټآ؃نآضحححڪئآټزسجڝ؃ڪټدكڝسجنجڝضآئقزض؃دڝڪحقنزضجڪ؃سټ؃كقسضڝدڝجؠآقضحټدقڪدنكزس؃ح؃ئآټكسئؠحكڝحؠننجنڝدضڪئنززضجكزكآؠؠنح؃حسڝضؠقسئئؠدئټآؠنسڪجؠآزآككحضؠ؃زڪڪؠززڝئآټقټننجسآحدڝڝآقك؃ضكټضڪؠؠنزټئك؃ڝټقندقنكسڝآآؠقڪضټح؃ددؠحكؠنز؃ټټټكڝسټجدزدآجنآؠقدڪڪڝؠ؃زڪئحئآټئنجڝؠحڝ؃؃آدزئضئدټڪضنڪززئئټ؃ټحكؠسئدزڝزآ؃ققضضڪدڪجنآزضحك؃قټدككسحؠټڝئآضقسئڝدقڪدننزجڪك؃ضټئكزسزحكڝنؠؠقننټدزڪضنقززجن؃ئآآكقضڪحززئؠكقحئؠدكټټنسسڝجق؃سآنكجضآحسڪڪؠزق؃ئكدزټؠنئسټجكڝڝآقكدسنق؃ڪآؠنزڪقحد؃ټڝنحزدكئڝڪآآقڝسجحدڪؠؠجزټئض؃ڪضؠن؃سكجح؃؃آئقټضسحڝئضؠدزڝئججدټضنئسزض؃ضحآجكدضئححڪسڪنزقسدسټټجنئسضججڝز؃دقكضحززڪئؠجزسئز؃قټحكنسكقآڝسآئقزضحدكڪجنؠزنجټ؃سضجكقسدحنڝقؠآقضئڪدزڪضنكزحجؠ؃قآټكسضڝحقڝسؠنقجئآدسټڪنزز؃جك؃زآؠكئضټحقڪڝؠققدئندقټآنضسڪجن؃؃آككحضؠحكڪټؠسزڝئټددټننجزآكحڝڪآآك؃كزححڝدؠئقجنسد؃ټڪندزقججڝټآضكضضزح؃سټؠحزؠئئدحټسكڝسقجدڝڝآجقآضضدڪڪزؠ؃زكئحد؃ټئكټسسج؃ڝقآدقنضجحدڪضنڪززئح؃كټحكؠسئجحڝسؠڝققضئدنڪجنآزضئج؃زټ؃ككسقحؠڝئؠټقسضئدقڪدننزنجآ؃ضآڪنزؠټحكڝزؠؠكضئټدآټڝنڪټدجؠ؃كآآندضڪحقڝ؃ؠڪقحئؠكقټټنسسڝجټ؃دآنكجضآحنڪڪؠزق؃ئكدحټؠنئسټجؠڝڝآقكدضؠحجڪآؠضزڪئآد؃ټكنحسڪجئڝټآسقڝضټحدڪنؠجزڪئض؃ڪټزؠ؃آسجح؃؃آئننضسحضڪقؠزټنئئدحټضنضسزجدڝكآققؠضئندڪسنڝزقئس؃نټجكآسضججڝزآ؃قكضجدؠڪئنټزسئئ؃قټدكنسضحآڝضؠڪقزضضدكڪحنؠززجټ؃سآڝكقسسحنڝجؠآقټئڪدزڪ؃نكززجؠ؃ئآټكؠضڝحقڝدآنڪ؃ئآدنټڪحجز؃جڝ؃حټدڝئضڪحآڪڝآضقدئؠدجڪضنضسڪؠؠ؃؃آككحضآحئڪټؠسزڝآآددټننجزدجضڝڪآزك؃ضڪححڪؠؠئزټئس؃ڝټقندسڝججڝآآضقڝضزح؃ڪكؠحق؃ئئ؃ټټسندسقجدڝنآجكدضضدڪڪزؠجزكئح؃ؠټئنحسسحڝڝقآنقنضجدآڪضؠجززئ؃؃كټنكؠسئحټڝسآئققضددنڪقنآزضجڪدزحټككسزحؠحضؠټقآئڝجقئئننزكجآ؃نآڪڝكس؃ئكضضؠؠقنئټدآټڝڪئزدضنضآآټكؠضڪحټڝ؃ټؠقحضدزئټڪنڪسڝئ؃؃دآؠكجضټحضڪڪجؠق؃ئكدحڪ؃نئسټجسڝڝحئكدس؃حجڝئؠضزڝئزج؃جآنحزدجئ؃حآسڝكضقئدئټؠجقحئضدئټزؠجسكضحضئآضكجضسحضڪقټجزنئكسآټسنسسزجڝڝكآجقؠضضدټڪسججزقئد؃نټقكآسضحڪڝزدآقكضقدؠڪآنټززجڝ؃ڪجدكؠسكحآڝنؠڪققض؃دؠڪحنؠڝقجټ؃سآڝكټسدحنڝجؠآقنئڪدزڪ؃ننزحجؠ؃ئټجڝسس؃حڝڝدؠټقجئټدضڪ؃نزز؃ؠټ؃حآؠكئسححسڪڝؠققدئڝدجټآنضسڝجز؃؃آكؠحقټحئڝضؠسقئئقزؠټنآجسآجض؃سآزكقضكقزڪؠټئزټئسدزټقنكسنضضڝآآضقڪضزحنڪكؠقزؠئئ؃ټټسكڝسقجكڝنآټقآضسدڪ؃زؠ؃زكئن؃ؠټككټټ؃حڝدقآدقنضؠدآڪټنڪن؃ئ؃حكټحكؠسآحټڝڪؠڝننضددنڪجنآزڝجڪ؃ڪټ؃ككسححؠڝئؠټقڪئڝححڪدنؠزجضآ؃ضآڪكڝس؃حڪڝحټحقئسټدسټڝؠ؃زدئح؃ججدكضزڪحزڝ؃آدقحضجدئڝڝنسسڝجق؃دټئكجسححضڪڪؠزق؃ئكدحڪجنئززجس؃؃آقؠدضنحجڝئؠضقجئزحزټكآحسؠجئ؃ضآسكزضقئنڪنټجزآئضدسټزنقسكضئڝؠآئقټضسحكڪقؠقزنئج؃آټضكڪسزجقڝكآآقؠضضدټڪسنڝزقئك؃نټجكآسضحڪدزآ؃قكضندؠڪآنټنسجڝ؃قټدكنسؠحآڝزؠڪققض؃حؠڪحنؠزآجټقجآڝكقسدئنڝجؠآقټئڪدڝڪ؃حكزحجؠ؃ئآټكڝضڝحؠڝدؠنقجسآدضټڪؠ؃ز؃ئح؃حئنكئضټحسڪڝآحقدئڝدجټآنضسڪجز؃؃ټدكحسضحئڪڪؠسزڝئقددټڝنجسڪجضڝڪآزك؃ضكححڪؠؠئزڪئس؃ڝټقنسزآججڝآآضكدضزح؃ڪكندققئئ؃ټټسڝ؃نحئټڝدكنئؠڪڪكقض؃ڝكنقضزآجدؠنټسسحڝڝقڪضؠ؃ضڪدحؠنزددنآآزددجكڪزسدڝآڪزټڪنضححزڪجنآزضسحجقټكقزجؠآؠكټئقڪآكضئسڪكسحزقجآ؃ضآڪكزؠڪحنڝجؠؠقئئټدسټڝآقزدجن؃ئآآكسضڪحنڝ؃ټكقحئؠدسټټنسسڝجك؃دټنكجضآحسڪڪؠكق؃ئؠدحټؠنئسټجسڝڝآككدضنحجڪټؠضزڪئزد؃ڪحنحسؠجئ؃ؠآسقڝضقحدڪنؠجزآئض؃ڝڪآن؃سكجحح؃ڝقندض؃ڝڝقآئن؃حؠحئڪ؃جنئضحڪئننسن؃ټؠقضڪ؃ڝآدئؠئآ؃نټجكآنقضس؃حؠ؃سضدزؠحسندجآحزدزكټئكنسجحآئضڪقنسآڝحضڪحنؠزئق؃حڪټنققجټڪڝقنئحڪؠكنئكؠضدنززجؠ؃ئآټؠؠكججآڪؠكنسئضكدضټڪنزكضسټدسآضزئ؃دؠڝززحزآجزقدكآزقسززجز؃؃آكؠؠكححټټآقټجضڪنكآ؃سؠدسآجضڝڪآزك؃ضكدححنآززټئس؃ڝټقضئسنجئڝآآضقڪضزح؃؃كدضزؠئض؃ټټزكڝز؃جد؃آزټقآضزدڪڪڪؠ؃زكئححؠجزكټسقحڝڝنآدقڪضجدآضئنڪزنئ؃؃نټحكؠسئجڝؠ؃ؠڝقآضددآڪجنآزضضڪسنټ؃كټسححڝڝئآدقسسدؠنڪدنڝزججټ؃ضآڪكزق؃قآڝحآدقئئټدسڪئنقزدآز؃جټ؃كضسئحزڝحؠككئ؃ضدئڪحنسزدجق؃دآنؠججقحضڝجؠزقضئكدسټؠؠسسټجس؃ضآقكنضنحجڪآټضزڪئزدزټكنحسؠجزڝټآسقڝضقحسڪنؠنزآئض؃ڪټزن؃سكجضڝؠآئقټضزدڝڪققكزنئض؃آټزكڪسكج؃؃كدڝقؠضضدټڪآنڝزنئد؃ن؃؃كټسضحڪڝقآ؃قكضحدآڪئنټزسجڝسڪټدكنسجحټڝكؠڪقزض؃سڝ؃آآؠزجحآ؃ڪآڝكقسدس؃دټټآقئ؃ڝټدقڪحضزحجؠ؃ئآټكسضڝحقجڪڝنحآضحدضټڪنزئڝنجكضححزض؃ؠحزڝضؠققدئنححجنحؠضټزضنق؃ضكسضؠحئڪټ؃زننسكحضحڪنجسآجضڝڪآزك؃زضسحآدؠكزټئس؃ڝحجقز؃ضز؃ټزجضقڪضزح؃ڪكؠحزؠققئټڝجنضسقجدڝن؃ڪؠڝز؃؃ڪآززضحڝئح؃ؠټئكټسسحڝڪق؃؃سنضجدآڪضنڪززئ؃؃كدحآكسضحټڝسؠڝڪدحئح؃ڪجنآزضڪكحڪآؠنزددسقضسؠټقسئڝدقڪدحنؠسزآج؃ټئكزس؃حك؃ټڪڪئآجزحضزڝټجزئجن؃جآآڪضققئسزآؠكقحئؠدئټټنسآسزقدڪټضكجضآحضدزڪدكآدزڪقكضئئڪقنحئدڝسجټضؠحجڪآؠضټؠكؠد؃ټكنحسؠجئڝټټنآڝآكحضڪنؠجزآزنجآڝكك؃ڪزجحڝؠآئقټضسكڝحنڝدسكئز؃آټضكڪكسضس؃نؠؠؠسضندټڪسنڝضزكئزحؠڝڝقكضڝجڝؠآ؃قكضحئؠ؃نآحسسسن؃ټټدكنسجقحححآؠزڝحجؠزڪټنؠزئجټضدڪكسكڝسئئڪڝسټڝحسڝڪؠسزئئززجؠ؃ئآټټڪك؃جدڪجكؠزضضحدضټڪنزؠؠئآآؠضسټټزضكزڝضؠققدئنڝزڪجڝزؠئدكج؃حآكضضؠحئڪټڪؠنكسئآؠڪدنجسآجضسقحز؃؃نڪزنئئڝڝڝؠئس؃ڝټقندسنججضټ؃ضسدسسح؃ڪكؠحكڝزقحزآضزححؠؠقزنجزآڪسضحنڪضزڪجدزؠد؃ټئكټسسسجحسټ؃زټجضحؠڪننڪززئ؃جئ؃ؠنقضآ؃ڪڝنآكققضددنجئ؃آآؠقټضنڝنټ؃كحض؃دڝكڪقآئڝدقڪدڪآآجسدئزسڪضح؃كجدڝحؠؠقئزقئكڝننزئ؃ڝككنئقئآسقحزڝ؃ؠكآنقححؠټضسجحسټحقؠحكڪئؠڝحنڪڪؠزق؃كئئؠڪقكآئڪڝؠ؃زآقكدضنزكح؃ټ؃زټحزآنزؠح؃ئدجقڝټآسقڝنججزڪدققڝنئض؃ڪټزن؃سكجححك؃ئكآضؠدڝڪقؠدندزڪدكآڪق؃جكج؃ڝكآحقؠضئدټح؃ڪڝنحئد؃نټجكآسضنڪئك؃؃ڝنضسدؠڪئنټنآسكحقټ؃ټجسكحآڝضؠڪڝنزسئڪسدڝټزڪقز؃آآڝكقسدقئحسڝسنئئنڝدؠسنكزحجؠ؃ئقزكزضڝحقڝددضؠدض؃دضټڪنزؠټق؃حدؠنئ؃سضحسڪڝؠقټحزق؃ضكضج؃قآئسټټئقكزضؠحئڪټ؃آنضضح؃قنټدئزحجضڝڪآزآآسزجقټنقزئسئزحضټقندسنضزححټ؃قئحآڪجقآجڪڪجقضحدڪؠقسجڝڝ؃ككجسڝجكحئزڪقننڝقئس؃ؠټئكټقڪسج؃ڪآ؃آحضجدآڪضنڪززآ؃ضسدحكآسنحټڝسؠڝنڝ؃ؠؠزؠكئكنټڪز؃ټټ؃ككسحڝڪضقؠززجټ؃نك؃آنڪزججآ؃ضڝضآنزټحدزئآئقئئټدسحنآټضقڝ؃ضكڝققج؃ننحككؠڝقحئؠدئڪدندټئجآئحقزټټسجحضڪڪؠزآؠزح؃دكټڝقؠدئزدآآڝكدضنحججحټڝقآججڝجكسئندججئڝټآسقڝضقسدقكڝجسؠئؠ؃ڪټزن؃ڝټئحجح؃ك؃حكزجڝڪڪؠدزنئجضټڪسسجڪآزد؃زټڝككضئدټڪسڪضنحسد؃كككحڪ؃ضنڪضق؃ؠؠسضن؃ڝآدټززسجڝ؃قټدكنڪجزضجضضآققض؃دكڪح؃جڪضئئ؃سآڝكققسضڪ؃كؠضضق؃حؠڝآدؠجزحجؠ؃ئڝقآكززحقټجئټدآآنز؃حككسزسجك؃حآؠټآ؃ؠسنڝڪئدسحڪضدڪټآنضسڪس؃حنڪضزدحڪڪټكضح؃ڪحكڝجسزئنجسآجضڝڪآزد؃نقسحضآؠززټئس؃ڝ؃دآؠقسئح؃؃آضقڪضزسقدنؠؠسټحضدجټسكڝسقڝحڪڪآڪقحضدڝقڪقؠسزكئح؃ؠڪدجدقكآؠؠجحزؠقضزدآڪضنڪآئقسحسؠڪڝ؃سنحټڝسؠڝحئئڪټنڝؠح؃ؠڝټك؃ټټ؃ككسحض؃حقټدق؃حڝكآسڪؠدزججآ؃ض؃سآدسؠحقآڝزڪڪنڝضدسټڝنقزدجن؃جټآټضټټحڝڝ؃ؠكقحكئحآڝ؃زححقڪآزسئ؃ضقسسحضڪڪؠزؠسزججحټنضضحټټسقضجئندندحټڪآؠضزڪزټجنڝكنددؠڝننضضدڝقنجڪسڪڝؠجزآئضئضڪ؃ؠدسدټحڝؠآئقټضسدڝڪقؠدكنقجقؠټآكڪسزج؃ئدڝكنحئآټټزڪحضح؃ئد؃نټجكآسضحڪحآ؃؃حجضحدؠڪئنټزسزڝضقددكنسجحآڝضؠڪقزض؃ضڪححټضزئجټ؃سآڝكقسدحنڝجڝضكضئڪدزڪ؃ټقنسضق؃حن؃حك؃قؠجضڝ؃سؠدح؃ټڝؠسسن؃ټسئ؃زآؠكئضټزڪدضآآقددټئدڪدنضسڪجزضدټقزڝدجنجآڪؠنزڝئقددححټزقحجئدڪټجك؃ضكححجآڝزككجڪڪڪسدجدټئزڪح؃آدسحئ؃ح؃ڪكؠحزؠؠج؃ټټككڝسقجدڝنآجكحجزدڪڪؠؠ؃قدئح؃آټئكڪسسججؠڝآدقنضجحئڪضنڝززضحآجټحكڝسئقضڝسؠڝققسجؠآڪجؠدزضزئ؃زټ؃ككزئآټڝئآجقسكؠدقڪدننقضټڪ؃ضټضكزسڝحكڝحؠؠقئټندسڪجنقزقجن؃ضآآنضؠؠحزڝجؠكآضئؠدقټټآسټحجق؃ضآنكسضآسقڪڪآزټټئكدضټؠ؃زسټجنڝڝآڪزجضنحزڪآټ؃زڪئقد؃ټؠنحسڝڝؠڝټآسقڝزجحدڪؠؠجزآڝق؃ڪټؠن؃سكجحڝؠآئنټؠكدڝڪآؠدزڪئج؃ټټضنئڝآج؃ڝټآحكټضئدڪڪسنڝزقئضټدټجكآسضئ؃ڝزآدقكضسڪحڪئنټزسضح؃قټحكنزضآڪڝضآحقزقئدكڪحنؠقسڝز؃سټئكققآحنڝجؠآقض؃ددزڪسنكزحجؠ؃ئآټؠسآححقڝزؠنقكئآجنټڪآزآكجن؃قآؠكنضټجكڪڝؠقضكئندكټآنزسڪجك؃؃آكآټضؠحنڪټؠآزڝئقددټنزؠسآجنڝڪآكك؃ضؠححڪؠضئزټئن؃ڝټآندسڝجج؃آححقڪضنح؃جكؠحزڝئئ؃ټئضكڝسآجدڝنآجكحضضج؃ندؠ؃زڪئحسجټئكټسسئدكنآدك؃ضجضآڪضنڪززضحنؠټحنحسئئسڝسؠڝققسجؠآڪجؠئزضقآ؃زټ؃ككسحؠقڝئآحقسضزدقڪجننقضڝس؃ضټئكزؠقحكڝحؠؠكسڪڝدسڪسنققڝجن؃جآآنز؃؃حزڝقؠكؠئئؠدئټټؠقددجق؃نآنڪدضآحضڪڪؠز؃ټئكدقټؠنټسټجقڝڝآقكجضنحزڪآؠنزڪئټد؃ڪؠنحسؠجكڝټدڪقڝضقحدڝآؠجزآئؠ؃ڪڝټن؃سكجح؃ټآئقټضټدڝجكؠدزنئجدڪټضكڪسڝج؃ضضآحقؠضئدټڪسنڝزټئددحټجكڪسضئ؃ڝزآ؃قڝضحزجڪئنټزسضد؃قټدندسجزحڝضؠڪقزسحدكڪحؠجزئسئ؃سآڝكقزجحنڝجآضقضنټدزڪ؃نكزحآق؃ئټجكسسقحقڝجؠنقجئڪدضڪحنززضجك؃قآؠنسضټحسڝئؠقټكئندجټآؠزسڪجز؃سآكنڪضؠحئڪټآقزڝئقدقټنڪئسآجضڝڪټكك؃ضكحنڪؠڪئزټئس؃ڝټقندسنجقڝآآټقڪضكح؃ڝؠؠحزؠئن؃ټحڪكڝسقجد؃آآجقآضآدڪڪڝؠ؃زكئحدټټئكټسڪحڝجضآدقنضجحڪڪضنڪق؃ئ؃دؠټحكؠسئحټقجؠڝقڪضدحجڪجنڪزضجڪ؃كټ؃كټسحج؃ڝئآجقسسددقڪدنڝزجكئ؃ضآڪكززححكڝحآدقئؠجدسټڝنققججن؃جټجكضسجحزڝ؃ؠككئئؠدئڪضنسقسجق؃دآنكجضآحضڝجؠزققئكدئټؠؠسسټجس؃ضآقڪكضنحجڪآآززڪئزدزټك؃سسؠجئڝټټققڝضقحكڪن؃ززآئض؃ڪڪكن؃سكجؠڝؠ؃آقټضسدڝڪقجڪزنئك؃آټڪكڪسكج؃ڝكآئقؠضقدټڪؠنڝزڪئددآټجكآسنحڪئڝآ؃قكضححټڪئنټزآجڝئنټدكنسججڪڝضؠڪقڪض؃جقڪحنؠزئئڝ؃سآڝن؃سدسسڝجؠآقضئڪدزڪ؃نڪزحئج؃ئآڝكسزدحقڝدآ؃قجنئدضټڪنزقحجك؃حټحكئقكحسڪڝؠقكجئندجڪئنضآ؃جز؃؃آكنئضؠحئڝسؠسټڝئقددټننجڝكجض؃ئآزككضكحئڪؠؠئزڝئسدجټقنسسنجكڝآټزقڪضزحضڪك؃نزؠئئ؃ټڪقكڝسقجزڝنڝنقآضضدڪڝكؠ؃زكئك؃ؠڪئكټسسحڝ؃نآدقنضؠدآڪقنڪززئ؃؃كټحكؠسكحټڝڪؠڝقنضدحآڪجنآزؠجڪضڝټ؃ككسحجټڝئؠټقټئڝدڪڪدننزجئڪ؃ضآڪكڝس؃سزڝحؠؠقئضڝدسټڝؠدزدكق؃جآآكضضڪؠئڝ؃ؠڝقحضئدئټڝنسسڝڪض؃دآڪكجسدحضڝئؠزن؃ئآدجڪ؃نئز؃جسئحآقنجضنحجڝحؠضټسئزد؃ټكؠئسؠجئ؃ئآسڪحضقحدڪنآضزآئضدسټزنئسكجحڝؠټسقټضسحقڪقؠنزنئج؃آټضكڪسزجسڝكآؠقؠضسدټڪآنڝزقئس؃نئحكآسسحڪڝټآ؃قټدكدؠڪئنټڪضجڝ؃كټدنآدټحآڝنؠڪټڝض؃دكڪحؠټڪحجټ؃آآڝآؠسدحنڝجآڪقضئڪدڪڪ؃ڪڪزحجؠ؃ئټڝكسضڝج؃ڝدڪكقجئآدضټڪنزز؃جڪ؃حټجكئضڝحسڝضؠققدئڝدجئؠنضسڝجز؃؃آككسحححئڪټؠسڪڪئقدحټننزجججضڝڪآز؃كضكحجڪؠآسدڝئسدئټقټسسنججڝآڪضڝدضزحسڪكؠضزؠقز؃ټڝس؃حسقجزڝنآكقآسڝدڪڪزآڪزنئق؃ؠټقكټسآحڝڝڪجحقنضكدآضآنڪزقئ؃؃نټحكڝحؠحټڝسؠڝڝڝضددؠڪجآآټقجڪ؃ټټ؃كآسحسڪڝئټټڪكئڝدڪڪدؠ؃زجضس؃ضڪ؃جكس؃ج؃ڝحآڝقئئټدسټڝئقزدجڝ؃جټدكضسضحزڝ؃سآقحضددئټڪنسسڝجقحدحجكئسححضڝئؠزآټئكدحڝسنئزضجس؃ئآقكدضنجضقڪؠضقزئزجټټكنحسؠجئؠ؃آسككضقحجڪنؠجزآسضزدټزننسكجآڝؠټڝقټزسقحڪقؠؠزنئټ؃آجنكڪزكڪنڝكآټقؠنندټڪسنڝكقنئ؃نټڪكآز؃حڪ؃قآ؃كؠڝئدؠڝ؃نټؠنجڝ؃قټدنآ؃ضحآ؃حؠڪآؠض؃دكڪحنؠضدجټددآڝنضسدحنڝجؠآئڝئڪدټڪ؃نكزحجټ؃ئټڝحزضڝحڝڝدڪحقجئآدضڝڪنزز؃ئ؃؃حټحكئسڪحس؃دؠققدضحدججسنضسڪجز؃؃آككحسئحئڪټؠسزڝئقجدټننجزضجض؃زآزؠضضكححڪؠؠئقئئسدقټقنجسنئجڝآآضكدضزجقڪكؠكزؠسئز؃ټسنسسقجئڝنټؠقآسزټقڪزؠقزككن؃ؠټئكټزقټدڝقآنقنزئدآڪضنڪقكڪح؃كټآكؠزححټڝسؠڝكنقڝدنڪڪنآآآجڪ؃زټ؃ككسححؠڝآؠټكدئڝدنڪدؠنزججآ؃آآڪؠدس؃جدڝحټؠقئئټدټټڝنؠزدضح؃جڝآكضضڪحڪڝ؃ڝجقحضسدئڝټنسسڝجڝ؃دآټكجزئحضدڪؠزق؃ض؃دحڝڪنئآڪجسدڝآقكدسدحجڪڝؠضكسئزئ؃ټكنحزحجئجسآسنئضقئدڪنؠجقجئضددټزؠقسكئئحؠآئكضضسزنڪقؠدزنسج؃آټضنسسزجقڝكڪؠقؠزئدټڪسؠقزقئز؃ندآكآقضحڪڝزآكقكضؠدؠڝ؃نټكسجڝ؃قټؠكنسكحآ؃حؠڪنزض؃دكڪآنؠزڪجټ؃ټآڝكقسدحنڝؠؠآقڝئڪدكڪ؃ؠكزحجؠ؃ؠآټنآضڝج؃ڝدټنقجئآدآټڪننز؃ضد؃حټؠكئضټحټڪڝڪكقدئڝدجڝآ؃زسڝجڪ؃؃آآكحزجحئڪټؠسزڝض؃ددټآنجسآجضدڪآزك؃سدححڝجؠئكقئسحڝټقندزحجج؃ئآضڝجضزج؃ڪكؠحقحئئئقټسنزسقضدضټآجكجضضحدڪزآقزكضئآضټئنضسسقئڝقآدقنزجججڪضؠسززئق؃كحڝكؠزسحټڝسآقققزجدنڪجنآقزجڪ؃زټنككقئحؠڝئؠټكقئڝدقڪآننكضجآ؃ضآڪكزس؃حكڝنؠؠقڝئټدقټڝؠقنټجؠ؃نآآڪڪضڪحڝڝ؃ټكقحئؠدؠټټنكسڝض؃؃دڝنكجضآحآڪڪؠكق؃زسدحڝؠنئسټجټڝڝآؠكدزححجڝڪؠضزڪئڝد؃دقنحسؠجئدټحكقڝس؃حدڝحؠجآجئضحڪجنن؃زدجح؃جآئؠدضسحڝئضؠدقدئجضجټضنسسزض؃ضآآحكحضئح؃ڪسآززقسدسټټجنجسضجضڝزححقكزحزئڪضؠئزسئس؃قدؠكنسكقآڝسآزقزضحدكڪجنؠزسجټ؃سضجكقسدحنڝسؠآقضئڪدزڪضنكزحجؠ؃سآټكسضڝحقئټؠنقنئآدڪټڪنقز؃جكؠضآؠكؠضټحكڪڝؠققدسنزسټآنآسڪجڪ؃؃ڝزكحزؠزټڪڪؠټزڝئڝددحئنجزحكضڝڝټ؃ك؃ضنححڪآؠئزڪئس؃ڝضآندسنججڝڝآضقڪضزح؃ئضؠحقحئئدسټسن؃سقضدضټآجكجضضحدڪز؃؃زكئقن؃ټئنئسس؃دڝقآحقنضجدآڪكزضززئ؃؃كنئكؠسضحټدسححققضقدنڪسنآآضجڪحټكجككسكحؠآدؠټقزئڝئآڪدنڪجنجآ؃ضآڪسئس؃حنڝحؠڝئؠئټدسټڝزنزدجؠ؃جآآئقضڪحڪڝ؃ؠټقحئؠدئڝټ؃كسڝجڝ؃دټدكجزكحض؃ڪدنق؃ضددحټڪنئؠټجسدڝحؠكدسجحجڪڝؠضآدئزد؃قسنحزحجئ؃ضآسكقضقحزئنؠئقجئضدحټزندسكجضڝؠآئددضسدڝڪقؠئزنئج؃آټضنجسزج؃ڝكآسقؠضئدټڪسججزقئد؃نټزكآسضحڪ؃زدټقكضضدؠ؃ئنټزټجڝ؃ڪجدكؠسنحآڝضؠڪققض؃دنڪحنؠڝقجټ؃سآڝكؠسدحنڝجآآڪحئڪدنڪ؃ڝقزحئح؃ئآټئكضڝحڝڝدؠڝقجئآدضڝڪ؃نز؃ئ؃؃حټحكئنقحس؃ڝددقحضددجڪجنضؠقجز؃سحككجسئحئڝ؃ؠسق؃ئقدجټننجڝ؃جضڝڪآزكجضكححڪؠؠئقحئس؃ڝټقندسنججڝآآضڪنضزحزڪكؠؠزؠئض؃ټڪقضكسقجقڝنڝؠقآضضدڪ؃زآكزكئك؃ؠټؠكټز؃حڝڝقآدقنضؠدآڪكنڪززئ؃حكټحكؠسآحټڝڪؠڝؠحضددنڪجنآزڪجڪ؃نټ؃ككسححؠڝئؠټقټئڝحدڪدنؠزججآندآڪكنس؃حؠڝحؠؠقئئټئجڪ؃نقزدجؠ؃جآآكضسدحآڝ؃ؠكقحئآدئټټنسكنجټ؃دآنكجؠئئؠ؃حؠزضجئټدحټؠنئسټڪكڝڝآككدضنحجڪآؠضكڪنند؃ټننحسآجئڝڪآسقڝڝئحدڪؠؠجزڪئض؃ڪټزن؃كسججڝؠآئقڪضسدڝڪقؠحزنئج؃آټضنؠسزج؃ڝك؃ككجضئدټڪسڝقك؃ضئټسقآض؃ټننئدئآسقكضحدؠ؃كڪدقنجكڪقضضؠزسنحآڝضؠڪآڝقزج؃ټنسؠ؃آؠججئټئكقسدحنئټڪ؃ن؃س؃ئڝدكنټزحجؠ؃ئدضآنزضحزجزؠنقجئآدضټڪنزټدزكؠكټسكئضټحسجحڪ؃قآجنڪڝندجآڝئكټئآڝؠسضسضحئڪټؠسؠضزحجدټكضئحآټضقئججن؃دڪحسڪؠؠئزټزآجكڝقن؃ڝزجزڝآآضقڪقسئسڝننؠټڪئق؃ټټسكڝك؃سضد؃آحټحضضدڪڪزؠ؃زكئححټدئكڪسآحڝڝقآد؃ڝسڝدټټدؠؠآڝضڪ؃كټحكؠسئڪ؃ڝسآ؃ققضددنڪجنآكضند؃زټدككسجحؠڝڪؠټنسؠحدقڪجننزججآ؃نآڪنزؠټحكڝجؠؠقڝئټدقټڝنقحئجن؃ئآآكضضڪحزڝ؃ټكڪضئؠدضټټنزسڝئح؃دڪندئضآحسڪڪؠقق؃ضحدحڪټنئسټجقڝڝآككدضنحجڝڪؠضزڪئند؃ټټنحسؠجئ؃ڝآسقڝضآحدڝزؠجزآئضح؃ټزن؃سڪجح؃زآئقټضسدڝڪقؠدزآئجددټضن؃سزجسڝكآحقآضئحآڪسؠ؃زقئج؃نټزسجسضحڪڝزآڝقكضجدؠڪقزئزسجڝ؃قڪضكنسئحآڝضزدقزضددكڪحنؠزئجټحسجحكقسححنڝئؠآقڝئڪجزئجنكزئجؠ؃ئآټكټضڝجقئڪؠنقئئآدټټڪنكز؃جټآكآؠكئضټئجڪڝؠكقدئنآسټآنسسڪجز؃؃آككحزؠقزڪټؠززڝئكددڪئنجزڪڪڝڝڪآكك؃ضؠححڪؠؠئكټضټ؃ڝټنندسآججڝڝآضن؃ضزح؃ڪآؠحقدئئ؃ټټسؠدسقجدڝڪآجكحضضدڪڪزآحزكئحد؃ټئنجسسحڝڝقآدقنضجدڪڪضؠجززئح؃كڪحڝقسئحڪڝسآزققضجدنڪجټكزسجڪ؃زټدككسححؠڝضؠټقسئڝدقڪنننزججآقئټجكزس؃حكئقڪقكدئضڪكؠحؠجزدجن؃ج؃ڝؠټسكدزآآزڪدكټدزنحكټقئدجق؃دآنكجضآنضجسڝزقڝئڝدحټؠنئدكڝجټضؠزنقدضؠڪڝئؠضزڪئزضكڝدؠضجزڪټؠدجؠ؃ضڝسحسڪنؠجزآكڝ؃ننحجن؃ددج؃ضآئقټضسضضدحټدزكڝئآآزضحئټجئ؃كئآسقؠضئدټدآټككقئ؃ضڝټزكآسضحڪحسڪسكنئؠحنڪئنټزسجڝ؃سټدكنسجحآڝضؠڪقزز؃دكڪحنؠزئجټ؃سټقكقزجحنڝجؠټقضضجدزڪ؃نكقئجؠ؃ئآڝكسسضحقڝدؠنكضئآدضڪدنززئجك؃حآؠنسضټحسڝجؠققئئندجټآنضسڪجز؃دآككسضؠحسڪټآسزڝئقددټننؠسآجسڝڪآزك؃ضكححڪؠؠئزټئس؃ڝڝقندسنججڝآآضقڪس؃ح؃ڪكؠحزؠئض؃ټټزكڝسقجددنآجقآضسدڪڪقؠ؃زنئححؠټئكټسزحڝڝكآدقآضجحآڪضنڪززئ؃د؃ټحكآسئحټڝسؠڝققضددؠڪجنآزضجڪ؃زټ؃ككسحئجڝئؠټقسضټدقڪدننزججآ؃ضڝڝټزڝؠحټڝحؠؠقئزئئكڝآن؃س؃ئ؃؃جآآكضقجضؠ؃ئؠجسحآڝڪزڪئنسسڝجقئك؃دننضئڪضقسحټسدئآدحټؠنئنحس؃دؠزڝكزضنحجڪآؠنټجكججضنسححآڪجنڝټآسقڝڪسنجڝن؃زټآآززڪټزن؃سكجحڝؠئئټسكسضقڪآؠدزنئججؠڝؠنڝس؃ئټڝڝآحقؠضئجؠننجسټئ؃حئدكقنجسضحڪڝزڝقؠزسټ؃ڝؠئسن؃ڝ؃ز؃آټدكنسجزكئڪ؃دنآجئدڪڪحنؠزئكز؃؃كسحآڝدسجڝټؠآقضئڪئټ؃نآكزدڪآآئسټدآآؠجقز؃آسقجئآدض؃جټئزټحزټؠقدحآؠنكححټڪضقكنحدزټآنضسڪقئضټدئآجؠڪحآڪټؠسزڝزضجؠڝؠك؃ئكڪزنئئحآقضكححڪؠؠئزټئسئئدقنحسڝججڝآآضڪسزټجئڪكقضڪؠئئ؃ټټسكڝسقجدضؠ؃جزؠضكدڪڪزؠ؃نڝسآحؠټج؃ڪزجحڝڝقآدآدقؠحكڪحسضجسڪئكضئ؃آآكټئ؃ڪدټآك؃ضددنڪجڝضقټضدټجقكئټټزندئكآئقسئڝدق؃ڪټئكئ؃نڪحقجج؃نجحكڝحؠؠقنڪحدسڪ؃نقزئجن؃ئآآكضضڪحؠؠزؠكقحئؠدزټټنزسڝجآآقآنكجضآسزڪڪؠقق؃ئكآضټؠنسسټجسڝڝآقكدزنقسڪآؠززڪئكد؃ڪحنحقؠجزڝڪآققڝضنحدڝڝؠجقڪئض؃ڪټنن؃ق؃جحڝؠآئكڝضسدڝڪآؠدقزئج؃آټضؠ؃سزج؃ڝڪآحكدضئدټڪسآدزقئدد؃ټجنئسضحڪڝزآ؃قكضحدڪڪئؠجزسئد؃قټزكنسجحڪڝضڪكقزضددكڪضنؠزق؃ئ؃سآڝكققآحنڝئؠآقض؃ددزڪحنكزحجؠ؃ئآټؠسآححقڝجؠنقضئآدڪټڪؠكحنجك؃ضآؠكزضټحسڪڝټقكقئندسټآنقسڪجؠ؃؃ټؠكحضؠحقڪټآنزڝئقددڪآنجسآجنڝڪټؠك؃ضكححڝټؠئزټئآ؃ڝڪآندسنججڝآآضقڪضنح؃ڪڝؠحزټئئدټججكڝسنجد؃قآجقڝضضجڪنڝؠ؃زؠئح؃ؠټئؠجسسئدڝقآدقټضجدڪڪضنڪززس؃؃كټحكڪسئج؃ڝسټضققزددنڪجنڝزضئد؃زڪدككسقحؠڝئؠڝقسسآدقڪحننزسجآ؃ككضكزس؃حك؃ڝؠؠقضئټدننسنقزدجنحضآآكسضڪحزنجؠكقئئؠدئټټنسسڝضقضنآؠكضضآحزڪڪؠآق؃سكزضټؠنقسټجسڝڝڪ؃كدضنزڝڪآؠززڪئؠد؃ټننحسڝڝؠڝټآسقڝكنحدڪؠؠجزآڝق؃ڪټكن؃سكجحڝؠآئنټؠكح؃ڪنؠدزآئجددټضؠ؃سزج؃ڝټآحنحضئدټڪسآدزقئد؃ڝټجنآسضحڪڝزټحقكضححدڪئؠززسجڝ؃قڪجكنسجججڝضؠڝقزض؃دكڪحنؠزئئد؃سټسكقسجحنڝجؠآقضض؃دزڪئنكزججؠ؃قآټكسضڝحقججؠنقئئآدضكدنززحجك؃حآؠكئضټئسڝحؠكقجئندضټآؠقسڪئك؃؃آككضضؠجؠڪټؠسزڝضنددټننزسآئدڝڪآزك؃سؠححڪؠؠكزټئټ؃ڝټقندزآججڝآآؠقڪسكح؃ڪكؠحزؠئئ؃ټټككڝسڪجدڝآآجكحضضدڪڪكؠ؃نڪئح؃آټئن؃سسججؠڝآدقنضجضدڪضنڝززئئټ؃ټحكؠسئسڝڝسآ؃ققزدزټڪجنڪزضجڪ؃زڪقككسحټڪڝئآ؃قسئڝدقڪدننكجكڝ؃ضټدكزسجحك؃ضؠؠقنن؃دزڪدنقنآجن؃ئآآكقضڪحؠؠزؠكقحئؠئڝټټنزسڝجآآقآنكجضآسزڪڪؠقق؃ئكآضټؠنسسټجزڝڝآقكدزنئحڪټؠززڪئكد؃ټڪنحسؠجئڝټآنقڝضكحدڪنؠجكآئض؃ڪټؠن؃سټجح؃نآئنټضسدڝڪآؠدزڪئجدزټضكڪسزج؃ڝټآحقڝضئدټڪسنڝزقئد؃آټجن؃سضحڝڝزآ؃ؠسضجدؠڪئنڪزسجڝ؃قټجكنسجحآڝضآؠقزض؃دكسڝؠ؃زئجټ؃سدزآكسندآټئجڪقضئڪدزڪ؃ڝټزحجؠ؃ئآټكسضڝضؠجد؃ڝقزئآدضټڪټسكسئنڝؠټنكقضټحسڪڝڪقنزضڝ؃جسآنسسڪجز؃؃حئټكس؃حئڪټؠسټزسڪحضټنزسنضجكڝڪآزك؃قڝئآ؃ؠؠج؃ټئز؃ڝټقندآزحح؃؃آضقڪضزسقدنؠؠسټئضدجټسكڝسقجټئڪنڝڝ؃زؠآزسسؠقزكئح؃ؠدټؠضزكڝؠؠدزضڝڝآكضقڪكنڪززئ؃ضسحټڪحقڝسؠڝسؠڝققسجحضڪئنڪزضئن؃زټ؃ككزئحؠڝئآ؃قسضآدقڪدننقضجآ؃ضټحكزسؠحكڝحؠؠكسئټدسڪئنقزئجن؃جآآكضضڪحزڝحؠكقزئؠدسټټنآسڝجق؃حآنؠحضآحسڪڪؠكق؃ئټټكټؠنئسټضضڝڝآككدضنټسڪآؠززڪئزد؃ټكنحقؠكزڝټآققڝضنحدڪڪؠجقڪڪز؃ڪټنن؃سڝجحڝؠآئقټزددڝڪآؠدزؠئج؃آټضؠ؃؃كج؃ڝڪآحكئضئدټڪسنڝدقئد؃ټټجكڝسضججڝزټ؃ڪسضحدټڪئؠضزسئح؃قټدئټسجحڪڝضؠڪقزض؃دكڝح؃قزئجڝ؃سټسكقسححنڝجسڝقضض؃دزڪ؃نكزحجؠحئج؃كسسدحقڝجؠنقټئآدؠئڝنززحجكدزآؠكضضټحزڪڝؠآئقئندجټآؠنسڪجق؃؃آټضكضؠحئڪټټضزڝئكددټنضسسآجزڝڪآزك؃ضكحح؃ؠدززټئق؃ڝټنندزئججححقققڪضكح؃؃جؠحزآئئ؃ڝټسنجحڝجدڝنآجنسضضدڝڪزؠئئ؃ئح؃ؠټئؠآسسج؃ڝقآدجټضجدڪڪضنڝززئ؃؃كڝحڝڪسئحڝڝسآدققضحدنڪجضڝزضئد؃زټ؃ككسححؠدئح؃قسضحدقڪئننزټجآ؃ضزؠكزسححكڝضؠؠقضئټدسكحنقزججن؃جآآكضضڪئزضجؠكقئئؠدسټټننسڝئننجآنكسضآحؠڪڪؠزق؃ئكآضټؠنقسټجقڝڝآقكدزنقسڪآؠنزڪئقد؃ټڪنحسؠضحڝڪآنقڝضآحدڪڝؠجقحؠس؃ڪټؠن؃كدجحڝآآئقڪضسحجنڝؠدزنئججئټضكڝسزض؃ضآآحقڝضئدڪڪسؠئزقضجنآټجندسضجزڝزآ؃قكضحؠؠڪئؠ؃زسئح؃قټسكنزجقكڝضآ؃قزضقدكڪضنؠزئڝ؃؃سټدكقسدحنڝجؠآكضنؠدزڪحنكزكجؠ؃ضآټكسدححقڝجؠنقجئآدضټڪآزټججك؃ئآؠكسضټج؃ڪڝؠڪڝحئندضټآټزسڪجق؃؃آنكحضڝڪؠڪټؠسزڝزنددټؠنجز؃ڝآڝڪآزك؃كسححڪآؠئزټڝك؃ڝټنندسنججڝآآضنڪؠنح؃ڪؠؠحزټئئدزټسآضحدجدڝآآجآكضضدڝڪزؠحزكئسټحټئكټسسسآڝقآحقنضجآڝڪضؠ؃ززئد؃كټحكؠقئددڝسآدققضجدنڪئنآزضجڪ؃زټجككسححؠڝئؠټنسئڝدقڪئننزسجآ؃ڝآڪكزس؃حكڝسؠؠقئئټدسټڝآقزدجن؃زآآككضڪحڪڝ؃ؠكقحئؠدسټټنكسڝجآ؃دآنآ؃ضټحضڪڪؠقق؃ئكدحټټنئسټجسڝڝآآكدضنحجئڝآضزڪئزد؃ڝټآقزسحنټحقكجحڪئقكحؠؠسقڪجزڪسكض؃حآآجڝڝؠآئقټزنض؃ڝدكڝضجڪجؠضس؃؃ئنټضڪ؃دزنقآضكدټڪسنڝآڪسڪدزآؠسڝټسجؠڝزآ؃قكنجضض؃؃نئئټڝڪندئؠ؃جنآضؠ؃نزسقڪض؃دكڪحنؠآضجټ؃سآڝكقسدحنڝجټآقضئڪدزڪ؃نكزحجټ؃ئآټكسضڝحكڝدؠؠقجئآدضڝڪنزز؃جن؃حآآكئس؃حس؃ڝؠققدئؠدجټټنضزحجزد؃آككحضؠحئڪڪؠسق؃ئقددټننجسآجضڝڝآزك؃ضكححڪؠؠئزټئس؃ڝټقندسنجئڝآآضقڪضزئټڪنؠحزؠئض؃ټټسكڝسكجدڝنآجقآضكدڪڪزؠ؃آ؃ئڝ؃ؠټئكټقنس؃؃دنڝسجڝجآضز؃دئؠټسڪددقنڝ؃سڝحټڝسؠڝآؠزكحضټجققجنټضقټجسڪضكئزحڝكؠټقسئڝسڪ؃ڪؠزسؠ؃ڝزسټڪكزس؃حكدسڪدقڝئجڪؠنحئؠڝټنحئئآڝنزض؃ڝڝنڪدؠقكئؠدئټټنسآ؃جق؃دآنكجضآحضڪڪټزق؃ئكدحټؠنئسټجزڝڝآقكدضنحئڪآؠسزڪئزد؃ڝكنحسؠجضڝټآزقڝضؠحد؃نؠجزآئس؃ڪټقن؃سؠجح؃ؠآئقټضسدڝڪآؠدزؠئج؃آټضكڪسزج؃ڝنآحقؠضئدټڪسنڝزقئددزټجكآسضضك؃دآ؃قكضحسسدټؠنسڪح؃ؠآزئدټآآزؠك؃آجقزض؃دكد؃ټدزڪحټڪ؃ضآكآسدحنڝج؃ئؠسضز؃كجضؠدزحجؠ؃ئدحؠآزجدڝآدسآدنآڪؠڪڪكنزز؃جكئټ؃ئندضض؃زنجضؠ؃ئؠجسحآڪټڪزججز؃؃آكڪقققجدڪضقكټئئټددټننجؠڪضټ؃زؠڪسنحڝححڪؠؠئزټزددئټقندسنقؠححټكقڪحنزضڝ؃ؠحزؠئئئض؃ئؠنضآ؃دؠزضآحزسددڪڪزؠ؃كڪسڝدقآحزسدآآزضضحټآقق؃حئسئؠجززئ؃؃كدنآآسټدڝټزئآكحضددنڪجڪحكڝضڪ؃سقدضك؃حؠدس؃آټؠدئڝدقڪدؠ؃؃قجآ؃سآڪن؃س؃حنڝحؠؠقئضدټټټڝنقزدئج؃جآټكضضڪټنڝ؃ؠؠقحئؠدئټټنسقڝ؃ق؃دآآكجضڪحضڝ؃ؠزق؃ئكدحټڪنئسڪجسڝڝآقؠدضنحجڪڝؠضقدئزدسټكآحسؠجئ؃؃آسكحضقحسڪنآجزآئضد؃ټزنټسكجضڝؠآققټضسدڝڪقآ؃زنئئ؃آټضضدسزجحڝكآحقؠضئدټ؃سددزكئج؃نټضكآسزحڪڝزآ؃قكضضدؠڪضنټزسجڝحقټدكنسسحآڝقؠڪقټض؃جكڪحنؠززجټ؃كآڝككسدجنڝجؠآقزئڪحئڪ؃نآزحجؠؠزآټكقضڝحقڝدؠنقجضآزحټڪنكز؃ئح؃حآآكئضټټكڪڝؠنقدئندجټآنضقڪكن؃؃آؠكحضټحئڝقؠسقڝنضددټآنجزسجضڝڝآزك؃؃آححڪټؠئزټئس؃ڝټقآدآټججڝڪآضك؃ضزحجڪكؠقڪآئئ؃ڝټسؠقسقجحڝنآئقآضكڪضڪزؠ؃زكضؠ؃ؠټضكټسنڝسڝقآدقنزقدآڪسنڪززڝج؃كټئكؠسئحټڝسؠڝنقؠئدنڪضنآززجڪ؃نټ؃ؠڝحضحؠڝسؠټنئئڝدكڪدؠحزجئ؃آآآڪكزس؃ئزڝحؠآقئضدټټټڝنقزدضڝ؃جآټكضضڪټنڝ؃ؠؠقحئټدئټټنسقڝدآ؃دآآكجضڪحضڝنؠزق؃ئكدحټڪنئسټجسڝڝآقؠدضنحجڪڝؠضقدئزدجټكنحسؠجئ؃دآسقڝضقحدڪنټجزآئضدحټزنئسكجؠڝؠآئقټضسحدڪقؠئزنئز؃آڪزضقسزجحڝكآكقؠضئدټڪسضڝزقئئ؃نټجكآسضحڪدزآ؃قكضضدؠڪزنټزنجڝ؃قټدكنسزحآڝسؠڪقزض؃دكڪحنؠزسجټ؃نآڝككسدحنڝجؠآقضئڪدقڪ؃نكزحجټ؃ئآټكسضڝؠئڝدؠنقجقئدضټڪنزز؃جك؃حدؠټئؠححؠڪڝؠققدكحئئڪضكزئڝقؠ؃؃آككحضؠحئحټ؃ڝؠڝئكدئټننجسآسنحقڪجڝحضكححڪؠؠئزټئسسددقجټسنڝق؃دآضقڪضزئقح؃ؠؠزجدزككټسكڝسقجدڝنآجؠآكضضزڪټؠ؃زكئحدئدقآككآضضدسندقنضجدآڪضنڪززج؃ئق؃ؠن؃سئحټڝسڝسكدسحدحقجكنزضجڪ؃زټ؃ككسحقئجئټنك؃ئڝدقڪدټڪكټئن؃حندضؠڝآققسدڝټزسضسدسټڝنقټحزجڝڝكقجزآڝسجڝڝقټضقسحدئټټنسڪ؃ئكټقجنآضجڪنكجدكڝدجسحټ؃ئكآزجټؠنججنڝح؃كندئك؃؃سزڝئڪد؃ټكنحؠټسق؃ڪؠڝزد؃ڪآزټكؠقزآئض؃ڪحټآټزسحنآڪسټككضسدڝڪقټآنټضؠ؃آؠزجح؃جنقسد؃سؠ؃ضؠجنڝقنڝزقئدجؠ؃قنكضڪ؃دنآجز؃ڝؠقسزدسن؃سض؃ؠؠڝسضدڪآؠڝدڝڝؠڪقزض؃ئئدضآجزئدڝككسقدسؠآزضټجټؠ؃نجكسقكقآزئززنسزټجكسضڝحقسڝڝقټڝآض؃ح؃؃قؠزكجك؃حآؠڝضسڪټحئجؠنحنكس؃نز؃سكسڪجز؃؃آككحضؠجآحټؠزقئئقددټنآڪكڪجڪڝ؃كنڝسضڝححڪؠؠئڪآقؠحؠټكزكحآزن؃ئآضقڪضززسدټآټزنحئآززقدټضسآ؃ؠآؠقؠئؠدنټټدڪڝآڪئآ؃ؠټئكټكضسجدضؠڝضټڝ؃ؠضضټدڪؠككضدسټحكؠسئضدحزآقزسحنؠنقآجزټؠقئجضټقضدڪڝجضڝئؠټقسزنئؠڝكننضضټحنزئكڝسندقؠڝحؠؠقئئټدسضڝد؃ؠدجؠ؃ؠآآكضضڪضقحنټضزكححټجزسڪڝ؃ټئد؃دآنكجؠټزټحقڪ؃كڪضض؃قآجز؃قكجسڝڝآقكدضنحجڝآڝضزڝض؃د؃ټكنحندضڪدټآضئك؃نؠزسسدكدسئض؃ڪټزن؃سكجحڪؠقجڝڪسحدڝڪقؠدكټسنحزآڝزقحټټقزض؃ڝټدقڪحضآزآئزقئد؃نڝقټ؃زكحقټزسئححټنقنحسټؠزآحنؠآقحئحڪضك؃جسڪزككڝقدكڪحنؠزئجټقسحضټقټضججڝجؠآقضنڝزڝجن؃حټ؃كزضنحضڪحئ؃ج؃ڝدؠنقجكدجؠڝحكڪئ؃ڪؠككئټقحضټحسڪڝؠققدآنزكدآئڪزججز؃؃آكڪنقدجقڪټقكآسئټددټننجؠزسڪ؃ؠؠڝزدنڪحكڪؠؠئزټقڪئسڪڝككحنآؠزحضحكئضزح؃ڪكڪئدقجدسقڪآكجنئجنڝنآجقآؠسسن؃كؠضسزدحؠكسق؃كټسحڝڝقآدقنضجدآجكڪڪئكئ؃؃كټحكؠسئحټټسڝڪآدضكدنڪجنآنززحححآئزؠدآآڪزكسضئكئئئ؃جټجكجض؃دئئجڝكټس؃حكڝحڝد؃ټ؃ققس؃قؠجدنئد؃جآآكضكجس؃؃ننكسئڝڝؠ؃قضدزنآئحټقسټ؃جئدسئآدآدق؃ئكدححجټؠقئحڪؠآزڝحؠڪئقحجټدققسئزد؃ټكڪؠقجئزآكزڝئجآټكززسؠجزآئض؃ڪټزئ؃آڝزحڪكآئقټضسدڝڪقؠدزن؃ج؃ټټآكڪسزج؃دڪڝسندئټڝ؃كنضزآټئز؃نټجكآندڝدجؠكض؃سد؃ڪڪڪكنټزسجڝحټ؃ضنڪضټ؃آحټؠڪقزض؃دكڪحنؠنضزټټآآڝكقسدحنئؠؠټقضئڪدزجحزؠزحجؠ؃ئآټكسڝڝقټجدنققجئآدضټڪنزز؃ئدئحجآنجضټحسڪڝڪآنؠضقد؃نڝسك؃نندضڝدحؠزسددڪآضزئئئض؃ددټننجؠضسآ؃زؠسسز؃ڝآئزسقزقضئس؃ڝټقټضكڪئڝڪقنزئقڝننضجټؠحزؠئئ؃ټټسدڝنكزدسؠټكقآضضدڪ؃ؠټسقئجقڪ؃كزئ؃ڝحكزجكټضكڝجنڝجنئئټڪننزئسڝؠكآضڪڪئڝټؠڝققضدضحددآزسك؃ڪآئسك؃نسقحؠڝئؠټڪجحنڪؠنضقئزټك؃؃ضآڪكزس؃حكڝحټڝآئجآدټټڝنقزدسؠجټڪققآجضڪسقكدآقڝئؠدئټټآنن؃ئدڪڝنججج؃ضؠ؃ضئڝټنڪضدآؠدجنئسټجسڝڝآقكدضنحجضټؠكزڪئزد؃حدټجزئحسكؠآزقڝضقحدجدزققزئض؃ڪټزآككجئڪآككنئزڝسكنضئڝجنقئئدئټضكڪسزضكج؃آؠزنحؠټجققجنڪكئټ؃نټجكآؠسسقدجؠزس؃ددؠئضڪدسؠڝسڪدټئحكټسجحآڝض؃ڪؠدسڝجكڪآنؠزئجټضنآڝئڪڝنسنڪڪزئڝدزؠ؃حآدؠجزحجؠ؃ئڝآآنزآحسآئض؃حضټززئحټققزټجك؃حآؠؠككدجنڪككقحضڪجكؠئؠڪزكآجټڪؠد؃كڪضؠحئڪټټنؠ؃ضدڝڝؠجئجدضآ؃سئ؃ټؠڪسد؃جڝدؠئزټئسز؃جكټئزآڪق؃ن؃ؠقڪضزح؃ڪكؠحڝؠكآئټسجنضسقجدڝنضججقنكڝزضضآآقزئح؃ؠټئكټسسنڝضټ؃دڝنضجدآڪضنڪززئ؃ضحدحزآسقحټڝسؠڝنڝقئجزټؠ؃؃زضجڪ؃زټ؃ككسححؠجئضزقسئڝدقڪدننزجسڝئضززكټس؃حكڝحضآئك؃ززجنضجسق؃ئد؃جآآكضنئضدڝڪنضسض؃قؠآجدټكنحسؠجئڝټآسضزسئضڝؠآق؃ئكدحجدآنززحټټححؠكزضنحجڪآكؠكحسجحنحز؃قزنجقڝټآسقڝققئزڝڝنجڪټئؠ؃ڪټزن؃سڪحدئكآڝزقحسؠنڝحؠدزنئججز؃زنزضك؃جكسضز؃ئؠجسسسئنڝزقئد؃نټجكآنكسڪنڪآئقكضحدؠججټجكحجحڪكټزكنسجحآدنڝحكؠئنڝكسسنؠزئجټ؃سآڝكقئدككججدئقسئڪدزڪ؃؃دحكئټ؃ئآټكسنكسحڝڪؠقضس؃كنڪضقدضؠآسؠدضآ؃سسدزآكسسدڝڪزضجدجټآنضآڝكحئ؃ڝؠؠآزسحآڪنكنننئؠددټننجؠسسڝ؃ؠټضك؃ضكححڪؠؠئزټسحئڝحټؠ؃سنججڝآڪقآقزجدنككزقحجآڝزسحدنحزنحجټحقدؠزضڪدڪڪزؠ؃نڪسندئآؠز؃؃ؠټآزڝح؃ټدضزدآڪضنڪنټسنحكټدڝ؃سڪحټڝسؠڝؠزززحؠټآسنحڝټضقكحڝڪقدكحڝڝئؠټقسقئئس؃جكنحنئؠ؃ضآڪكزقئضټ؃آننضزد؃كټضڝدآؠجئن؃ڝآنسجدسقنڝآؠكقحئؠجقددآ؃ضڪ؃ؠآئئددكآحزدح؃قټس؃ضڝسقآحئحدآجكټد؃ئجكضنحجڪآؠضزڪئزدقككحڝزججئڝټآسڪئقحجضټنقئئدڪقكزضسنقسكجحڝؠڪڝآ؃زددڪؠزز؃ددؠڝئضټؠكڪسزج؃ئئڝضنسئئڝټنؠڪقزټئد؃نټجآجن؃جؠڝ؃نحزؠضآدؠڪئنټآنئزآڪقحڝنقسدئككحؠؠنحسج؃ڪحنؠزئنڪح؃ؠقحجؠزجكنټجڪؠضجحقن؃دقج؃آك؃دحكددسكضدقكقدټكټضندضټڪنزز؃جكآحدآټئ؃سحنڪڝؠققدزكجكڪټكڪؠئجز؃؃آككحضؠحئحآڝسټئئټددټننجؠدسس؃زؠڝسڪجنحقڪؠؠئزټقحدټڪڪك؃جټڝآڝټآنقڪضزح؃دئڪؠققجآڪڪ؃ڝنڝسقجدڝنڪزؠحس؃دئؠآزجدآآڪزجدضن؃زقحدټ؃زڝڪآ؃نح؃ڪضنڪززكسججڝحكنڝدج؃ڝسؠڝققزنئئڝڝزئزسجڪ؃زټ؃ټؠضدجقڝئؠټقسن؃ضحڝټندئنڝؠكڪئق؃؃نكضق؃ززجټكضزدسټڝنقنزسئحجآؠئضحئآڝزؠححآټقددزټټنسسڝنز؃دآڪكجضآحضڪڪؠزقسحؠدحڪ؃نئزدجس؃؃آقكجضنحزؠجؠضزڪئزدئټكنجسؠجسئحآزكئضقجدڪنؠجزآضضسؠټزنئسكضآڝؠآكقټضآ؃دڪقؠسزنض؃؃آټسكڪسقج؃ڝټقكقؠضئدټڝجنڝزكئددآقټكآسنحڪسحآ؃قكضحجؠڝؠنټزؠجڝ؃ټټدآقسججڪڝضؠڪقټض؃قضڪحنؠزئئڝ؃سآڝكڝسدكسڝجؠآقضس؃دزڪ؃ؠدزحنز؃ئآټكسضڝحقڝدؠڝقجضئدضڪ؃نزق؃كس؃حآڝكئؠڝحسڝئؠقندنټدجڪدنضزحجزسحآكنحؠقحئڝدؠسنؠئقدسټننكئڪجض؃جآزؠ؃ضكحجڪؠؠززټئنټسټقندسنضجڝآآسقڪضزټجڪكؠززؠئئ؃ټټسكڝققكئڝنآققآضندڪسڝؠ؃زڝټز؃ؠټككټزټحڝڝكآدقنضجح؃نآنڪززئ؃ح؃ټحكآسئجدؠټؠڝققضدجحڪجنټزضض؃نكټ؃كڪسحسؠڝئؠټقسسدټحڪدؠ؃زجضز؃ضآڪكزس؃ټآڝحآحقئئټدسټڝنقكدكټ؃جټجكضسضحززسؠكنحنئدضڪئنسزسجقضحآنكججئحضڝضؠزقحئكدئټؠنئنقجس؃سآقكقضنحجڪآؠضضسئزدسټكنئسؠجسڝټآسحڝضقحسڪنؠقزآئؠ؃ڪڪزڝټسكجسڝؠدجقټضؠدڝڝنئحزنئق؃آضدكڪسزج؃دكآحقؠضكدټڪؠنڝآآئددآټجكآسؠحڪڝڪآ؃قكضحدؠڪئنټزټجڝ؃قټدكنسجئآڝضؠڪقڪض؃ح؃ڪحجدزئجټ؃سآڝكټسدجدڝجؠڪقضضڪدزڪ؃نټزحؠټ؃ئټحكسزڝقؠڝدؠڝقجض؃دضس؃نزن؃سآ؃جټ؃كئڪححس؃زؠقندنټدجڪدنضزحجزقحآكآحقڪحضڝحؠسڝسئقضڝټنآجآڝجض؃جآزكئضكنئڪؠآسجزئسدضټق؃آسنججڝآڪضنضضزحسڪكؠقزؠزح؃ټڪقكڝسقجقڝنحڝقآضضدڪڝكؠ؃زكئن؃ؠئ؃كټسسحڝ؃نآدقنضآدآضدنڪززئ؃؃كټحكؠسنحټڝڝؠڝقنضدحندآنټزنجڪقڪټ؃كڝسحئؠڝئؠټقؠئڝدآڪدحآزجئڪ؃ضآڪكټس؃جئڝحؠؠقئسټدسټڝنڪزدئ؃؃ج؃ئكضز؃حزڝ؃آ؃قحضجدئټټنسقدجق؃دټحكجنزحضڪڪؠزق؃ئكدحڪدنئزضجس؃دآقندضنحجڝدؠضڝئئزدسټكؠئسؠجئ؃حآس؃ؠضقحدڪنټجزآئضدجټزنضسكقسڝؠټسئزضسحضڪقڪنزنئج؃آڪزئ؃سزجزڝكدزقؠضئدټڝقضدزقئك؃ن؃قكآسضحڪ؃كسحقكضؠدؠڪكنټزسجڝ؃قضڪكنسكحآڝڪؠڪقكض؃جكئضنؠزؠجټ؃نآڝدنسدحنق؃ؠآقنئڪدڪڪ؃نؠزحئؠسدآټكنضڝزنڝدؠڝقجسآزقټڪنآز؃جټ؃حدټكئقټضكڝ؃ؠټقدك؃دج؃ئنضق؃ڝد؃؃آڪكحآسحئڪټؠسكڝنؠددټڝنجزدجضضحآزنحدجححڝدؠئڪزئس؃ڝټقآدآټجج؃حآضكئضزنئڪكټحټڪئئدئټسنجسقضټڝنڪجئؠضضحضڪزؠززكقج؃ؠڝئكټسسجسڝقآققنؠسدآڝزنڪززئق؃كح؃كؠسئحټ؃قؠڝققضندنڪټنآزضجڪ؃زټ؃ككسقحؠڝټؠټققئڝحنڪدننزنجآسڝآڪكزس؃ئكڝحؠؠقؠئټدټټڝحآزدضن؃جآآكټضڪحؠڝ؃ڪضقحسؠدئټټنڪسڝئ؃؃ددنكجزآحضڪڪؠڝق؃ضددحجڪنئزڝټقڝڝټدكدنقحجڪآؠضك؃ڪكد؃ڪجنحزضجئڝټآسقڝڪضحدڝدؠجقسئضد؃ټزؠححججح؃جآئڝزضسدڝڪقټدټټئجدئټضنسسزؠئڝكڪحڪڪضئحسڪسؠجزقسټ؃نڝجڝڝسضجزڝزآكقكټآدؠ؃ئؠئزسئق؃قټنكنآسحآ؃زس؃قزضندكج؃نؠزئجټدقزدكقسآحنڝټؠآقضئڪدزؠټنكزنجؠ؃ڝآټكسضڝحقؠؠؠنققئآدضټڪنكز؃ضكسضآؠكنضټحنڪڝ؃نقدضآآټټآنآسڪقڪ؃؃آككحزؠقزڪټؠټزڝئڝددحڪنجسآنئڝڪآڝك؃ضنححڪؠؠئقڝ؃؃؃ڝڪدندكدججڝآآضنڪؠنح؃ڝحؠحقئئئسدټسؠد؃نجد؃ئآجټنضضدڪڪزټ؃ټآئحدسټئندسسضؠڝقآددزضجحضڪضؠكززئح؃كڪئضضسئجزڝسڪسققضددن؃ج؃ڝزضئق؃زټنككؠسحؠ؃سضڝقسضندقڪؠننزججآ؃ضڪككزسآحكڝزؠؠقئئټدسؠآنقزؠجن؃ڝآآكضضڪحزز؃ؠكقنئؠدئټټنزسڝجقټكآنكنضآحزڪڪؠكق؃ضكؠآټؠننسټزئڝڝآڝكدسآحجڪآؠؠزڪآجد؃ټكنحقؠجئڝټآآقڝضڪحدجڪؠجقڪئض؃ڪټڪن؃ز؃جحڝؠآئنټضسدڝڝ؃ؠدزڪئجقڪټضكڪسزج؃ڝڝآحكجضئدڝڪسؠڝزقئد؃ڪټجؠنسضجئڝزڪ؃قكضححدڪئؠدزسضټ؃قڪجكنسجججڝضڝزقزض؃دكڝئنؠزئئض؃سجڪكقسدحن؃ضؠآقضضزدزجكنكزحجؠدسآټكسسكحقڝكؠنقجئآدضټڪنزززجك؃آآؠكسضټجسڪڝؠققزئنزكټآنآسڪضز؃؃آككقضؠحقڪټټئزڝزقددټننكسآؠنڝڪڪنك؃زكححڪؠؠنزټئن؃ڝڝسندقنججڝآآآقڪضؠح؃سؠؠحكؠئئ؃ټټټكڝسڝجدز؃آجكڪضضدڪڪڝؠ؃قئئح؃ؠټئؠټسسحڝ؃؃آدكحضجضئڪضآ؃ززئ؃دحټحؠجسئحټڝسټدققضدحئڪجآئزضجڪ؃زټ؃ككسحججڝئآزقسضددقڪدننزجئج؃ضټضكزسقحك؃حؠؠقئضجدسضضنقزقجنحجآآكضسئحزڝئؠكن؃ئؠئئټټنسزضجقزقآنڪدضآئضڪڪؠزقسئكدسټؠآحسټجسڝڝآقكقضنحئڪآؠضزڪسزد؃ټكنكسؠجؠڝټټزقڝزقحدڪنؠنزآئآ؃ڪسحن؃زكجحڝؠآنقټټټدڝڪڝؠدكنئج؃آټؠكڪسؠج؃دزآحكټضئدټڪټنڝقجئد؃نټجؠآسضحڪڝڪآ؃ك؃ضحضجڪئؠڝزسجڝد؃ټددئسجحآڝضټ؃قزض؃ححڪححضزئجټ؃سآڝكقسدجدڝجآضقضض؃دزڝ؃نكزحئد؃ئ؃؃كسسسحقڝدؠنقجضحدضڪ؃نزز؃جكححآؠكئسجحسڝضؠقڝڝئنججټآنضزئجز؃سآكآڪضؠحنئټؠزقزئقدسټننئسآجزڝڪآزكضضكححڪؠؠضزټئس؃ڝټقحضسنججڝآآكقڪضزح؃ڪكنؠزؠئن؃ټټڪكڝسكجد؃آآجقآضؠدڪسجؠ؃زكئححؠټئكټسآحڝڝڪآدټڪضجحڪڪضنڪزڪئ؃د؃ټحكؠسئئټڝسؠڝك؃ضددڪڪجحڪزضجڪ؃زټ؃كڝسحججڝئؠڝقسضڝدقڪدنڪزجقق؃ضټئكزق؃حكڝحآدقئضددسحؠنققججن؃جټجكضكزحزڝ؃ؠككئئؠدئڪضنسكقجق؃دآننضضآحضڝزؠزڪضئكدحټؠؠسسټجس؃كآقټئضنحجڪآؠضزڪئزدزټكنآسؠجسڝټټسقڝضقحزڪندكزآئآ؃ڪڝزن؃سكجقڝؠآققټنحدڝدقؠدزنئك؃آضنكڪقنج؃دكآحقؠضندټڪننڝآئئدحنټجكآسآحڪڝؠآ؃؃ؠضحجؠڪئنټزټجڝ؃ڝټدد؃سججڪڝضؠڪقڝض؃حئڪحنؠزئضټ؃سآڝن؃سدجحڝجڝئقضس؃دزڪ؃ؠحزحضڪ؃ئآټكسزدحقڝدآئقجسڝدضټڪنزز؃جك؃حټجكئسزحسڝدؠققدئندجڪجنضزضجز؃قآكنحضؠحئڝجؠسڝضئقدقټنآجسآجض؃ئآزكئضكسڪڪؠڪئزټئسدضټقدقسنقدڝآڪضقڪضزحسڪكؠسزؠك؃؃ټټسكڝسقجقڝنآئقآضضدڪ؃زؠ؃زكئك؃ؠټؠكټززحڝدقآدقنضندآڪآنڪآنئ؃دكټحكؠسنحټزټؠڝقڝضدجنڪجنآزؠجڪ؃ؠټ؃ڪضسحجټڝئؠټقټئڝحجڪدننزجضآ؃ضآڪكڪس؃ج؃ڝحڝجقئضڝدسټڝؠ؃زدزض؃جآآكضز؃حزڝ؃آحقحقسدئټټنسسڝجق؃دټدكجسضحضڝ؃ؠزك؃ئكدحڪدنئن؃جس؃سآقكدضنحجڝحؠضق؃ئزد؃ټكآحسؠجئ؃جآسكضضقكڝڪنټجزآئضدئټزنسسكسڪڝؠآنڪټضزحزڪقؠڪزنئئ؃آټسكڪسزؠئڝكآحقؠضقدټڪسنڝزقجن؃نټككآسټحڪڝقآ؃كؠضحدؠڪننټڝحجڝ؃قټدؠنسجحآڝؠؠڪقټض؃سټڪحؠټزئجټ؃ټآڝكڝسدحنڝجټآقضئڪدڝڪ؃نټزحؠټ؃ئآټكسضڝحڪڝدآحقجئڪدضڪڪنزز؃جټ؃ححجكئسجحس؃ڝؠققدض؃دجڪ؃نضآسجزدحآككحسححئحسؠسزڝئقحجټننجزئجضدضآزك؃ضكجئڪؠؠئقسئسضكټقندسنئضڝآآضكقضزئقڪكؠحزؠئئ؃ټټسنسسقجؠڝنآضقآسضدڪڪزؠسزكنق؃ؠټؠكټقسحڝڝقآزقنضزدآجټنڪنزئ؃؃كټقكؠڪكحټدكؠڝنقضددنڪكنآزكجڪضڝټ؃ؠكسححؠڝؠؠټقنئڝكنڪدآنزججآ؃آآڪكڪس؃كڝڝحآټقئئټدڪټڝؠجزدجن؃جڪآكضضڪحڝڝ؃آدقحقجدئڪڝنسسڝئد؃دحككجضآحض؃؃ؠزق؃ضجدحجننئسټجسڝڝآقكدسححجڝسؠضق؃ئزد؃ټكنحزحجئ؃ئآسكزضقجدڪنؠجقحئضقئټزنزسكضحڝؠآئكجضسحجڪق؃كزنزج؃آټضنئسزنزڝكد؃قؠزئدټڪسؠضزقئض؃نحؠكآسضحڪڝزآزقكضجدؠڪئنټكسجڝ؃قټقكنسنحآ؃سؠڪنزض؃دكڪكنؠزؠجټكدآڝنقسدحنڝكؠآ؃آئڪدڪڪ؃آكزحجؠ؃نآټكنضڝق؃ڝدآآقجئآدآټڪؠحز؃جك؃حڪؠكئضټحټڪڝؠڝقدقحدجڪڪنضسڪجڝ؃؃ڪڪكحضؠحئڝڝؠسزڝضدددڝڝنجسآجضڝڪآزك؃س؃ححڝئؠئزڝئسدڝټقندز؃ججحڝآضكضضزح؃ڪكؠحقدئئ؃ڝټسكڝسقضدڝنآجكحضضحئڪزحڪزكسح؃ؠټئنجسسجضڝقڝټقنضكزآڪسؠسززئآ؃كټجكؠسضحټڝسئجققضددنڪزنآزضجڪ؃زحآككسقحؠڝآؠټقزئڝجقئئننزكجآ؃كآڪؠضس؃ئكضضؠؠقنئټدآټڝڝڪزدضنضآآټكؠضڪحټڝ؃ڝضقحضدزئټڪنڪسڝئن؃دآؠكجضڪحضڪڪجؠق؃ئكدحټڝنئسټجسڝڝآټكدضنحجڪټؠضزڪئزد؃جضنحزدجئ؃ضآسك؃ضقئدئټؠجقحئضدحټزؠڪسكضحضڪآئكجضسحضڪقآڪزنسجسضټسنئسزجسڝكڝڪقؠضنزټڪزؠززقئؠ؃نټئكآسزحڪڝزآضقكضحدؠڪضنټزسجڝ؃قضضكنسجحآڝكؠڪقزض؃دكحئنؠزنجټ؃ڪآڝككسدجآڝجؠآقؠئڪكجڪ؃نكزحضؠ؃ئآټكآضڝحڪڝد؃ڪقجضڪدضټڪنڪز؃آض؃حآؠكئزټحسڪڝآ؃قدئڪدجضڪنضسڪجز؃؃آڝكحسجحئڪڝؠسقڝئقددټڪنجڪدجض؃ئآزؠ؃ضكححڝدؠئقدئسقئټقؠجسنجج؃جآضآزضزح؃ڪكآئزؠئئدضټسؠكسقجدڝنټضحڪضضحزڪزددزكئح؃ؠڪسټؠسسجكڝق؃ققنضجدآڪضنڪززئز؃كټآكؠسسحټ؃سؠڝققضزدنئكنآزآجڪحزټ؃ككسقحؠڝقؠټڝؠئڝئقڪدننزكجآقنآڪنجس؃ئكڝحؠؠقنئټدنټڝدټزدسن؃جآآكؠضڪز؃ڝ؃ؠڝقحسؠدئټټنآسڝجآ؃دجڝكجقآحضڪڪؠټق؃ؠؠدحڪدنئقټجسڝڝآڪكدضڪحجسدؠضنڪزنددټڝنحټڝجئجټآسقڝ؃ؠحدڝ؃ؠجزټئض؃ڪټزآ؃آآجح؃دآئكجضسجحڪقټدټټئجدجټضنحسزنضڝكڪحټحضضحجڪسؠسزقئز؃نڝجڝڝسضجئڝزآئقكآزدؠڝسسززسئس؃قټآكنسجحآدضحدقزضزدكڪكنؠنآجټدقزدكقسكحندڪؠآقضئڪحكقحنكزؠجؠحئآټكسضڝحقزڪؠنقنئآدڪټڪنكز؃ئكجڪآآكنضټكآڪڝؠڝقدسندجټآنؠسڪجؠ؃؃جڪكحقؠحئڪټؠآزڝؠڝددحقنجقآجضڝڪآټك؃ضټححس؃ؠئقڝئس؃ڝټڝندټضججڝآآضنڪسڪح؃ڝ؃ؠحقحئئجؠټسؠدسقجد؃حآجڝضضضدڪڪزآحزكئحدئټئ؃سسسحڝڝقټجقنضجحسڪضدزززئ؃؃كټحكؠسئجئڝسآكققضجدنڝجڪقزسئئ؃زضزككسكحؠدئؠټقسضضدقڪضننڪقجآجضآڪكزسسحكجقؠؠڝټئټجسټڝنقززجن؃زآآ؃نضڪجكڝ؃ؠكقكئؠدڝټټنسسڝضقسئآنكنضآحآڪڪڪڝق؃سكزضټؠنآسټجنڝڝجټكدزنقسڪآؠټزڪئڝد؃ڝڝنحقؠكزڝټآڪقڝس؃حدضزؠجزآكض؃ڪټڝن؃زدجحڝؠآئنټؠكدڝڝدؠدزڪئجقڪټضؠڪآنج؃؃حآحكئضئئجڪسآڝټؠئددجټجنضسضكؠڝزآ؃جحضححجڪئؠضزسئق؃قڪججآسججضڝضڝټقزض؃دكڪحجقزئئئ؃سټقكقسجحن؃جسسقضضئدزدجنكزكجؠدسآټكسسضحقسټؠنقجئآجضټڪنززسجك؃قآؠڪقضټجقڪڝؠقققئندنټآنضسڪضز؃؃آككنضؠحقڪټحؠزڝئقددټننكسآجټڝڪآكك؃سكححڪؠؠقزټكج؃ڝټڪندقنججڝآآؠقڪضؠح؃جسؠحقټئئ؃ټټټكڝندجدڝنآجكڪضضدڪڪڝؠ؃كؠئح؃ؠټئنڝسسحڝ؃دآدآزضجدآڪضآ؃ززئ؃دجټحڝؠسئحټڝسؠڝققضدحدڪجؠسزضئ؃؃زڪ؃ككسحجدڝئحجقسضسدق؃دننزجئح؃ضټحكزنټحكححؠؠقئضجدسسئنقآؠجنحجآآكضسئحزڝئؠكآڝئؠجئټټنسزسجق؃ضآن؃قضآئضڪڪؠزقزئكدكټؠدنسټئقڝڝآقككضنحڪڪآؠضزڪسزد؃ټكننسؠجآڝټڝڪقڝسنحدڪنؠآزآضټ؃ڪټزن؃زؠجحڝؠآڪقټسڪدڝڪقؠدزنئج؃آټټكڪزدج؃ڝؠآحقؠضئدټڪټنڝزڝئددحټجنآسضحڪڝټآ؃ڝڝضحححڪئآټزسجڝ؃ڪټدكڪسجزكڝضڪڪقزض؃دڝڪحححزئقؠ؃سڪڝكقسدج؃ڝجآ؃قضكؠدزڪ؃نكزحئح؃ئآڪكسضڝحقددؠنقجضجدضڪضنزقدجكححآؠكئسئحسڝسؠق؃آئنحجټآنضزئجزقزآكككضؠئئڪټؠسقضئقدضټنڝ؃سآئزڝڪآزكزضكحټڪؠؠئزټسس؃ڝټقنقسنجنڝآڝټقڪسكح؃ڪكؠنزؠؠڪ؃ټټسكڝزنجدڝنآآقآآڝدڪڪزؠ؃زكئح؃ؠټؠكټسڝحڝڝنآدكنضجدآڪؠنڪننئ؃د؃ټحكؠسئحټڝآؠڝقنضددنڪجآآزضجڪ؃ټټ؃كڝسحنكڝئټټقسئڝدڪڪدؠ؃زجزق؃ضټئڝزسدجدڝحآآقئئڪدسڪ؃نقزدؠڪ؃جآآكضسححزڝ؃ؠكقحئئدئڪجنسززجق؃حآننضضآحضڝئؠزڝآئكدحټؠآئسټجس؃ضآقكزضنززڪآآززڪئزدزټكنكسؠجئڝټڪسقڝضقحكڪنؠززآؠن؃ڪټزن؃سكجقڝؠآآقټضقدڝڝقؠدزنئز؃آڝسكڪسټج؃دكآحقؠضندټڪننڝككئددآټجكآسآحڪج؃آ؃قكضححټڪئنټزڪجڝجقټدكنسججڪڝضؠڪك؃ض؃ق؃ڪحنؠزئئڝ؃سآڝنحسدنټڝجؠآقضئڪدزڪ؃ؠ؃زحئض؃ئآڝكسسڝحقڝدآ؃قجؠحدضڪضنزك؃جك؃حټدكئسدحسد؃ؠقؠدئندجڪحنضڝججزضنآكؠحضؠحئڝجؠسقجئقجحټنآجسآجض؃ضآزكئضككزڪؠټئزټئسدسټقنقسننكڝآټزقڪضزحقڪكؠټزؠئئ؃ټڝسكڝسقجكڝنآؠقآقټدڪڝكؠ؃زكئؠ؃ؠڝزكټسسحڝ؃نآدقنضټدآ؃قنڪززئ؃؃كټحكؠسآحټ؃؃ؠڝقنضددنڪجنآزآجڪ؃ڪټ؃ندسحجؠڝئؠټقآئڝقڪڪدؠدزجضآ؃ضآڪكټس؃حټڝحټآقئزټدسټڝنڪزدؠد؃جدنكضزڪحزڝ؃ؠڝقحئڝدئڝڪنسسڝجق؃دټدكجضټحضڪڪؠزن؃ئكدحڪحنئزئجسد؃آقؠدضنحجڝجؠضقضئزسجټكؠحسؠجئ؃جآسدسضقحقڪنټجزآئضدئټزنئسكضجڝؠټسقټضسحسڪقؠآزنئج؃آڝضكڪسزجزڝكآكقؠقآدټڝقنڝزقئك؃ن؃ڪكآسضحڪ؃كآ؃قكضؠدؠدڝنټزسجڝ؃قټدكنسنحآڝڪؠڪقكض؃حكڪحنؠزنجټجكآڝكڝسدحنڝجؠآقؠئڪدكڪ؃نكزحضؠ؃ئآټكآضڝحڪڝدجققجسآدضټڪنټز؃جڝ؃ح؃زكئسجقسڝ؃آ؃قدض؃دجټټنضسڝجز؃؃ئټكحضؠحئڝدؠسزڝئقددټجنجزحجض؃سآزكدضكجئڪؠؠئقجئسقؠټقندسنضجڝآآضكئضزحسڪك؃سزؠضس؃ټټسنسسقجقڝنآجقآزضدڪڪزؠقزكئس؃ؠئككټسسحڝڝقآزقنضؠدآڪزنڪقزئ؃؃كټسكؠؠدحټڝآؠڝنقضددنڪكنآزكجڪضئټ؃نؠسححؠڝؠؠټؠڝئڝدقڪدؠآزججآ؃ټآڪنضس؃حكڝحآټقئئټدڝټڝؠدزدجن؃جټڪكضضڪجدڝ؃دسقحئؠدئټټنسسڝجڝ؃دټئكجضڪحضڝڪؠزق؃ئڝدحئدنئزئجسدڝآقكدس؃حجڝ؃ؠضآؠئزئ؃ټكنحزدجئقحآسڪكضقئدڪنؠجقحئضدحټزڪټسكضحڝؠآئكئضسحجڪقحسزنسج؃آټضنضسزجزڝكجققؠسسدټڪسؠززقئآ؃نټجكآقضحڪڝزآققكضندؠدآنټققجڝ؃قټنكنآححآڝضؠڪككض؃دكڪآنؠټججټ؃سآڝكقسدحنڝؠؠآقڝئڪدكڪ؃نكزحجؠ؃ؠآټكټضڝج؃ڝدآنقجئآدؠټڪدټز؃ئ؃؃حڪؠكئضټحآڪڝؠآقدكزدج؃آنضسڪجټ؃؃ئ؃كحنكحئ؃ټؠسزڝئڪددټڪنجؠكجضڝڪآزك؃س؃ححڪآؠئزټئسحڝټقندزدجج؃جآضكڝضزئ؃ڪكؠحقحئئدئټسحنسقئدڝنآجكحضضنضڪزؠززكسح؃ؠټئنجسسججڝق؃ڪقنسضدآڪضؠضززئؠ؃كټحكؠقئحټڝسآسققضقدندؠنآقزجڪ؃زټقككقزحؠڝئؠټكقئڝدقڪنننكقجآ؃ضآڪكزس؃حكڝكؠؠقټئټدقټڝؠقزدجن؃كآآآقضڪحڪڝ؃ؠكقحئؠدنټټنقسڝجق؃دڪنكجضآحؠڪڪؠټق؃آزدحڝؠنئسټجآڝڝآڪكدكسحجڝحدضزڝئڝد؃ټننحسآجئڝڪآسقڝټآحدڪنؠجق؃ئض؃ڪټزن؃نججج؃دآئكضضسح؃ڪقآجزنئجدحټضدنسزج؃ڝكڪحقؠضئحجڪسؠضزقكض؃نڪضكآسضجضڝزحققكضحدؠ؃ئنټزسئز؃قټضكنټقحآڝضؠڪقزضسدكڪننؠزسجټدسآڝكقسضحنسجؠآقؠئڪجزڪ؃نكزقجؠ؃قآټ؃سضڝضقڝدؠنقكئآكنټڪننز؃ضك؃حآؠكنضټحنڪڝحققدضآآټټآنآسڪئح؃؃آككحزؠڝزڪټؠټزڝئڝددحڪنجزڪجضڝڪآڝك؃نزححڪؠؠئقڝئس؃ڝڪدندنټججڝآآضن؃ضزح؃ڝجؠحآكئئ؃ټټسؠدسقجد؃ضآجآڝضضدڪڪزؠ؃زكئحدحټئنقسسجدڝقټدقنضجححڪضڪدززئز؃كڝحكؠسئججڝسآجققآددنڝضنآزضئض؃زټؠككسححؠدئؠټقسضسدقڪقننآزجآدزز؃كزسقحكئ؃ؠؠقئئټحققدنقزنجنضڝآآكضضڪجككحؠكقآئؠسحټټنسسڝئننجآنكڪضآقدڪڪؠزق؃ئككڝټؠنؠسټئدڝڝآنكدسنق؃ڪآؠؠزڪؠټد؃ڪ؃نحقؠكزڝټآآقڝضآحدضنؠجقڪڝڝ؃ڪټڪن؃نحجحڝؠآئكڝڝقدڝڝ؃ؠدقكئج؃آټضؠ؃؃كج؃؃حآحڪسضئدټڪسآددنئددئټجآټسضحڪڝزآ؃دسضحححڪئؠززسئد؃قڪدڝزسججحڝضټزقزضزدك؃ح؃ڪزئئج؃سټجكقټدحن؃ضزسقضضضدزجڪنكزحجؠحئج؃كسسسحقڝقؠنڝسئآجضئدنزززجك؃كآؠآنضټجسئآؠققزئنقسټآنآسڪضزسجآككقضؠحقڪټحسزڝضنآؠټنننسآن؃ڝڪآزك؃زكجكڪؠؠؠزټئټ؃ڝحآندزآججڝآآټقڪسدح؃ڪكؠحقټئئ؃ټټڝكڝؠسجدڝنآجكڪضضدڪڝدؠ؃آزئح؃ؠټئكټسسحڝڝڝآدكئضجدڪڪضؠڪټئئ؃؃ڝټحححسئجئڝسټڝڪنضحح؃ڪجؠ؃زضنڪ؃زټ؃ككسحجحڝئؠڪقسئڝدق؃دننزجئج؃ضټضكززدحكدحؠؠقئضئدسڪسنقڝآجندجآآكضسئحزسقؠكقكئؠدئك؃نسزضجق؃جآنكجضآئضضدؠزقسئكدقټؠححسټضسضقآككزضنحكڪآڝدزڪئټز؃ټنننسؠئزڝټآزقڝضكحدڪنجززآئض؃ڪټؠن؃سكجحڝؠڝڪقڪضآدڝڝ؃ؠدزؠئجدڪټضكڪسټج؃زضآحقؠضئجټڪسنڝزڪئدد؃ټجڝ؃سضئ؃ڝزآ؃ك؃ضحقجڪئنټزسضڝ؃قټدنحسجج؃ڝضججقزض؃دكڪحؠدزئئض؃سټدكقزدحنڝجآ؃قضؠآدزڪسنككحجؠ؃ئټجكسسجحقضڝؠنؠجئآدضڪئنزڝضجك؃ضآؠؠئضټحسڝضؠققضئنقدټآټضندجق؃سآكټنضؠحڪڪټټسضدئقدزټننزسآنجڝڪڝزك؃ضكحقڪؠحؠزټكئ؃ڝڝقندسنجكڝآآكقڪآضح؃ڝؠؠحزؠئؠ؃ټڪدكڝسقجددنآجقآضآدڪڪڪؠ؃آټئحدټټئكټسڪحڝئسآدقنضجحڪڪضنڪق؃ئ؃ضزټحكؠسئجڝڝسؠڝكحضدسقڪجنآزضض؃؃زټ؃نئسحزكڝئؠټقسئڝدقڪدؠدزجئز؃ضټ؃كزز؃قسڝحآدقئق؃دسڪسنقكدكټ؃جټحكضسححزضڪؠككئ؃ضدئڪئنسزنجق؃دآنؠجؠڝحضڝضؠزقزئكسسټؠؠس؃ڝجس؃زآقټڝضنحجڪآآزح؃ئزدكټكدجسؠجئڝټټقجدضقحؠڪن؃دزآئض؃ڪڪكئحسكجټڝؠجضقټضسدڝڪقجڪزنئن؃آڪ؃كڪسكج؃؃كدڝقؠضندټضآنڝزڝئدحنجسكآسؠحڪڝؠآ؃ڝزضححټكڪنټزټجڝئدټدكنسججڪدقؠڪقڝض؃ككڪحنؠزئئڝ؃سآڝندسدئ؃ڝجؠآقضس؃دزڪ؃ؠجزحؠآ؃ئآټكسضڝحقڝدآدقجضسدضڪ؃نزق؃جك؃حټدكئزسحسڝسؠقكجئندجڪحنضڪنجز؃؃آكؠحؠڪحئڝجؠسقضئقسضټنؠض؃ڪجض؃ضآزؠئضكححڪؠټئڪ؃ئسدزټقنضسننقڝآآضدؠضزحسڪكؠنزؠئس؃ټڪسټؠسكجضڝنجڪقآضؠدڪ؃زؠ؃زكئق؃ؠټقكټڪدحڝحقآدقنضكدآسننڪقجئ؃حكټحكؠسنحټڝنؠڝ؃جضدحآڪجنآزآجڪدحټ؃ككسحئؠآزؠټقټئڝدڝڪدڝڪزجئڪ؃ضآڪكڝس؃ززڝحؠؠقئضڝدسټڝؠدزدزټ؃جآآكضز؃حزڝ؃آجقحككدئټټنسقدجق؃دټضكجكسحضڪڪؠزق؃ئكدحڪحنئزقجس؃دآقندضنحجڝحؠضؠدئزدزټكآحسؠجئ؃جآسكجضقكآڪنآضزآئضدضټزنؠسكجحڝؠڪئقټضسحسڪقؠقزنكز؃آڪزئ؃سزجقڝكد؃قؠضئدټڝقضدزقئن؃ندضكآسضحڪ؃كسحقكضآدؠجحنټزسجڝدنزجكنسڪحآئ؃ؠڪقزض؃دكسڝنؠزؠجټددآڝكنسدجنض؃ؠآقؠئڪقټڪ؃ؠ؃زحضؠسزآټكآضڝحآڝدجضقجضڪآڝټڪنڪز؃نئ؃حآؠكئزټجټڪڝؠڝقدضددج؃ننضق؃جز؃؃ټدكحآزحئڪټؠسكدئقددڪجنجټقجضڝڪآزنحضكححڝضؠئڪكئس؃ڝټقندسنجج؃جآضكقضزححڪكآحټقئئدجټسحسسقجقڝنڪجڪڪضسحئڪزؠئزكؠټ؃ؠټئكټسسجسڝقآحقنضجدآ؃ضنڪززئز؃كټككؠزضحټدسؠڝققضقدنڪننآ؃؃جڪدزټ؃ككسقحؠسآؠټقټئڝجقئئننزكجآ؃كآڪدحس؃ضكحضؠآقنئټقنټڝڪقزدجنؠسآآكؠضڪحكڝ؃ؠكقحسؠززټټنآسڝجڪ؃دئقكجزآزڪڪڝؠټق؃ئڝدحدزنئزجكس؃؃ټ؃كدسجحجڪټؠضزڝئزد؃ضټنحسؠجئ؃دآسقڝضقحدجقؠئقحئضدسټزندسكئئڝؠآئكجضسكؠڪقؠدزنسج؃آټضنئسزجسڝكدسقؠسسدټڪسؠسزقزن؃نټجكآززحڪڝزآققكټددؠڪئنټققجڝ؃قټنكنكححآڝضؠڪككض؃دكڪآنؠزضجټ؃سآڝكقسدحنڝنؠآقڝئڪدكڪ؃آكزحجؠ؃آآټكنضڝنجڝدؠنقجئآدؠټڪنڝز؃جؠ؃حټؠڝدضټحنڪڝڝټقدض؃دجڝآ؃قسڪجټ؃؃آټكحن؃حئڝڝز؃زڝئڝددجدنجسآجضدڪحنك؃س؃ححڝحؠئټدئس؃ڝئزندزحجج؃حآضقڪضزجحنجؠحقئئئجئټسكڝسقضدضټآجكضضضحزڪز؃ئزكضئنټټئنزسسزټڝقآدقنسضټسڪضؠكززنؠ؃كټحكؠقئك؃ڝسآنققضآدنجزنآقزڪ؃؃زټآككسآحؠڝئؠټكقڝددقڪڪننآدجآ؃ضآڪنكؠزحك؃؃ؠؠټحئټدسټڝنقزدجن؃ڪآآنجضڪحزڝ؃ؠكقحئؠدټټټنسسڝجن؃دټآكجضآحڝڪڪټڪق؃ئكدحڝؠنئسټئ؃ڝڝټحكدنڪحجڝڪؠضزڪضحد؃؃ټنحسؠجئ؃ڝآسقڝسئحدضضؠجزآئضحڪټزن؃زضجح؃زآئڪدضسجدڪقؠدقزئجدسټضكڪسزئحڝكآحككضئسؠڪسنڝزقضجسدټجنؠسضجقڝزآ؃قكضحدؠڪئؠكزسئڪ؃قټدكنسجحآڝضآققزض؃دكڪئنؠقسجټ؃سټنكقققحنڝجؠآنضئڪدزڪؠنكزټجؠضقآټنقضڝحقڝټؠنكقئآدضټڪؠكز؃جك؃ڝآؠڝڝضټحسڪڝټققدئنح؃ټآؠحسڪقؠ؃؃ټؠكحضؠجحڪټ؃ئزڝئقددڪآنجسآئئڝڪدضك؃ضكححڝټ؃ؠزټضس؃ڝڪحندسنججڝآآضقڪسئح؃ڝكؠحزؠئئ؃ټټسكڝزججدڝنآجقڪضضج؃ڪزؠ؃قضئحجحټئكټسسئڝڝقآدكسضجحقڪض؃حززضح؃كټحنقسئضڝڝسؠڝققسجدنڪجؠنزضنك؃زټ؃ككقححؠڝئآؠقسضټدقجضننقضجآ؃ضټټكزنڪحكڝحؠؠكسئټدسڪڝنقزؠجن؃جآآنزؠضحز؃دؠكقآئؠدئټټنسسڝجق؃ڝآننئضآحضڪڪؠزق؃ئكدڪټؠنئسټجقڝڝټنكدضنج؃ڪآټآزڪئزد؃ڝكنحسؠئدڝټټجقڝنآحدڝآؠجزآضج؃ڪ؃ڪن؃سكجح؃ټآئقټسضدڝضجؠدزنئجحآټضكڪزسج؃؃قآحټڝضئحڝڪسنڝققئدضقټجكآسضئ؃ڝزآ؃كنضححضڪئنټزسضدضڝټدنآسجزنڝضؠڪقزض؃دكڪحؠنزئئڝ؃سآڝكقسدحنڝجآكقضئڪدزڪحنكقئجؠ؃ئټؠكسقسحقڝدؠننجئآدضڪآنززڪجكضسآؠنسضټحسڝڪؠقكټئندجټآؠزسڪجزد؃آكڝټضؠحئڪټټسزڝئقحدټنؠجسآقكڝڪټكك؃ضكججڪؠؠڪزټئس؃ڝڪنندسنئضڝآآڝقڪضزح؃ڝؠضئزؠضز؃ټحئكڝسقجدڝنن؃قآسضدڪڝنؠ؃زكئح؃ؠكڪكټزئحڝڝقآدقآضجحڪكڝنڪقسئ؃ج؃ټحكؠسئئټضكؠڝكزضدحكڪج؃؃زضض؃نكټ؃نكسحجضڝئؠټقسسدټحڪدؠؠزجنز؃ضآڪكزق؃قآڝحآآقئضڪدسججنققجټآ؃جټڪكضسقحزڝ؃ؠككئقئدئڝ؃نسؠټجق؃دآننضضآحض؃حؠزآڪئكدحټؠنئسټجسد؃آقنضضنحجڪآؠضزڪئزدڝټكنحسؠجئڝټآسقڝضقحكڪنؠجزآئس؃ڪټززقسكجكڝؠآسقټضقدڝڝق؃ڪزنئك؃آدجكڪسڪج؃؃ؠزآقؠضندټسحنڝزقئدحنجسكآسؠحڪڝټآ؃ټټضححټقسنټزټجڝ؃ڝټدكنسجئآضقؠڪقڝض؃دټڪححسزئجټكجآڝكڪسدجحڝجؠڪقضضڪضجڪدنټزحئؠ؃ئټجكسزڝحقڝدآ؃قجض؃دضڪڪنزن؃جك؃حټدكئڪححسڝحؠقندئندجڪحنضزحجزد؃آكنئضؠحئڝئؠسڪنئقددټنآجقججض؃ضآزكزضكض؃ڪؠآسزټئسدزټق؃نسنججڝآټزقڪضزحكڪكدؠزؠئئ؃ټڪقكڝسقجؠڝنحآقآضضدڪڪزؠ؃زكئك؃ؠټڪكټسقحڝ؃قدڪقنضكدآسآنڪزڪئ؃حكجضكؠسنحټڝنؠڝكقضدحآكټنآزآجڪدحټ؃ككسحئؠآزؠټقټئڝدڝڪدڝڪزجئڪ؃ضآڪكڝس؃ززڝحؠؠقئضڝدسټڝؠدزدقق؃جآآكضز؃حزڝ؃آجقحككدئټټنسقدجق؃دټضكجننحضڪڪؠزق؃ئكدحڪحنئزقجس؃دآقندضنحجڝحؠضؠدئزدزټكآحسؠجئ؃جآسكجضقجدڪنآضزآئضدضټزنؠسكجحڝؠڪئقټضسحسڪقؠقزنكز؃آڪزئ؃سزجقڝكد؃قؠضئدټڝقضدزقئن؃نجحكآسضحڪ؃كسحقكضآدؠجحنټزسجڝدنزجكنسڪحآئ؃ؠڪقزض؃دكسڝنؠزؠجټددآڝكنسدجنض؃ؠآقؠئڪقټڪ؃ؠ؃زحضؠسزآټكآضڝحآڝدآنقجضڪآڝټڪنڪز؃نئ؃حآؠكئزټجټڪڝؠڝقدضددج؃ننضق؃جز؃؃ټدكحآزحئڪټؠسكدئقددڪجنجټقجضڝڪآزنحضكححڝضؠئڪكئس؃ڝټقندسنجج؃جآضكقضزححڪكآحټقئئدجټسدزسقجقڝنڪجڪڝضضحئڪزؠئزككد؃ؠټنجحسسجضڝقنضقآضئدآڪضنڪزؠ؃ز؃كټحكؠئقحڝڝزؠڝنقؠئدنڪكنآزكجڪضسټ؃ؠڝحضحؠڝنؠټسضضددكڪدڪنزجئ؃آآآڪكزس؃؃قڝئؠآقئضدټټټڝنقزددڪ؃ضآټكضضڪټنڝ؃ؠڝقحئڪدئټټنسقڝكؠ؃دټ؃كجسححضڝ؃ؠزن؃نآدحڪحنئزدجسئڪآقؠدؠټحجڝئؠضقحئززحټكنحدقجئ؃جآسكسضقحكڪنؠكټآئسدئټزن؃سكججڝؠآسقټضسحئڪقؠدزنئز؃آټضكڪسزؠئڝكآحقؠضقدټڪسنڝققكڪ؃نټزكآزححڪڝټآ؃قڝؠحدآڪننټقضجڝ؃كټدكآسجحآڝنؠڪقزض؃دټڪحنؠزئجټقنآڝكقسدحڪڝجؠآقضضڪزئڪ؃نټزحزڝ؃ئټجكسسضققڝحآ؃قجس؃دضټڝنززحجك؃حئڝكئضټحسڝجؠققدئندجڪدنضسڪجز؃جآككحضؠجئئنؠسقجئقدضټننكسآجؠضڪآقكسضكحسڪؠؠضزټئز؃ڝټقحضسنججڝآآكقڪضزح؃ڝكئضزؠئق؃ټضڝكڝسڪجددنآجقآضؠدڪڪؠؠ؃زټئححؠټئكټسڪحڝڝآآدڪآضجدآڪضنڪزټئ؃ددټحكآسئحټڝسؠڝقڪضددنڪجنآزضجڪ؃زټ؃ن؃سححؠڝئؠټقسسڝدقڪدؠحزجئ؃؃ضئككزق؃حكڝحآجقئضضدسڝجنقكدجن؃جټئكضسسحزحآؠكققنؠدضڪزنسززجق؃حآنكضضآحضزحؠزق؃ئكدقټؠنئسټجسقجآقكدضنحزڪآؠضزڪئزسآټكننسؠجڪڝټآزقڝزققئڪنؠؠزآئك؃ڪضحن؃قككضڝؠآآقټضڪدڝ؃زؠدكنكآ؃ټټټكڪسڝج؃جضآحكدؠئدڪڝ؃نڝقجئد؃ؠټجكڪسضحڪزؠآ؃قكضححدڪئنټزسجڝقآټدكنسجج؃ڝضؠڪقزض؃زضڪحؠجزئئز؃سټ؃كققدقټڝجآئقضضحدزض؃نككحكڪ؃ئټضكسسزحق؃ضؠننجنضدسڪسنززقجكجڪآؠكنؠټحزڝكؠققجئندئټآنزسڪجزقئآككحضؠحؠڪټؠسزڝئقكضټننجسآجكڝڪآزك؃ضكزڪڪؠؠآزټض؃؃ڝټكندقنكسڝآآټقڪضؠح؃ضكؠحكؠنز؃ټټڪكڝز؃جددكآجنآنڪدڝڪڝؠ؃قدئحئزټئنجآسج؃؃حآدقټضجدټڪضؠ؃ززئ؃قټټحكؠسئجئڝسؠڝققضدكڪڪجنآزضئح؃زټ؃ككسحقزڝئآضقسضكدقڪحننزجڪڝ؃ضټسكزسضحكڝحؠؠنئؠ؃دسڪزنقزكجندضآآؠضؠزحقڝقؠكقنئؠض؃ټټنآآڝجك؃ؠآنكنضآحسڪڪؠنق؃ئككسټؠنئسټجآڝڝآقكدضننزڪآؠضزڪئؠد؃ټكنحسؠؠقڝټآسقڝضڝحدڪنؠجزآند؃ڪټڝن؃زججحڝآآئكجؠسح؃ڝ؃ؠدققئج؃ټټضن؃سزج؃ڝڪآحقؠضئدڪڪسنڝزقئدقڪټجكآسضجحڝزآ؃قكزححسڪئؠسزسئج؃قضجكنقجحآڝضآزقزضكدكڝسنؠكئجټ؃سټقكقسنحنحڝؠآقضئڪدزڪؠنكزنجؠ؃ئآټكسضڝحقڝنؠنقڪئآدسټڪآزز؃جك؃ؠآؠكقضټزحڪڝټققدئندآټآنڪسڪئؠ؃؃ڪككحضؠحټڪټؠڝزڝقئددټننجسآئ؃ڝڪآڝك؃ضكححڪؠؠئزټئڝ؃ڝڪجندسؠججدآآضقڪس؃ح؃ڪټؠحككئئحټټسكڝزدجد؃جآجن؃ضضجڪڪزؠ؃قحئحدئټئټكسسحڝدجآدكضضجحئڪضنڪززئ؃سضټحنئسئجقڝسآ؃ققسجټئڪجؠضزضنح؃زټ؃ككقحئئڝئآسقسضقدقضڪننزججآ؃ضټقكزسجحكڝحؠؠنئئټدسڪكنقزؠجنج؃آآكضضڪحزڝؠؠكقسئؠدئټټنسسڝجق؃نآنكڪضآحسڪڪؠزدآئكدسټؠنسسټجسڝڝآقؠڪضؠحجڪآؠسزڪئزد؃ټټؠزسؠجئڝټڪ؃قڝضقحدڪنؠجزآئض؃ڪټزن؃ضكزدټؠټئڪضقڝټجؠ؃حزسققحڝؠټككڪسزج؃ح؃ڝضنقئآئقڪؠنڝزقئدئڝ؃ئنضضټ؃آټقآجقكضحدؠدكټزكحكئ؃ؠټدكنسجزسحڝآؠقزنحټد؃؃ج؃ضڝقڪڝح؃ڪنزسټحنڝجؠآنقزضجحټنقججقڪجق؃دنټآككج؃نقآكقجئآدض؃ضآټقؠحټټڪقج؃آټټكحجدټؠكقجكڪؠكسؠئزضجز؃؃آكټنكحجؠڪضسآحجټحئكټننجسآجضڝڪآزك؃ضكد؃ڪؠؠئزټئس؃ڝټققدنكزن؃حآضقڪضزئضدټآسزضحئكدؠنندسقجدڝن؃آڝنټزدڝڪزؠ؃زككؠؠئټزكټسسحڝئقڪؠنكټححزڪضنڪززسزحڝڪټقڝئ؃ڪضزټئنڝؠكنجڝآئؠ؃زضجڪ؃زدڝؠڝزڪدڪئكآڝقسئڝدقحؠڪئق؃جنټققؠج؃ټنكزجڪڪټكزئحڪقككئؠڪقندجآټ؃كضضڪحزحضڪزكقجؠټكڪحنسسڝجقجقټجنئضئآضڝحؠقق؃ئكدحججقضزټجسڝڝآقؠئقدجڪڪسقڝئئڪڝقآحجڪڪكڪئ؃ڝزكقئنڝضؠآڪڝؠجزآئضضج؃ؠؠئسجدحضڪټدقټضسدڝدڪڪټقزججڪقزسئدڝدكجئنڪؠكټئقدټق؃ئقددټننجسآئضنئنآڝزآ؃قكضحنؠڪئنڪزسجڝ؃قټدكنقجحآڝضؠڝقزضددكڝقنؠزئجټ؃سټدكقسححنڝجؠآنضئڪدزڪحنكزئجؠ؃نآټؠسضڝحقڝجؠنقضئآحآټڪآزز؃جك؃ئآؠكسضټجآڪڝؠققدئندئټآنسسڪجك؃؃آككحضؠحسڪټؠززڝئقددڝننجسآجزڝڪآكك؃ضڝحح؃ؠؠئزټئق؃ڝټنندزحججدآآضقڪضكح؃ڪؠؠحكدئئ؃ټټسكڝسكجدڝؠآجقڪضضدڪڪزؠ؃زؠئح؃ؠټئكټسسئڝڝقآدقآضجدڪڪضؠټززئ؃؃كټحكڪسئحڪڝسؠڝققزددنڪجنڝزضئد؃زټسككقححؠڝئآ؃قسضحدقڝقننكججآ؃ضټدكزسجحك؃دؠؠقئئټدسڪدنقزججن؃سآآكضضڪحزڝجؠكقجئؠدئټټآسسڝجق؃ئآنكسضآحؠڪڪټزق؃ئكدضټؠنزسټجڪڝڝڪقكدضنحسڪآؠقزڪضسد؃ټكنحسؠجسڝټآققڝضؠحدڪنؠجزآئق؃ڪټقن؃سكجحدؠآئقټضكدڝڪؠؠدقټئجحآټضكڪسنج؃ڝآآحنئضئحڝڪسنڝزټئددڝټجكآسضئڪڝزآ؃قڪضحح؃ڪئؠټزسضد؃قټدن؃سججڪڝضؠڪقزز؃دكڪحؠدزئئج؃سټجكقسدحنڝجآجقضئڝدزڪ؃نككحجؠ؃ئټئكسسسحقڝزؠننجئآدضڪضنزززجك؃نآؠؠئضټحسڝسؠقققئنحكټآنضسڪجز؃زآككجضؠحؠڪټآقزڝئقدكټننڝسآجضڝڪآزك؃ضكحؠڪؠؠضزټئس؃ڝڝقندسنجآڝآآڪقڪضټح؃؃كؠحزؠئټ؃ټټڝكڝز؃جددنآجقآضڪدڪڝ؃ؠ؃قڝئحدؠټئكټسڝحڝڝنآدكجضجدآڪضنڪزټئ؃دحټحكټسئحټڝسؠڝقڝضددؠڪجنآزضضڪ؃زټ؃ن؃سحجحڝئآجقسسڝدقڪدؠدزجئج؃ضټسكزق؃حكڝحآحقئضئدسڝضنقزدجن؃جټحكضسئحزڝزؠككئئؠدئڪئنسزنجق؃دآننضضآحضڝسؠزكحئكدحټؠآئسټجس؃زآقككضنحزڪآؠضزڪئزدكټكنجسؠجئڝټڪسقڝضقحنڪنؠآزآئؠ؃ڪڝزن؃سكجؠڝؠآټقټضڪدڝ؃قؠدزنئآ؃آټڪكڪزسج؃ڝكآحقؠضټدټڪقنڝقدئددآټجكآسڝحڪ؃جآ؃قكضحدؠڪئنټقدجڝ؃كټدكنسجئآڝضؠڪكحض؃حئڪحؠدزئضټ؃سآڝنجسدجضڝجآئقضسڪدزڪ؃ؠئزحئس؃ئټآكسسڝحقڝدآضقجضجدضڪكنزز؃جك؃حټجكئسقحسڝدؠققدئندجڪضنضسڝجز؃؃آكؠحضؠحئڝسؠسققئقدزټنآجسآجض؃زآزككضكحنڪؠټئزټئسدقټقننسنئحڝآآضقڪضزحقڪكؠنزؠئټ؃ټڪقكڝسقجنڝنآڪقآضضدڪڪزؠ؃زكئز؃ؠټټكټسقحڝ؃نآدقنضكدآڪقنڪززئ؃حكټحكؠسنحټڝآؠڝكدضدجنڪجنآزؠجڪ؃ټټ؃نزسحجټڝئؠټقټئڝدؠڪدننزجضآ؃ضآڪكڪس؃ج؃ڝحآآقئسټدسټڝنڝزدئد؃جڪ؃كضز؃حزڝ؃آدقحسضدئټټنسسڝجق؃دآټكجسئحضڪڝؠزق؃ئكدحټڪنئسڪجسڝڝآقؠدضنحجڪڝؠضقدئزدضټكؠئحضجئ؃حآسكآضقحدڪنټجټڝئضدجټزنضسكجآڝؠآئئ؃ضسحضڪقؠحزنئج؃آڝض؃دسزجسڝكآققؠسآدټڝقسكزقئق؃نڪضكآسضحڪدزحجقكضكدؠڪؠنټزنجڝ؃ققئكنسؠحآڝسؠڪقزض؃جكئضنؠزآجټ؃ڪآڝكڪسدئنضسؠآقټئڪدڝڪ؃ؠدزحضؠسزآټكڪضڝج؃ڝدټ؃قجئآڝضټڪنڝز؃جن؃حټجكئسڝآقڪڝآدقدضسدجټآنضسڪڪن؃؃ټجكحضآحئڪټؠسكڝنؠددڪئنجزسجض؃ئآزؠ؃ؠآححڝضؠئقزئسدزټقآدآټجج؃سآضكقضزجسڪكآحقحئضدزټسن؃سقجؠڝنآجدكضضحضڪزؠنزكئئ؃ؠټئض؃سسجزڝقآحقنضجدآ؃ضددززئق؃كټنكؠسنحټدسححققضكدنڪؠنآزټجڪحزججككسنحؠڝآؠټكآئڝدقزآننزنجآ؃آآڪكڝس؃جؠنآؠؠقآئټحقټڝنقزدضنسسآآكټضڪحڝڝ؃ؠټقحئؠآزټټنڝسڝجك؃دآنكجزآققڪڪآ؃ق؃ضحدحڪدنئقټككڝڝټدكدسجحجڝئؠضكڪنند؃ڪحنحزئجئ؃آآسقڝجقحدڝجؠجزڪئضدزټزؠح؃ؠجح؃ضآئككضسدڝڪقؠدحټئجدزټضكڝسزج؃ڝكڪحڪڪضئحقڪسؠنزقئز؃نڝجقزسضجكڝزآؠقكضندؠ؃ئنټزسئن؃قټآكنزححآ؃ضؠڪقزضؠدكڪجنؠزڝجټ؃سآڝكقسكحنڝڪؠآقزئڪدزڪ؃نكزؠجؠ؃ضآټكسضڝئقڝدؠنقآئآدڪټڪنټز؃ضك؃حآؠكټضټحڝڪڝآ؃قدسندجټآنڪسڪئ؃؃؃ټقكحضؠحئڪټؠڪزڝض؃ددڪجنجزآجضڝڪآڝك؃ضنححڝجؠئزټحج؃ڝټټندزحججڝآآضقڪكڝحدڪآؠحزؠئئ؃ڪټسكڝكضجحڝنآجقټضضدڪڪزؠدزكئح؃ؠټئن؃سسحڝڝق؃قكنضجدآڪضټحكټئؠڝڝنزضڪ؃زؠكضڪ؃؃قؠسج؃آؠؠسنټزجڝدئټ؃ككسحئڝحضآسزئحقؠققنجضټكقحججټسض؃زټجسڝحؠؠقئكڪض؃ڝؠكڝئقڝككآئسڝڪنزضس؃ضزدقزئؠدئټټنسآټجك؃حآنكجضآحضڪڪټزق؃ئكدجټؠنضسټجقڝڝڪقكدضنحضڪآؠضزڪئند؃ڪكنحسؠجضڝټآزقڝضنحدڪنؠجزآئض؃ڪټقن؃سكجحڝآآئقټضسدڝڪآؠدزنئجسڝڪحكڪسزج؃ج؃ڝنكقضدټئنضضج؃ئنڝجؠ؃آنڝض؃ټز؃دآ؃قكضحئڝ؃ڪؠؠزجدحآآسټڝكټحسڪزئآنقزض؃دكددټڝكدجؠټكسحئدڪآكقجڝڪنضك؃ضدؠڪ؃نكزحسحجزڪنقڪسؠحقڝدؠننجزسدضټڝنزز؃جك؃جآؠنسضټحسڝدؠققضئندجټآآضسڪجز؃حآككئضؠحضڪټټسزڝئقدجټننضسآجقڝڪآټك؃ضكحجڪؠؠڝزټئز؃ڝټنندسڪڝنڝآآضقڪسحح؃ڪنؠحزؠټس؃ټټزكڝسكجدڝنآجقآز؃دڝڪقؠ؃زكئح؃ؠټئكټدكحڝڝكآدقؠضجدآڪضآڪټ؃ئد؃نټحكآسئحڝڝسؠڝؠجضددؠڪجنڪزضجڝ؃زټ؃آسسجحؠڝئؠڪقسئڝدقڪحننزججآ؃ضټحكزس؃حكضضؠڝقئئټدس؃سټؠقڪجحسسټككضضڪحزحزڝدقڝئقآؠكآئنڝؠنسجح؃جنسئزحسڝنؠزق؃ئكئد؃ڝآدسؠ؃ككحزددآآقسڝدنقكحزضدد؃ټكنحكڝضڪ؃ؠآجسحدآؠټئكححؠڪضد؃ڪټزن؃قكضآڝؠآضقټضسدڝڪنؠدقآئج؃آټزكڪسقج؃ڝكآحنؠضئدټڪقنڝزنئد؃آټجؠآسضحڪڝكآ؃قؠضحدڪڪئؠجزسجڝ؃كټدنضسجحټڝضآ؃قزضئڪ؃ڪحنؠزئئق؃سټ؃كقسدؠآڝجؠټقضئڪدزڪ؃نكزحضس؃ضآڪكسضڝحقڝدؠنقجڝڝدضټڝنززدجك؃حآؠؠئؠسحزڝ؃ؠققحئندزټآنضككجز؃دآككئضؠحضڪټؠسنآئكددټننئسآجضڝڪآقك؃ضكححڪؠؠضزټئس؃ڝحټنسسنججڝآدټؠئسؠح؃ؠآؠسزؠئئ؃ټټسضحسقججڝنآجقآضضدڪ؃زدجزكئئ؃ؠټسكټسزحڝڝقضټقنضضدآڪزنڪززئ؃؃كڝڝكآسئحټڝزؠڝققضددآڪجنآزضجڪ؃ټټ؃ككسحآس؃ئؠټقسئڝجآ؃زؠضسكددآقزدحجآقسنڝضآټزسحضټئئدزؠزڪجن؃جآآؠكقڝج؃ټڪكحححڝئكڝئجڪآكټئ؃ؠكڝضكټضآحضڪڪڪسنسضن؃ؠككضڪ؃ئؠقضڪدزسئسآحجڪآؠضنڝزآدټټحزضح؃نؠقجحآټؠقندئټكزڝججټككحجڝؠټزسجحڝؠآئټڪك؃جؠټڝققجكټآقسجڪڪزكسئضؠدآجكسضئدټڪسڝحن؃ئآڝننڝسدڝآؠئضټ؃آؠؠسئدؠڪئنټزسقض؃كټحكنسجحآڝضؠڪنزض؃دكڪجنؠزضجټ؃نآڝكقسدحنڝضؠآقسئڪدزڪ؃آكزحجؠ؃سآټكقضڝحؠڝدؠنقجئآدسټڪنقز؃جؠ؃حټدكئضټحزڪڝآ؃قدئؠدجټټنضزحڝڪ؃؃آككحسجحئڪڪؠسقج؃ڝددټننجزكجضڝڝآزك؃؃آححڪآؠئزڪئس؃ڝټقآدآټججڝټآضقڝضزححڪكټحټڪئئ؃ڝټسكڝسقجزڝنټجڪكضضدڝڪزؠدزكئئ؃ؠټقسئسسحڝڝقټحقنضئدآڪضسدززئد؃كټجكؠسئحټدسححققضحدنڪئنآززجڪحزججككسئحؠڝئؠټقؠئڝحقجڪننزئجآ؃سآڪككس؃حكدڝؠآقئئټدزټڝنقزدجؠ؃جآآكضضڪحنڝ؃ؠكقحؠآح؃ټټنسسڝقكجؠڪسقنججڪئقزجدڪككحئدڝ؃ڝكزټجسڝڝآقؠضق؃حڪڪحقنئدڪنكآئدڪجسڪئسڪڝكڪئټؠنححڝحؠجزآئضجڝددؠآس؃؃كؠنضټټسضؠدڝڪقؠدزنند؃ټټسكڪسزج؃ڝكآحنؠضئدټڪزنڝزكئد؃ټټجؠآسضحڪڝكآ؃قكضحدآڪئؠټزسجڝ؃كټدكآسجحڪڝضؠڪقزض؃دكڪحنآزئجټ؃سټ؃كقسدحنڝجآدقضئڪدزآڝؠجزحجؠ؃ئ؃دآ؃سټحضآئزڪدڝنؠقئح؃دقزټجك؃حآؠآؠكضججڪآسڝئ؃ڪڪكڝئنټسنزئنڪؠئقكڝضؠحئڪټڪضؠجسض؃ڝنټئد؃ڝآحضټددؠضسندآحئؠقزټئس؃ڝڝڝټئقزحؠكزټئقڪضزح؃دټټآقكئدڪ؃كنجؠټحك؃ئجڪقكحئڝڝسنضآؠزكئح؃ؠټئض؃سسج؃ڝقآدقنضجدآڪؠدڝززئد؃كټسكؠسضحټڝزؠڝقآدقدنڪجنآزكجڪ؃قټ؃كټحكحؠڝئؠټكجئڝدكڪدآنټسجآ؃سآڪكزس؃حؠڝحآټجڪئټدقټڝنآزدجن؃جڪآڝقضڪحكڝ؃ؠؠقحئټدئڝټ؃كسڝجن؃دآآكجضڝحضڝئڪآق؃ئندحڪقنئسڪجس؃دآقكضحدحجڪآؠضقؠئزددټكنحدڪجئڝڪآسك؃ضقحدڪنټجټضئس؃ڝټزندسكجزڝؠآئؠقضسح؃ڪقؠجزنئئ؃آټضضدسزجدڝكآئقؠضئدټڪآح؃زقئح؃نڪئكآسسحڪڝقآ؃قټدكدؠڪئنټقزجڝ؃كټدكڪحنحآڝضؠڪندض؃دنڪحآؠټزجټ؃زآڝكقسدحآڝجآڪجڝئڪدكڪ؃نټزحجؠ؃ئڪټڝكضڝحنڝدؠآقجئڪدضڝڪ؃نز؃جؠ؃حآټكئس؃حسڝضڪټقدئؠدجڝسنضسڝجز؃حآككسحححئڪټؠسككئقدحټننجدڝجضڝڝآزكدضكححڪؠټئټسئزد؃ټقنحسنجئڝآآضؠكضزحدڪكؠئزؠئض؃ټټسآآسكجدڝنآئقآضضدڪڪقؠ؃زكئح؃ؠټقكټسسحڝسكآټقنضجدآدئڪحكئجڪټآسضئئڪڝكؠئحڪټضآڝنحكڪجنآزضزحجدټڪكسجضڪڝك؃حزڪضكقجټڪزنئئؠڝنكحټؠكزس؃حكحكڝجكدئنآټكڪئآڝټنقجئ؃ضنقئكدسڝئؠكقحئؠجؠد؃آجسزئض؃دآنكجزآڪټڪڪؠقق؃ئكدحټڪنئزڝجسڝڝآنكدضڪحجڪآؠضكڪئزد؃ټؠنحسټجئ؃؃آسنڝضقحدڪآؠجزڪئض؃ڝټزنسسكجحڝآآئكئضسح؃ڪقؠجزنئزټجټضكڪسزجزڝكآجقؠضقڪئڪسنڝزقئټ؃نټئكآسضآ؃ڝزآدقكضجدؠڪئنټزسضن؃كټحكنسجحآڝضؠڪقز؃جدكڪجنؠزضجټ؃سآڝؠقؠنحؠڝئؠآقسئڪدكڪ؃نككټجؠ؃ضآټكقضڝحكڝدؠنؠ؃ئټدضټڪنقز؃جك؃حآآكئضټحسڪڝؠؠقدئندجآؠؠدسڪجز؃؃ڪټآسزضدجآ؃زكڝسآڪززحسټضئحقن؃سآزك؃ضكززدضآقسټدزټئزؠحنحدئ؃ڝآآضقڪنقضن؃ضنكضح؃جنسض؃؃قؠدس؃؃ڝزؠكدضضدڪڪزؠ؃ټزئج؃آټئكټسسحڝڝقڪدقنضجدټڪضنڝززئح؃كڝحكؠسئحڝڝسؠڝققضئدنڝجنآزضجڝ؃زټدككسئحؠڝئؠټقسئڝدقڪحننزججآ؃سآڪكزس؃حكڝقؠؠقئئټڪكڪكنقزدجنجحڝحنسضزڪضننض؃؃ئننسجڪآؠجسڝجق؃ددؠآټزقدآآضزسدكآجزؠحئټجقحڪڪڪڪټضكدضنحجد؃ڪسقزجضڪكزكئؠڝسكنئجڝئكزد؃د؃ڝنؠجزآئضجحڝټنؠضڝ؃زؠڪسزدكؠڪس؃ڪؠآجسآدؠآنجزڪضسآج؃ڝكآحڪدقدحنټڪقحټؠضج؃نټجكآكسسج؃ئؠكضآ؃زكحسندجآحزدڝؠآ؃سسدنآ؃زكحسكضض؃دكڪحنؠؠنجڪ؃سآڝكقسدحنڝجټآقضئڪدزڪ؃نكزحئد؃ئآټكسضڝحكڝدؠؠقجئآدضڝڪنزز؃جن؃حآآكئضڪحسڪڝؠققدئندجټآنضسڝجز؃سآككحضؠحئڝنؠسق؃ئقدحټننزجججضڝڪآزكټضكحجڪؠؠئج؃ئس؃ڝټقنحسنججڝآڪضڝ؃ضقح؃ڪكؠحزؠئز؃ټټسكڝسقجحڝنآجقآضضدڪ؃زؠ؃زكئج؃ؠټضكټسؠحڝدقآدقنضئدآڪسنڪزكئ؃دكټحكؠسئحټڝنؠڝقكضددند؃نټزضجڪ؃قټ؃ككسححؠڝئؠټقسئڝدآڪدننزجڪضدئآڪكزس؃ضټدآآكقدح؃ټنزؠدحټ؃قجحقټحقڝجسڪضدؠآضقحئؠدئ؃آټنقآجسټئضټجآڪزكججنڪضضئحندڝټؠنئسټسټجزټضقڪددڪحك؃ئدڪآزقئكڪآقټڪنجقڝټآسقڝزڝضئ؃زنؠقكئض؃ڪټزآ؃جدجحڝآآئقټضسححڪقآجزنئج؃ڪټضنحسزج؃ڝكڪحقؠضئدڝڪسؠدزقئئ؃نڝجكآسضج؃ڝزآحقكضئدؠڪننټزسئ؃؃قټقكنسئحآڝزؠڪقؠدزدكڪحنؠزؠجټ؃زآڝكآحقحنڝجؠآكدئڪدقڪ؃نك؃ئجؠ؃ضآټكسضڝحقڝدؠنكڪئټدسټڪنزز؃جك؃حآؠئزضټحزڪڝؠكقدئندجڝآڝڪسڝجق؃؃آنكحضآحئڪټڪدزڝئكددټآنجسټجضڝڪڝئكدضكححڪآؠئزټئسد؃ټقندسنججڝڝآضقڪضزكڝڝضؠحزؠئئجد؃زنقضس؃نكنسآدزؠؠسئدضؠقزنضح؃ؠټئكټقنضض؃جؠزضڝدسؠڝزددسؠقئجدؠآئزجححقڝدجآآققضددنجئڪسكدجضټڪقڝجحټآكئجټڪآكؠ؃زدټڪدننزججآسجآڝكقس؃حكڝحؠؠقئسټدسټڝنكزدجؠ؃جآټكضزڪحزڝ؃ؠؠقحئؠدئڪ؃نسزڝجق؃دآؠكجضڪحضڝ؃ؠزق؃ئكدحټؠنئسڪجسڝڝآقكحضنحجڪآؠضقدئزد؃ټكڪكزؠجئڝټآسؠجزڪحآڪ؃ققجڝڪقكنجڝڪدسآئئڪټكآئؠؠقك؃ڝئؠدزنئجضټ؃ڝؠنضڪ؃زؠقضؠ؃ضؠټسسدضآئقزئق؃نټجكآكسسقدجؠزس؃ددؠئڪكنټزسجڝ؃قحڝكؠسئحآڝضؠڪقزض؃جكڪحنؠزضجټ؃زآڝكؠسدئنڝجؠآقزئڪدزڪ؃نؠزحئؠ؃ئآټكزضڝحكڝدؠآقجئآدضټڪنزز؃جن؃حآؠكئضڪحسڪڝؠققدضزدجټآنضض؃جزټجټسكحضؠحئددڪزققجسڪنزنئآڝزكؠئئڝضكقدد؃جڝضؠئزټئسجڪڝڪؠحسجڝدؠسضآد؃ؠسسڝدئؠسزؠئئ؃ټڝټټحقضحك؃كټ؃قآضضدڪجقڪنكضجكڪحكججسڪ؃كقئدڝ؃كڝ؃ؠدټڝدنڪززئ؃جق؃سؠقسح؃؃قكسقدجؠڝسسددق؃ؠآئج؃زټ؃ككؠئضد؃ضؠنسزآڪدټڪدننزجكحجحټؠقڝججآئ؃ئؠؠقئئټئزدئؠضسن؃ټؠقئجدؠآئزجححنآزددزآؠزدحنټزسجددآنكجضآئكدئآحزسدڪټضزڪج؃ټضزز؃حټنقججحڪدئڪؠسقضئزد؃ټكټنككئڝڝدكسئآڝدج؃ڝضؠجزآئضضدڝڝنؠضك؃ڪآ؃ضؠدجؠآسؠدنؠحقزئج؃آټضټضكڝجټڝسزكئنڝقنكضئڪ؃ؠدضئڝضد؃كآسضحڪدزقققكضجدؠڪئنټقججڝدنټدكنسضحآڝكؠڪقزض؃جكڪحنؠزسجټ؃قآڝنضسدئنڝجؠآقزئڪدكڪ؃نڝزحئد؃ئآټكزضڝحڝڝدؠؠقجئڪدضڪحسڪز؃جك؃حټحكئضڪحسڝجزڝقدئندجدقنضسڝجزدحقجكحضآحئڝئؠسزڝئقددقټنجسڪجضڝڪآزك؃ضكئحئڪؠئزڝئسددټقننسنججحضآسقڝضزححڪكؠضزؠئقټئټسكڝسقئقڝنآئقآضؠقڝڪزؠضزكضد؃ؠټضكټسزحڝڝآقققنضجدآڝئنڪزقئ؃؃ټكككؠسئحټ؃ټؠڝقكضددنكسنآزؠجڪ؃قټ؃ككسحئؠضزؠټقآئڝدڪڪدنټزجئحضقآڝكؠس؃ئ؃ڝحؠآقئضجدسڪجسڝزدجن؃جڪجكضضڝحزح؃ڪآقجئڝدئڪقنسز؃جق؃دزټكجسححضڪڪؠزق؃ئكجحجڪنئزججس؃ضآقكنضنئجججؠسقئئزدئټكنجسؠجنضڝآسك؃ضقحټڪنؠئزآئز؃ڪټؠسزسكجحڝؠټ؃قټضزدڝڪقسئزنئئ؃آټسكڪسزج؃دكحټقآضضدټڪزنڝزؠئد؃نټجكآسزحڪڝقآ؃قكضحجؠڪئنټزقجڝ؃نټدكټسجئآڝضؠڪقكض؃دؠڪحؠسزئجټ؃سآڝكنسدحآڝجؠآقضضڪدزڪ؃ننزحئس؃ئآڝكسضڝحقڝدؠؠقجئآدضټڪنزك؃جك؃حآآكئضڪحسڝقؠققدئندجټڪنضسڝجز؃؃آكؠحضؠحئڪڝؠسقدئقدئټننجسآجض؃دآزكدضكححڪؠټئزټئسدحټقنئسنجسڝآڪضقڪضزحجڪكؠضزؠئڝ؃ټټسكڝسقجحڝنآضقآضقدڪڪزؠ؃زكئج؃ؠټئكټسسحڝدقآدقنضئدآڪسنڪق؃ئ؃؃كټحكؠسسحټڝزؠڝققضدجنڪجنآززجڪ؃كټ؃كآسححؠڝئؠټقزئڝدكڪدنآزجئح؃ضآڪكقس؃ضڝڝحؠآقئئټدسڪجسڝزدجن؃ج؃حكضضڝحزڝ؃سآقحئآدئټڪنسسڝجقحدكنكجضټحضڪڝؠزقحئكدحټؠنئسڝجسڝڝآقكدضنئجڪآؠضق؃ئزدحټكننسؠضئڝټآسكدضقحجڪنؠڝزآضض؃ڪټزندسكجآڝؠآسقټضندڝڪقؠدزنزڝ؃آټسكڪسزڪجڝكآجقؠضضدټڪسنڝكقنج؃ؠټئكآسسحڪڝكآ؃قكضحدؠڪسنټزسجڝ؃قټدؠنسجحآڝزؠڪقكض؃حدڪحآؠزئجټ؃قآڝكنسدحڝڝجآآقضئڪدقڪ؃ؠجزحجټ؃ئآټآجس؃حقڝدؠؠقجئآدضټڝنزز؃جك؃حڪضكئضټحسؠئآققدئندجڝڝآآقكجدټنقڝجنټزسڪجكڪكقؠئحڪجكضئ؃آڝئحڝڪآزك؃قڝضڪڝقنئضكڪزؠحسح؃ئؠؠضآ؃ڪؠكقڝضنح؃ڪكؠحآؠسڪحآحؠنضسقجدڝنڪقآ؃سكدقآزجئدزئج؃ؠټئكټؠڪڪس؃ئآدقنضججڝ؃آآكزددنآڝزندزؠدزجج؃آزئآڪؠؠجزآئض؃ڪټزؠ؃؃ڝآئسضحؠڝئؠټؠؠزكجئآحنڪزججآ؃ض؃جآضزسدكآضؠڪقئئټدسحكڪحزڪټئ؃جآآكضضڪحزڝ؃ؠكقح؃ددئټټنسسڝجق؃دؠنټحزكحكڪڪؠزق؃كقجقڝزكزقنئضڝڝآقكدقدئك؃زنكضنڝڝققضك؃ڪنټضزدئؠضسزدحكدڪنؠجزآئض؃ڪټزق؃نقحد؃ټآئقټضسسكححؠڪزقدسآكسڪدقټضزآحؠټضق؃حسټزقكحسټڝؠح؃ڝټجكآسضزجحؠټئقججحجقڝئنټزسجڝحآڝزنضضك؃دؠقسددجؠقضنڪضؠټسسدضآئجدڪټسقحنڝجؠآټزقححقټكقؠحقڪدڝجټحكسضڝحقحقآجكئئئؠضزكنؠز؃جك؃حڝحآززندڪقنؠڝقدئندجحئټآقضحڝؠسسټدآسنحكڪټؠسزڝقټئحڪجكؠئنئز؃؃آزك؃ضكسؠضكټڝققئس؃ڝټقآقك؃ئڪڝ؃ندئسټڪنؠضآڝؠن؃ڝ؃؃ڪټسكڝسققنزضآجقآضضج؃؃نؠدزنئحدقټئكټسسئڝڝقآدقؠضجدټڪضآضززئ؃؃كټحكټسئحټڝسؠڝققزددنڪجنڪزضئ؃؃زټضككسححؠڝئآ؃قسض؃دقڪدننكججآ؃ضټدكزسجحكڝآؠؠنئئټدسڪحنقزئجن؃ئآآؠضضڪحزڝجؠكقضئؠدكټټنسسڝجق؃جآنكضضآحقڪڪؠزق؃ئكدضټؠنضسټجسڝڝڪقكدضنحسڪآؠقزڪضدد؃ڝكنحسؠجزڝټآكقڝضڪحد؃نؠجزآئق؃ڪټنن؃سڪجحڝؠآئقټضقدڝڪنؠدزټئجدڪټضكڪسنج؃؃ئآحقؠضئحڝڪسنڝزآئددسټجكآسضحڪڝزآ؃قنضحدڝڪئنڝزسجڝ؃قټدكآسجحټڝضؠڪقزس؃دكڪحنڪزئئك؃سټ؃كقزدحنڝجؠڪقضضڝدزڪجنكزحجؠ؃ئآڝكسس؃حقڝدؠننجئآدضڪ؃نززحجكدضآؠؠئضټحسڝدؠققجئندضټآؠزسڪجز؃ئآكنسضؠحئڪټټسزڝئقدضټننزسآجقڝڪآزك؃ضكحزڪؠؠضزټئس؃ڝڪنندسنجكڝآټ؃قڪضزح؃ڝؠؠحزؠئؠ؃ټڪدكڝسقجد؃آآجقآضټدڪڝحؠ؃زكئح؃ؠټئكټسنحڝ؃؃آدقآضجحڪڪضنڪزآئ؃دڪټحكؠسئئټڝسؠڝقټضددڝڪجؠنزضضڪ؃زټ؃كڪسحج؃ڝئټضقسسددقڪدؠ؃زجضد؃ضآڪكزق؃حكڝحآدقئضجدسڝقنقكدجن؃جټحكضسئحزڝكؠككئئؠدئڪئنسزسجق؃دآنكجضآحضڝ؃ؠزقزئكدجټؠنئسټجس؃دآقكحضنحجڪآټضزڪئزدحټكنئسؠجڪڝټټققڝضقحئڪنؠززآئض؃ڪڝزن؃سكجضڝؠآزقټسآدڝڝقؠدزنئز؃آڪدكڪسقج؃؃ؠآحقؠضكدټڝحنڝزقئددآټجكآسؠحڪ؃جآ؃قكضحدؠڪئنټزكجڝ؃ڪټدكآسججآڝضؠڪقكض؃حؠڪحنڪزئجټ؃سآڝكنسدحؠڝجؠآقضسڪدزڪ؃نؠزحجټ؃ئټټكسزڝحقڝدؠآقجئڪدضټڝنزك؃جك؃حآټكئضڝحسڝئؠققدئندجټڝنضسڝجز؃؃آكؠحضؠحئڝ؃ؠسقحئقدؠټنآجسآجض؃دآزكجضكحجڪؠټئزټئسدحټقنئسنجقڝآآضقڪضزححڪكؠئزؠئز؃ټټسكڝسقجئڝنآئقآضضدڪ؃زؠ؃زكئض؃ؠټزكټز؃حڝدقآدقنضسدآڪقنڪزټئ؃حكټحكؠسزحټڝكؠڝقټضددنڪجنآززجڪ؃كټ؃كآسححؠڝئؠټقكئڝدكڪدننزجضآ؃ضآڪكنس؃حآڝحآؠقئسټدسټڝنؠزدجټ؃جآټكضزڪحزڝ؃ؠآقحئڪدئڝزنسسڝجق؃دآڪكجضټحضڪڪؠزن؃ئكدحټڝنئزدجس؃كآقؠدضنحجڝ؃ؠضقحئزددټكآحسؠجئ؃دآسكجضقجؠڪنؠجزآئضددټزنجسكجسڝؠآئقټضسحجڪقؠحزنئج؃آڝضكڪسزجئڝكآسقؠضڪدټ؃سنڝزقئض؃نټزكآسؠحڪدزآ؃قكضسدؠڪقنټك؃جڝ؃قټدكنسسحآڝقؠڪقؠض؃دكڪحنؠزقجټ؃زآڝكقسدئنڝجؠآقكئڪدؠڪ؃ؠدزحئټ؃ئآټكآضڝحآڝدؠنقجسآدضټڪنټز؃جڝ؃حڪدكئضټحسڪڝؠڝقدئؠدجټآنضقڪكن؃؃ټ؃كحسححئڝڪؠسكد؃حددڪحنجزكجضڝڪآزؠ؃ؠآححڝجؠئقضئسحسټقنددټجج؃ضآضقڝضزح؃ڪكټحټڪئئدسټسنقسقجؠڝنڪجڪڝضضحزڪزؠكزكئق؃ؠڝئ؃؃سسجقڝقآنقنضقدآڪضقڪززئك؃كټئكؠسټحټ؃قسدققضؠدنڝحنآزضجڪ؃زقجككسټحؠڝضؠټقسئڝجقئئننزڪجآد؃آڪندس؃ئكضضؠؠقڝئټحدټڝنڪزدضنسسآآن؃ضڪجحڝ؃ؠڪقحضؠدؠټڪؠدسڝئئ؃دټضكجضآؠحڪڪؠڝق؃ضئدحټټنئسټڪكڝڝټدكدضؠحجڪآؠضكڪنند؃ڪحنحزئجئ؃زآسنڝؠؠحدڝجؠجقضئضدئټزآ؃آآجح؃ئآئكسضسحئڪقؠددضئجدئټضنسسزجكڝكټئئضضئحسڪسؠآزقئد؃نڝجڝڝسضجزڝزآكقكسكدؠڪئس؃زسئك؃قټحكنسجحآدضحدقزضندكڪآنؠزڪجټحسجحكقسؠحنڝټؠآقؠئڪجزئجنكزآجؠ؃ڪآټؠ؃ضڝحقټدؠنقټئآدقټڪؠدز؃ئؠنئآؠكڝضټجضڪڝؠققدئنآسټآؠدسڪجق؃؃آككحزؠقزڪټآحزڝضئددڪئنجقآح؃ڝڪټجك؃سضححڝدؠئكټئس؃ڝڪئندزسججدسآضكڪضزح؃ڝضؠحقزئئدكټسكڝسقجد؃جآجكقضضح؃ڪزؠ؃زكئحدضټئكڪسسحڝڝقڪدقنضجحسڪضؠقززئن؃كڝحكؠسئجزڝسآكققضزدن؃جنآزضئق؃زټنككزآحؠڝئؠټقسضقدقڪنننزټجآدضآڪكزسكحكڝڪؠؠقټئټدسؠآنقززجن؃آآآكضضڪحزجقؠنقسئؠدئټټنزسڝجقحڪآؠكجضآحسڪڪؠزق؃ئندحټؠنئسټجسڝڝآقكدضؠحجڪآؠضزڪزئددټكنحسآجئڝټآسقڝضقحدڪنؠجزڝئض؃ڪټززجزكجحڝؠآئؠدزآحنټڪقسجټڪسكقجټټڝسنئحڪؠكنئكؠسڪحڝجنڝزقئدحڪ؃ئنضضج؃زكزسكدئؠقسددحؠضحڝنحدضټدكنسجزټحڝټنزڪحزټقزؠحضټټقسجضڪئض؃سسحنڝجؠآقضنآدقڪدنكزحجؠ؃ئآټؠسضڝحقڝحؠنقئئآدزټڪآزز؃جك؃ئآؠكئضټحكڪڝآققدئندئټآنسسڪجك؃؃آككحضؠحئڪټؠززڝئقددټؠنجسآجضڝڪآؠك؃ضكححجحآدزټئس؃ڝڝآټحزجحدټضسضجزڪحقسحڝڪ؃قجڝآدآڪسكڝسقجددڪڪككزئؠڝجننضج؃ضننئآټزنڝضق؃زؠسحجټڝضڪدآڪضنڪؠنسقدئآحززحكآئزآحضټئقجنزڪقنآزضجڪضټڝټنسضنڝڪڝؠؠټقسئڝدقجحننزججآ؃ضآڪكزس؃ئكڝحؠؠقئئټدسټڝنكزدجن؃جآآكسضڪحقڝ؃ؠكقحسؠدئټټنزسڝجك؃دآڪكجزآحضڪڪؠقق؃ئندحټڪنئزټجسڝڝآقكدضآحجڪټؠضزڪئزد؃ټكنحسآجئڝټآسقڝضقحدڪنؠجزڝئض؃ڪټزؠټزضجحڝؠآئؠدقنجكټزقئجټؠنكحجؠڪنكك؃س؃قآضقؠضئدټج؃ڪكقضض؃دزټجكآسضزڝجدټآق؃حكټنزټحزټڝققجزڪسضحسقحآڝضؠڪقزنڪدنڪجنؠزئجټ؃سآڝؠقسدحنڝئؠآقسئڪدكڪ؃آكزحجؠ؃سآټكسضڝحؠڝدآنقجئآدسټڪنقز؃جؠ؃حآؠكئضټحسڪڝؠكقدئندجټټنضسڪجز؃؃ڪ؃كحضؠحئسآؠنزڝئقددحكآكققحقنزآټك؃ضكححد؃ڪقكدئ؃ڪڝضآح؃سڝججڝآآضټسققحكټؠكج؃ؠئض؃ټټسكڝننټن؃حآجقآضضئزدڪؠكسقدكآدزسحقجآحڝڝقآدقنضزدټڪضنڪززنح؃ك؃ضآڪكزس؃حكڝحقجك؃ضجڪقنآزضجڪئآ؃دنحضن؃كضزآحقسئڝدق؃سټڪقزجسڪضنڪكزس؃حكڝحؠؠقئئټدسؠحؠ؃زدجن؃جددؠؠزحدڪآ؃سؠدكآټټكڪ؃نسسڝجقضدڝئؠحڪكحنڪڪؠزق؃كؠجنڪئكؠئزضج؃ئآقكدضنزؠدحآكزڪدندڝټټنحسؠجئئضڝزكقئنآټڪؠؠجزآئضس؃ڝجن؃سكجحڝؠآئقټئسضڪئڪؠحزنئج؃آدآآكزآج؃ڝكآحؠ؃ققجدڪ؃قڝدآټنكحئحټڪكججئڪحزئجنڝنكټئقڪڪكڝضدضحټحكنسجحآسزكڝكئض؃دكڪحټ؃نقضد؃؃نڝجآڝنؠحسحڝڪؠجضئ؃ح؃ڪننزحجؠ؃ئجئڪؠضڝحقڝدآآجټئآدزټڪنكز؃جك؃حڪؠڝزضټحقڪڝؠنقدضزدجڪڪضڝسڪجن؃؃آنكحضؠحئ؃ټدكزڝئؠددټټنجزضجضدڪحنك؃ضټححڪآؠئكحئسحدزنندسڝجج؃زآضقڪضزجحقؠؠحقدئئدڝټسكڝسقجدقزآجقڝضضحئڪزؠحزكضئآضټئندسسج؃ڝقآدقنزجزڝڪضؠحززئئ؃كټؠكؠقئك؃ڝسآئققضحدنڝننآقزآس؃زټسككسټحؠڝئؠټكقئڝدقڪقننقضجآ؃ضآڪكزس؃حكڝسؠؠقؠئټدقټڝؠنزدجن؃قآآكسضڪحزڝ؃ټكقحئؠدكټټنؠسڝئد؃دڪنكجضآحؠڪڪؠقق؃ض؃دحڪټنئسټجټڝڝټجكدضنحجڝڪؠضزڪئڝد؃ڪؠنحسؠجئڝټآسقڝضټحدڝحؠجزآئض؃ڪټزن؃سؠجحڝؠآئقڝضسدڝكؠؠدزټئج؃آټضكڪسزئ؃ضسآحقڪضئحآڪسؠدزقئدؠټټجكڝسضحڪڝزآ؃قكزحزڪڪئؠ؃زسئح؃قڪدكنسككټڝضآدقزسآدكڪجنؠزضجټ؃نكسكقسدحن؃ڝؠآقسئڪدؠنزنكزحجؠحكآټكزضڝحقنئؠنقسئآدضټڪنزز؃ضكسضآؠكزضټحكڪڝآققدز؃آآټآنقسڪضآ؃؃آنكحسدحئڝدزټزڝئقددڝڝنجسټجضڝڪزنك؃ضآححڪآؠئزټئسحڝجؠندسټججڝڝآضكدضزح؃كآؠحزڝئئ؃ټټسكڝسقضدضټآجك؃ضضححڪزآ؃زكئحؠقټئن؃سسججڝقآجقنسضټسڪضؠدززئح؃كټحكؠقئئزڝسآحققضئدنڝ؃نآقزجڪ؃زټئككسجحؠڝئؠټنسئڝدقڪضننززجآ؃ڪآڪؠزس؃حكڝزؠؠقسئټحزټڝآقزدجن؃قآآكنضڪحڝڝ؃آؠقحئؠدنټټؠدسڝجق؃دټآكجضآحآڪڪآكق؃ئكدحټؠنئسټجنڝڝآڝكدضآحجڝڪؠضزڪئآد؃ټننحسؠجئدټآسقڝضټحدڪڝؠجقضئضحڪټزن؃سڝجحڝټآئن؃ضسجڝڪقؠدق؃ئجدحټضنسسزئحڝكآحكحضئحقڪسنڝزقضج؃نټجنئسضئ؃ڝزآ؃قكضحدؠڪئؠحزسئز؃قټجكنزضحآڝضآئقزضددكڪحنؠكئجټ؃سټضكقسزحنڝآؠآنضئڪدزڪزنكزئجؠ؃قآټؠسضڝحقڝقؠنقنئآدټټڪؠكز؃جك؃نآؠكڝضټحسڪڝآنقدئندآټآؠزسڪجز؃؃آككحضؠحنڪټؠڝزڝئقددټننجسآجقڝڪآزك؃ضؠححڪؠؠئزټئن؃ڝټقندسنججدآآضقڪضؠح؃ڪټؠحق؃ئئدڝټسكڝسټجدد؃آجقآضضجڪڪزؠ؃زڪئحد؃ټئننسسحڝڝقآدك؃ضجدټڪضنڪززضح؃كټحنحسئئدڝسؠڝققزددنڪجؠجزضئض؃زټټككزئحؠڝئآضقسضندقڪدننزججآ؃ضټزكزسححكڝحؠؠقئئټدسڪسنقزنجن؃ضآآنزضڪحزڝقؠككسئؠدئټټآسسڝجق؃كآنكؠضآجحڪڪآكق؃ئكدؠټؠؠسسټجسڝڝآقكدضنحټڪآؠقزڪئزد؃ټكنحسؠجآڝټټ؃قڝضقحدڪنؠجزآئؠ؃ڪټزن؃سنجحڝؠكآقټضؠدڝڪنؠدزآئجدآآدكڪسؠج؃؃جآحك؃ضئحڝڪسنڝزآئددقټجكآسضحڪڝزآ؃قڪضحدؠڪئنټزسضڝ؃قټدكڝسججدڝضآنقزض؃دكڪحؠدزئجڝ؃سآڝكقسدحنڝجآ؃قضضئدزڪدنكزحجؠ؃ئآټكسس؃حقڝدؠنقضئآدضټڪنززججك؃حآؠزضس؃حسڪڝؠقؠسزئحڝؠټؠدسڪجز؃؃ڪڪؠڝسقدحآسسآدزنضزټدقټ؃زئجس؃ضآزك؃ضكضندكآڝزددسآآزدنكسنججڝآآضئدضزح؃ڪكؠحزؠئئ؃ټڝسؠڪسكجدڝنآجقآضسدڪڪزؠ؃زكئئ؃ؠټئكټسسحڝدقآدقنضضدآڪزنڪزكئ؃حكټحكؠسسحټڝقؠڝقؠضددنڪجنآززجڪ؃كټ؃ككسححؠڝئؠټقسئڝدنڪدنؠزججآجحآڝكزس؃حنڝحؠؠقئئټدسټڝنقزدجټ؃جآآكضحجججڝ؃ؠكقحسڝئضڪسكئئقټقننضضڝكنحضجڝسئئقټئكدحټؠڝضنزضحڝسكڝض؃ڝجكټضضڝڪنټضآآقك؃ؠحسؠجئڝټڪنؠضسجدزؠڝزسدڝټدزسدقنجزؠحئټجقحڪڝضؠدڝڪقؠدزنند؃ټټسكڪسزج؃ڝكآحنؠضئدټڪزنڝزكئد؃ؠټجؠآسضحڪڝكآ؃قكضحدټڪئؠټزسجڝ؃كټدكټسجحڪڝضؠڪقزض؃دكڪحنآزئجټ؃سټ؃كقسدحنڝجؠڝقضئڪدزدكؠضزحجؠ؃ئدڪټ؃زؠدڝآقزكدآآسزڪحزټسقضضس؃كآؠكئضټضزحكټئزقحدټحزضنسزڪجز؃؃آكؠسقدحڝڪجقؠئحڪؠكټئحڪئسڝئزڝ؃كڝئڪؠؠحزڪؠؠئزټئسسټټكنحسنججڝآآضقڪززح؃ڪكؠجزؠئض؃ټټقكڝققجدڝنآضقآضضدڪڪقؠ؃قكئح؃ؠټضكټسكحڝڝنآدقنضجدآڪضنڪزقئ؃؃كټحكآسئحټڝسؠڝقكضددنڪجنټزنجڪ؃زټ؃ڝدققجڝڝئك؃قنئڝدقڪدننحسجآ؃سآڪكزس؃حكڝحټؠڪزئټدزټڝنكزدجؠ؃جآآجدضڪحقڝ؃ؠؠقحئؠدئټټټجز؃جق؃دآؠكجضآحضڪڝؠزق؃ئكدحئدنئسټجسضئآڝكدضنحججحټڝقآججڝجكسئنآڪئجڝټآسقڝقنضحڝجندئڝڝڪؠدضنڝڪنؠسئڝحنڝسڪدسڪئڝجؠدزنئججضڝڝؠنجض؃سؠجسح؃سآ؃ضڝدئئنزټئد؃نټجآجن؃جؠڝ؃نحئ؃ضقدؠڪئنټآدزححجآدزنحقسضڝنؠڪقزض؃ض؃ڪؠؠآسآټټآؠټجكقسدحنحدڪسكجئټؠحڪقنكزحجؠجس؃دؠدضج؃ننؠضټ؃قضؠدڝټڪنزز؃سڝحآڪؠكجدڪټنقئجؠڪ؃قؠڪضټآنضسڪجز؃؃آكقحدنټؠڝنؠسزڝئقجض؃ؠنآضن؃ڪكڪز؃دؠؠڝسقدكؠآجض؃ؠدزټقندسنضڪحڝڪ؃قټحسټڝق؃حڪسنئق؃ټټسكڝؠ؃سضد؃آحزؠضؠدڪڪزؠ؃حكآسسكقټټجڝد؃ح؃ئآدقنضجسټدڝآنسڪدزآقسؠدضآټزسحضټئؠسضحدنڪجنآټسجڝدزټ؃ككسحئڝدنآقزآحئټؠقئجسټؠزټ؃قڪ؃قكجقڪزضئسئقآئټدسټڝڪټكزئڪڝنكآئزڝضنكس؃ؠكقحئؠدئټټنسززڝقننآڪكجضآحضجسڪققكجؠڝجڪدنئسټجسڪنئحآككززسنآزكزڪئزد؃ټكنحسؠجئجټسئكقضقحدڪندئؠسئجټټزټدسنؠئقټزجضك؃ضسدڝڪقڪسنئضڝككټككڪسزج؃حدڝسندضجؠزڪسنڝزقئد؃نټجټجنضټسڝزآ؃قكضحدؠسئڝ؃ؠسئټ؃قټدكنسجحآڝضؠڪئزؠحدكڪحنؠزئجټڪسجڪټقكؠحنڝئآئقضئڪدزحكآدقض؃زؠټقد؃ؠټضسڝڝڝؠنقجئآئؠ؃قآزسڝڝڝكئسؠدئؠڪزددآآ؃زضحزڝئڪحنضسڪجزحنڝټنسئنڝزؠ؃قآققئقددټن؃ئزكټكئسؠكحضقټڝټضڝدزقجئس؃ڝټقټحكضئدڝنكقضجزئحقڪكؠحزؠسټئئټڝقڪجڝڪزكآئڪټجضڝدڪڪزؠ؃نڝسآحؠټجئڪحسآڝزڪحټكنؠسحدڪضنڪززققجنټؠقټئض؃ڪ؃؃ؠڝققضدسحدنآجسټڝؠؠڪسنحجآدزآټقآزقسئڝدقجضنآحټټؠئټټجضؠټنسسڪڝضضقئئټدسټڝنقڝدقحئجضقكضضڪحزڝ؃ؠك؃حندضئ؃قنڪسڝجق؃دح؃آزززحئآڪزدححآزح؃ټؠنئسټجسڝڝئقټآكنقضڪآؠضزڪئزد؃ټكؠحنؠضد؃حآسقڝضقززد؃ؠټزجدق؃؃ڪ؃ن؃سكجحضآڝقزڝدجنټئ؃آڝسسڪڝد؃ټآكڪسزج؃ئآڪزقئ؃نسحدكنآضكئض؃نټجكآكؠضقدزؠڝڪآضكدؠڪئنټكؠزجدڪآنسټدزټئنؠؠڪقزض؃دكڪححؠآضزټقضټضكقسدحنضكنئقڪآڝدنټنضحزقجؠ؃ئآټؠؠكججآڪؠكن؃زكسدآټڪنزز؃نآئڝدئآحسححدټآټضقؠئندجټآټئنحضئڝڪكآحڝڝئكآضټڝق؃ڝئڪددټننجټجئكؠضدآقآ؃قڪزڝئؠئزټئسجڪدحؠضسك؃نككسحدجؠسسزڝدؠحزؠئئئج؃؃ؠڝسزڝحؠئزد؃قضسححڪزؠ؃زكزدجدڪضكسقححڝڝقآدقنضجدآڝټڪڪڝسئڝ؃كټحكؠققسدد؃نڪضؠدئندسجح؃ؠزئڪدجآڪسزدنټضڝضڪققؠئڝدقڪدڝضنآئكڝټنڝسنسسحكڝحؠؠڪڝققؠدزڪندك؃ڝڝ؃نآآكضضڪسڝحزټ؃زن؃ؠنآضجدززضجق؃دآنضقضزآ؃كڝقحڝقدآححټؠنئسټضؠج؃ټضزټجنآققضئئڪآزججڪآحكزجزڝضكڝڪحقڝضقحدڪنؠجزآزجئڪضسنئسكجحڝؠڝكؠؠزق؃ڝك؃ؠدزنئج؃آټضكڪزؠز؃آآآزقؠضئدټ؃ڪڪسقدجكټټس؃نسسضحڪڝزڪڝؠټسڝدكؠزئجدقآنسزح؃ضڝسقحآڝضؠڪټټزټحسټنزڪڝحجټ؃سآڝكقسدحندڝڝآكئضجدزڪ؃نككزسڝدقآززسؠئحآڝدؠنقجنحجڝڝڪنسڝټجآ؃حآؠكئقسض؃؃ؠئئقدئندجټآنضسڪحزجڝټقكنضؠحئڪټڪنؠجسئڝټؠآضټ؃ڝؠنس؃آزك؃ضكححڪؠؠئؠؠقسؠقټآندسنججحجڝقنؠئڝؠؠڪټؠحزؠئئجټڝآؠئضقئټڝنآجقآضضدڪسز؃زؠكئجدزټئكټسسضجحكآنزقحآؠآقڪجكټټقسجزټندنزدحټڝسؠڝټكقؠجسټنقججئټزقدجكڪحكدئ؃نآحڪقؠئڝدقڪد؃حككض؃؃ضندحئسسحكڝحؠؠحقئټقنآئدزسكآز؃كآآكضضڪسجڝڪآڝزددڪټټكئؠآسڝجق؃دڪڪؠكسزدؠآجزنحجټضزندآؠققحدټټسقزج؃آټقنحكټڪزڝئدڪجټڪنحسؠجئحقڝڝكآض؃؃حئحؠئزآئض؃ڪحڝندسڝجحڝؠآئڝحجكټقڝئحئكئنك؃آټضكڪسزڪسڝكآحقؠضئدټڪسنڝزقكض؃نټجكآسضحڪڝزڪقآكججج؃ڪئنټزسسئجآڪضكئئجټ؃قڪئسڝسكحئزڪقكسحقڪڪنڪضدڝآنحضج؃ضد؃قضئڪدزڪ؃نكڝحقنئئححككضڝحقڝد؃ننټسؠئڪڪؠنزز؃جكحزڝڝنقضز؃سكجضد؃كؠكضض؃ننؠضكحس؃زآككحضؠئآدؠټسضټدڝټآزجټآزضجضڝڪآزؠققټحټڪؠكضدنڪكككئسزئزدججڝآآضؠڝكدجآڪ؃قكجنټټزآټزكڝسقجدسكآجك؃ضضدڪڪزؠ؃زكئقڪټټئنحسسججڝقآحقنضضدآڪكزضززئ؃؃كټسكؠسضحټڝق؃ئقكضسدنڪئنآزضجڪدزحټككسسحؠ؃سؠټقؠئڝحقجڪننززجآ؃سآڪكقس؃ضكحضؠآققئټسآټڝ؃ضزدئ؃ڪضآآكنضڪجڪڝ؃ؠنقحئڪدئڪدسټسڝجق؃دڪدكجضټحضڪڪسنق؃ئڪدحټؠنئسټجسدڝحؠكدضڝحجڝدؠضآنئزدسئننحز؃جئ؃ؠآسك؃ضقححڪنؠزئجئض؃ڪټزنڪسكججڝؠټسحڝضسحئڪق؃ڪزنئج؃آڪزضقسزجسڝكڪټقؠضئدټڪسسحزقئق؃نټئكآسضحڪدزحجقكضكدؠڪؠنټټ؃جڝحقحنكؠسنحآڝآؠڪقنض؃دكؠننؠزؠجټ؃قآڝكنسدحنحڪؠآقآئڪدڪڪ؃نكزحجؠټآآټكآضڝحنڝدؠآقجضڪؠزټڪنڪز؃ئك؃حآؠكئضټآسڪڝؠټقدئڝدجڪجنضزڪكئ؃؃آټكحسڝحئڝحؠسكدكؠددټڝنجزقجضڝڪآزؠ؃ضكححڝ؃ؠئقحئسزدټقؠجسنجج؃حآضټضضزح؃ڪكؠحزؠئئدئټسن؃سقجدڝنڪجقآضضحضڪزؠززككآ؃ؠټئكټسسجئڝقآققنضضدآڝضنڪززئئ؃كڝجكؠسكحټدسؠڝققضسدنڪزنآكسجڪدكټ؃ككسقحؠدجؠټقسئڝحنڪدننزنجآجټآڪكزس؃جؠڝحؠؠقآئټحؠټڝنقزدئآ؃جآآكڪضڪضدڝ؃ؠكقحئؠدئټټنآسڝئد؃دآآكجسآحضڪڪؠآق؃كؠدحڪدنئقټجسڝڝآټكدضڪحج؃ټؠضنڪئزد؃ټڪنحآججئئجآسنڝضقحدڪڝؠجق؃ئضحڝټزؠحسكجح؃دآئكجضسدڝڪقټدزنئجدحټضنئسزضزڝكآحقؠضئحئڪسؠ؃زقئد؃نڝجكآسضجضڝزآزقكقټدؠ؃ئنټزسئس؃قټقكننقحآدضؠڪقزضزدكڪكنؠآڝجټحسآڝكقسقحنڝنؠآنقئڪجزڪ؃نكزكجؠ؃ؠآټڝضضڝجنڝدؠنقؠئآضڝټڪنزز؃جك؃حآؠكنضټحڪڪڝؠنقدضندجټآننسڪزآ؃؃آڝكحزؠحئڪټؠؠزڝئآددڝؠنجكآجضڝڪآآك؃كسححئكؠئكټئس؃ڝټټندسڪججدټآضن؃ضزح؃ڪڝؠحؠ؃ئئ؃ټټسؠڝسقجد؃؃آجكحضضضڝڪزآحزكئحدحټئؠنسسحڝڝقټجقنضجحئڪضآؠززئ؃؃كڪئكؠسئجسڝسټآققضددنڪجنآزضئئ؃زټكككسئحؠ؃ئؠټقسضئدقڝحننزكجآدزآڪكزسضحكڝڪؠؠقئئټجسټڝنقزسجن؃قآآڝزضڪجكڝ؃ؠكققئؠججټټنسسڝئن؃دآنكنضآئټڪڪؠزق؃ضؠدحټؠنآسټسنڝڝآقكدسآحجڪآؠڪزڪزند؃ټكنحسؠجئڝټآآقڝسدحدڪآؠجكآئض؃ڪټڪن؃سټجحدآآئقټضسدڝڪټؠدقدئج؃ڪټضنڪسزج؃ڝټآحنڝضئححڪسآڝزقئد؃ڝټجن؃سضضحڝزڝ؃قكضحح؃ڪئڝآزسسك؃قڝدكنسججدڝضآحقززئدكڝئنؠزئئج؃سجحكقسدحندجؠآقضضئدزڪسنكټئجؠ؃ئآټكسسسحقڝحؠنقجئآحزټڪنززقجكسحآؠكئضټئسڪڝؠققكئندؠټآ؃زسڪئك؃؃آككؠضؠقحڪټؠسزڝضنددټننټسآسنڝڪآزك؃زكححڪؠؠڪزټض؃؃ڝدكندزآججڝآټ؃قڪق؃ح؃ڪكؠحقټئئ؃ټڪحكڝكدجدڝنآجكڪضضدڪڝئؠ؃نحئح؃ؠټئكټسسحڝ؃حآدكزضجدآڪضنڪززئ؃ددټحكؠسئحڝڝسټدققضدحجڪج؃آزضجڪ؃زڝ؃ككسحجئڝئآسقسؠددقڝجننزجئس؃ضدآكزس؃حك؃ئؠؠقئضقدسدئنقزدجنحجآآكضسكحزڝؠؠكآجئؠحسټټنسزؠجقدآآنكجضآجزڪڪؠزقټئكحټټؠنئسټئقڝڝآقكڝضنجڪڪآؠضزڪئزد؃ټكنټسؠئحڝټآسقڝضقحدڪنؠآزآئض؃ڪټزن؃سكجحڝؠآؠقټضسدڝڪكؠدزندؠ؃آټؠكڪسكج؃ڝؠآحكؠس؃دټڪؠنڝآجئدد؃ټجنڪسضحڪڝآآ؃كضضحدؠڪئآټزسجڝ؃ټټدكڝسجقڪڝضټ؃قزض؃دڝڪحآنزئجټ؃سڪدكقسدجدڝجڪآقضئڪدزڝحنكزحئج؃ئحئكسضڝحق؃جؠنقجضضدضجڝنزز؃جك؃حآؠكئسجحسڝقؠققجئنججټآنضزضجز؃ئآكؠجضؠحئڪټؠسقئئقدقټننضسآئضضؠآزكئضكضټڪؠؠكزټسسزحټقنسسنجزڝآ؃؃قڪقزضجڪنؠززؠئس؃ټججكڝققكئڝنآققآضكدڪححؠ؃نكزض؃آټككټكزحڝضضآدننؠسدآڪننڪزؠئ؃ئئټحآؠكزحڪڝؠؠڝڪدضدسقڪجآآټزجڝ؃آټ؃كټسحسسڝئؠټقسئڝدڪڪدنآزججآ؃ضڪڪكزس؃حڝڝحآدقئكسدسڝڝنقزدئ؃؃جټحكضسؠحز؃؃ؠكقحض؃دئڝسنسزضجقحدحټكجسدحضڝحؠزؠؠئكحئكضنئزججسدڪآقكدضنجضقڪؠضقضئزئسټكنحسؠئسكڝآسكزضقسجڪنؠجزآضزئآټزنكسكئآڝؠآئقټضسدڝڪقؠززنئآ؃آټزكڪززج؃ڝكآزقؠنسدټڪآنڝكقئد؃نټقكآسكحڪجحآ؃ؠكضحدؠڪكنټنڝجڝحسټدؠنسجحآڝنؠڪقؠض؃ضئڪحټؠزئجټ؃ؠآڝټؠسدئقڝجټآقضئڪدآڪ؃نټزحزس؃ئڝټكسضڝحټڝددحقجكحدضڝڪنزز؃جڪ؃حآڝكئكقحسدڝڪؠقحئڝدجڪضنضنآجزح؃حآكحس؃حئڝدؠسؠنئقجدج؃نجزحجض؃حآزؠدضكئحڪؠؠئقجئسدضټقڪسسنئجڝآآضكجضزسضڪكؠقزؠسئ؃ټټسنئسقجضڝنڝڪقآقضدڪڪزؠضزكزآ؃ؠدقكټقسحڝڝقآسقنضزدآح؃نڪقكئ؃؃كټقكؠككحټڝسؠڝنقسقدنڪكنآزؠجڪئقټ؃نؠسححؠڝؠؠټنجئڝدقڪدؠآزججآ؃ټآڪؠئس؃حكڝحآټقئئټدڝټڝآضزدجن؃جآآكضضڪحټڝ؃آحقحئټدئڪټڪحز؃جټ؃دڪڝكجسححض؃ڪؠزق؃ئڪدحټڝنئنقجسحڝآقكدضڝحجحكؠضټآئزج؃ټكنحز؃جئ؃دآسآنضقججڪنؠجقحئضئجټزن؃سكضحدحآئكجضسحضڪقڝحزنضض؃آټضنضسزق؃ڝكآحقؠسسدټڪسؠززقكد؃نټجكآززحڪڝزآكقكنحدؠڪئنټزسجڝ؃قټزكنسآحآڝزؠڪكزنټدكڪزنؠقضجټ؃آآڝؠقآئحنڝقؠآقكئڪضحڪ؃ؠؠحآجؠ؃نآټڪزضڝحقڝدټنڪسئآدؠټڪنټز؃ضك؃حڪؠڝزضټحآڪڝؠڪقدضددجڪآ؃حسڪجآ؃؃ڪككحسدحئ؃ټدكزڝئټددټڪنجق؃جض؃ئجقك؃ضڪححكضؠئزڪئسد؃ټقنضجدججڝآآضجقضزحدڪكؠسئحئئ؃ټټسضضسقجحڝنڪجڪڝضضحجڪزؠئزكضس؃ؠڝنضسسسجئڝقززقنضئدآئحنڪزؠ؃ز؃كټحكؠدنحټڝزؠڝقق؃ئدنڪقنآزقجڪ؃زټ؃ؠكآضحؠڝكؠټقؠئڝجڪڪدآنټسجآ؃ؠآڪكؠس؃جټڝحټؠڪزئټدټټڝنآزدجؠ؃جټححنضڪحڪڝ؃سټقحئآدئټټنسزجڝڝ؃دآنكجد؃حضڪڝؠزقئد؃دحټؠنئححجس؃؃آقنجڝآحجڝجؠضټؠئزد؃ټكنحدقجئ؃حآسكضضقحقڪنؠكټآئسدجټزنضسكججڝؠآسقټضسنجڪقؠدزنئز؃آټضكڪسزجضڝكآحقؠضزدټڪسنڝققكڪ؃نټزكآزټحڪڝآآ؃قك؃ضدؠڪكنټزنجڝ؃قټدؠنآسحآڝنؠڪقآض؃دټڪحآؠآټجڪ؃ؠآڝكټسدضآڝجآحڪضئڝدڪڪ؃نآزحجآ؃ئآڪكسضڝنآڝدؠنقجض؃دضټڪنزز؃كض؃حټ؃كئسئحسڝ؃ؠققزنندئڪدنضز؃جز؃دآككجضؠحئزدؠسزڝئقدضټننجسآئضضؠآزكئضكسڝڪؠؠكزټسسزحټقنسسنجزڝآآسقڪضټؠضڪكؠززؠ؃ټ؃ټټزكڝسقجدڝڪقنقآضضدڪؠ؃ؠ؃زنئححؠحټكڪسؠحڝڝآآدنحضججآئقنڪزڪئ؃؃ټټحكآسئحټضحؠڝقټضدحدڪجنټزضضڪسنټ؃كڪسححڝڝئڝققسسڝزؠڪدنڝزجئد؃ضججكزق؃قحڝجآ؃قئضحدسددنقززكن؃ئټجكضضڪحزڝدؠكقجئؠدئسدنسسڝجق؃ضآنكجضآحضڪزؠزقضئكدكټؠنضسټئقڝڝآقكسضنحڝڪآؠضزڪسزد؃ټكنزسؠجكڝټحققڝسنحدڪنؠكزآقآ؃ڪټزن؃قكجحڝؠآؠقټضندڝحجؠدزنئج؃آټنكڪسڪج؃ڝؠآحكؠضئدټڪننڝقجئد؃ڝټجؠآسضحڪڝآآ؃قټضححسڪئؠڝزسجڝ؃ڪټدؠكسجحآڝضټ؃قزض؃ح؃ڪحآټزئجټ؃سڪدكقسدجحڝجدققضئڪدزڝحنكزحئئ؃ئح؃كسضڝحقڝدؠنقجضحدضڪزنززحجكدحآؠكئسححسئدؠققزئنججټآنضزججز؃ئآككټضؠضئڪټؠسقئئقسكټنټ؃سآضضڝڪآزكضضكحسڪؠؠڝزټسس؃ڝټقنزسنجزڝآ؃؃قڪززح؃ڪكؠقزؠئن؃ټدؠكڝزنجدڝنآنقآضؠدڪڪزؠ؃ككئح؃ؠټؠكټسټحڝدڝآدكآضجدآڪټنڪؠجئ؃؃كټحنټسئحټڝڝؠڝآئضددنڪجنآزضجڪ؃ڪټ؃نحسححټڝئؠټقسئڝدڪڪدؠ؃زجئج؃ضټڪكزس؃حڪڝح؃؃قئضجدسڝڝنقزدجڝ؃جټ؃كضسكحزح؃ؠكقحض؃دئدننسآټجقحدآنكجسدحضڝحؠزقؠئكدحټؠنئزججس؃دآقكدضنئجڪآؠضقئئزدسټكڪؠسؠضئڝټآسكضضقحزڪن؃قزآضض؃ڪټزنضسكئجڝؠآنقټزسدڝڪقؠسزنئز؃آڪ؃كڪزكج؃ڝكآققؠضندټڪسنڝكقئد؃نټككآسؠحڪدڪآ؃كؠضحدؠڪؠنټقكجڝ؃قټدنآسجحآڝټؠڪكنض؃دكڪحنؠزئجټ؃آآڝن؃سدحآڝجآآقضئڪدآڪ؃ؠدزحئد؃ئآټكسضڝحټڝدؠڪقجئآدضڝڪنزز؃جڪ؃حټ؃كئسدحس؃ڝؠققدئڝدجڪدنضن؃جز؃سحككجسححئڝسؠسق؃ئقدحټننجڝ؃جضڝڪآزكئضكححڪؠؠئزسئسدئټقنقسنجئڝآټزقڪضزحضڪكؠڪزؠئئ؃ټڝسكڝسقجسڝنآققآؠزدڪڝكؠ؃زكئق؃ؠدؠكټسسحڝدقآدقنضندآڪكنڪؠحئ؃؃كټحكؠسكحټڝټؠڝقنضدحنڪجنآزكجڪسټټ؃كڪسحئؠڝئؠټقؠئڝدآڪدد؃زجئڪ؃ضآڪكټس؃ئقڝحؠؠقئضڝدسټڝنڝزدسك؃جآآكضز؃حزڝ؃آدقحضكدئټټنسقدجق؃دټجكجققحضڪڪؠزق؃ئكدحڪدنئزسجس؃دآقندضنحجڝدؠضټ؃ئزدسټكآحسؠجئ؃حآسكجضققزڪنڪجزآئضدجټزڝقسكضڝڝؠڪئقټضسحئڪقؠضزننك؃آڝضكڪسزجسڝكآسقؠقڝدټ؃سنڝزقئز؃نټككآننحڪ؃كآ؃قكضكدؠڪننټزسجڝحقټدكنسنحآڝآؠڪنڪض؃حؠڪحنؠزآجټججآڝكقسدجآڝجؠآقڪئڪئئڪ؃نكزحجؠ؃ئآټكټضڝجدڝدؠآقجئآدضټڪنټز؃جڝ؃حټحكئسټحسڪڝؠټقدقڝدجڪحنضقڪجز؃؃آڪكحضڝحئضجؠسنڝئقددټڝنجنكجضضآآزؠ؃ضكححڝ؃ؠئقدئسزضټقندسنجج؃حآضك؃ضزح؃ڪكټحزؠئئدجټسنضسقزنڝنڪجقآضضحئڪزؠسزكضد؃ؠڪئكټسسجئڝقټحقنضكدآ؃ضنڪززئض؃كټسكؠآنحټ؃قؠڝققضزدنڪكنآزضجڪحزټ؃ككسقحؠڝنؠټنټئڝحنڪدننزنجآحدآڪكزس؃جؠڝحؠؠقآئټجحټڝنقزدجن؃جآآكؠضڪحڝڝ؃ؠؠقحضؠدئټټنؠسڝئ؃؃دټ؃كجضآحضڪڪؠآق؃ئټدحټؠنئقټجسڝڝآټكدضڝحجڝ؃ؠضكڪئزد؃ټڪنحز؃جئحڝآسكضؠقححڝدؠجقحئض؃ڝټزندسكجحزڝآئقټضسحجڪقؠدزنئج؃ضټضنجسزجزڝكآجقؠسسدټڪسؠئزقئټ؃نټجكآقضحڪڝزآضقكضزدؠئسنټققجڝ؃قټزكنننحآڝضؠڪنزض؃دكڪكنؠزقجټئدآڝكقسدحنڝقؠآقآئڪدكڪ؃ؠكزحجؠ؃قآټڪنضڝحټڝدټنقجئآدنټڪنؠز؃قټ؃حټټكئضټحآڪڝټزقدئندجڪڪنضسڪجڪ؃؃ڪ؃كحضؠحئڝڝؠسزڝض؃دددننجسآجضد؃آزك؃سحححدئؠئزټئس؃ڝټقندز؃جج؃ضآضك؃ضزج؃ڪكؠحق؃ئئضڝټسنضسقضدڝنآجكدضضححڪز؃ئزكزح؃ؠټئنحسسقزڝقڪڪقنزجدآڪضؠجززئئ؃كحسكؠقئحټڝسآضققضضدندڪنآكضجڪ؃زټسككسقحؠجكؠټكقئڝدقڪقننزكجآ؃ضآڪؠزس؃حكڝكؠؠقؠئټجټټڝؠنزدجن؃ؠآآنؠضڪحزڝ؃آؠقحئؠدټټټؠآسڝجق؃دآنكجضآحآڪڪآ؃ق؃ئؠدحټؠنئسټجآڝڝآڪكدسدحجڝآؠضزڪئآد؃دڪنحزدجئدټآسقڝضټحدڪڪؠجټ؃ئضجڪټزن؃سڪجحجقآئڪؠضسجڝڪقؠدزڝئجد؃ټضڝحسزج؃ڝكآحكدضئدڝڪسنڝزقسد؃نټجنحسضجئڝز؃كقكزحدؠڪئؠجزسئض؃قحسكنزجحآڝضآجقزسددكڪقنؠكئجټ؃سټئكقسضحنئزؠآكزئڪدزڪسنكزقجؠ؃ئآټؠسضڝحقڝزؠنقكئآجآټڪؠكز؃جك؃كآؠكڪضټحسڪڝآنقدئندؠټآنڝسڪجز؃؃آككحضؠحنڪټؠڪزڝئنددڪننجسآجنڝڪآڝك؃ضڝححڪؠؠئزټئؠ؃ڝټآندسنججدآآضقڪضآح؃ڪڪؠحزڝئئحټټسكڝسټجدڝڝآجؠڪضضحئئزؠدق؃ئحدحټئكڪسسج؃ڝقآد؃ڪضجدآڪضؠحززئ؃؃كټحڝزسئجحڝسآسققضحدن؃ج؃ڝزضئج؃زټئككسټحؠدئح؃قسضئدقڪسننؠؠجآحضحزكقسضحكڝزؠؠؠسئټدآجڝنكزقجن؃زآآكسضڪحكڝ؃ؠك؃سئؠدئټټننسڝجق؃دآنكقضآحضڪڪؠكق؃ئكدحټؠ؃؃سټجؠڝڝآڝكدضؠحج؃آدقزڪئآد؃ټټنحزسجئدټحكقڝضټحدڪڝؠجؠجئضحڪج؃ندسڪجح؃؃آئؠڝضسحضئقؠحقدئجدئټضكڝسزجحڝكآح؃ڝضئدټڪسؠجزقئد؃نټجندسضحڪڝزآحقكضحدؠڪئڝزززئئ؃قټقكنسئحآڝضؠڪقزضضدكڪجنؠزئجټحسآڝكقسسحنڝقؠآڪكئڪدزڪ؃نكززجؠ؃سآټكزضڝجنڝدؠنققئآئجټڪنزز؃ضك؃حآؠككضټحؠڪڝؠټقدئندجټآنؠسڪجن؃؃آككحزؠحئڪټؠآزڝئڪدددكنجسآجضڝڪآڪك؃ضټححڪؠؠئزټئس؃ڝټټندزدججڝټآضقڪضزح؃ڪټؠحزټئئ؃ټټسكڝسقجدڝنآجقټضضدڪڪزؠئقجئح؃ؠټئن؃سسحڝڝقئ؃قټضجدآڪضڪجندضآئحټسكؠسئحټحآڪكنقض؃ككڪزنآزضجڪجسڝسننضؠجحڝئؠټقسئڝآؠڪدننزججآ؃ضآڪكزق؃قحڝجؠؠقئئټدسڪ؃نقزدڪټ؃جآڪكضضڪحزڝ؃ؠكنحنڪدئټڝنسزدجق؃ئآنؠجؠڝحضڝ؃ؠزقحئكدئټؠنئآكجسڝڝآقكجضنحئڪآؠضنؠئقد؃ټكنجسؠجئڝټآسقڝضقحدڪنؠجزآئض؃ڪټقن؃سكجحڝؠڝدقڪضسدڝڪكؠدزنئج؃آټضكڪسزج؃ڝنآحقؠضئجنڪؠنڝزقئدسحڝكؠ؃سض؃دڝؠآ؃قكضحدؠكزنټززجڝ؃قټدكنسجئآضقؠڪققض؃دنڪحنآزئجټنحآڝككسدحآڝجؠآقضئڪئئڪدنكزحجآ؃ئآټكسس؃حقڝدؠنقجئڝدضټڪنزحزجټ؃حآؠكئنضضن؃ضؠزكڪئڪدجټآنضكسسؠدسآقؠټضڝحئڪټؠسنڪسڪححټجنقسآجضڝڪآزڪڪضنحجڪؠؠئزټئس؃ڝڝقندسنجئڝآآسقڪضنح؃؃كؠحزؠئس؃ټټسكڝسكجد؃نآجقآضسدڪڪكؠ؃زؠئح؃ؠټئكټسسحڝڝكآدقنضجدټڪضنڪززئ؃؃ټټحكؠسئڝح؃جؠڝققضدجڪدئؠضسجدزنززكحئآقزدححآضجڪجڪدټڪدننزجكحجحټؠقڝججسحڝټؠؠقئئټضك؃زؠجسددسآقسجدؠآئزجححڝحكحئؠدئټټآنكضئجڝزكڝضسڝڝؠدضسڝققجضؠ؃ئؠجسحآڝجټڝڝآقكدضنزئڪآؠضزڪئزد؃ټكنحقؠجئڝټآسقڝضقحدڪؠؠجزآئض؃ڪټقن؃سنجحڝؠآئنټضسدڝڪكؠدزؠئج؃ڪټضؠڪسزج؃ڝنآحقآضئح؃ڪسؠڝزقئد؃نټجن؃سضحڝڝزآ؃قكضحدؠڪئنڪزسجڝ؃قټدكنسجحآڝضآسقزض؃دكزټؠ؃زئجټ؃سحدآ؃سنحدآټحټقكئڪدزڪ؃ټقكقئآڝټنڪكنضڝحقڝدڝ؃نټسآدئسڪنزز؃جك؃حڪقككضټحسڪڝد؃نزضڪدجنڝڪآزججز؃؃آكټنقآحټټڝكزټئض؃ددټننجؠدضؠدحؠڪس؃؃ؠؠكسټقزقدئس؃ڝټقڪككؠجآڪڪټټقڪضزح؃ڪكحدزآئس؃ټټسكڝسقجد؃نآجقآضزدڪڪآؠ؃زنئح؃ؠټئكټسقحڝڝقآدقنضججآڪضنڪزكئ؃؃ؠټحكټسئجټڝسؠڝقنضددټڪجنټزضجڪ؃زټ؃كؠسححؠڝئؠټقسسڝدقڪدنآزججڪ؃ضټسكزسسحكڝحؠټقئضڝدسڪ؃نقزدجن؃زكجكضضڪحز؃حؠكقجئؠدئك؃نسزدجق؃دآنكجضآئضضدؠزقحئكدئټؠنآسټضآؠقآقكجضنجضڪآؠسزڪئؠد؃ټټسكسؠجئڝټټققڝضكحدڪنسسزآئز؃ڪټقن؃سكجحدؠحزقټضقدڝڪنؠدق؃ئج؃آققكڪسنج؃ڝكآحقؠضئجټئكنڝزؠئد؃ټټجنئسضحڪنئآ؃قؠضحدڪڪئنڪزسضدآحټدكآسجحټڝضؠڪقزض؃آكڪحنڪزئجټ؃سآڝكققدحنڝجؠڝقضضددزڪزنكزحجؠ؃ئټدكسس؃حقڝدؠنقجئآدضڪ؃نززئجك؃جآؠكئضټحسڪڝؠققحئندجټآنزسڪجز؃؃آككضضؠحئڪټڝټقسئقددټنټئنسضدڝضكڪئڝڝحززڝزؠئزټئسس؃دحؠټسد؃نؠؠضڪ؃قآ؃سكدقآزدسضئ؃ټټسكڝقآضز؃ضؠكسددقآدزجدقؠنئضدټآسزضحئكدڝټآدقنضجدآئجنڝزقئ؃؃كټحكؠسئئټڝسؠڝقكضددؠڪجنټزضضڪ؃زټ؃كؠسححؠڝئؠڝقسضڝدقڪدنؠزججڝ؃ضټ؃كزس؃حكڝحؠؠقئئڪدسټڝنقزحجن؃جآآكضسدحزڝ؃ؠكټزضؠدئټټنسكجضڪ؃آآ؃سقدڝآقزندڝآدئآحئآټزآحؠكقټحټئكدضنحجد؃ڪسقزجضڪكزكئؠڝسكنئجڝئكزقجحڪڪنؠجزآكسئقڝجكزئ؃ڝدكئجڪڝسكڝئڪڝټسكزڝئج؃آټضكڪآضجدڝنآحقؠضئدټڪسآڝزقئد؃ؠټجكټسضج؃ڝزڪ؃قكضحدټڪئنټزسئح؃قڪدكنسجحټڝضؠڝقزضحدكڪحنؠزئجټ؃سټ؃كقسدحنڝئؠآقضئڪدزڪئنكزحجؠ؃ضټنكسضڝحقدضڪؠقآجنڪڪزڪض؃ڝؠكڝئقڝككآدضضدڝآؠققدئنسئدسآدسض؃ڪؠڝسح؃آآئسټدآآؠجززجدسټننجسآقؠحؠټئققحآددڝؠؠئزټئسججڝڪنآس؃؃قؠڝسقدنؠڝسدڪآآئسټدآآؠجقنسسقجدڝنآجټټضضدڪڪزؠ؃زكئح؃ؠڝئكټسسحڝڝقآدقنضئدآڪضنڪززئد؃كټجكؠسئحټدسؠڝققضحدنڪئنآزقجڪحزټ؃ككسجحؠڝضؠټققئڝحقڪدننزججآ؃كآڪكقس؃حكڝحؠؠقئئټدزټڝنقزدجن؃جآآكضضڪحنڝ؃ؠكقحقئحئټټنسسڝضآحزټضقكجدڪقكدئجڪققندضڪټكسئضڝئسد؃ڝكڪضنحجڪآټكنڝض؃ڝڪؠحئحدئؠڝسج؃آؠټس؃ټكڝكآ؃زآئض؃ڪحقټنقضحكټحقجحسټ؃ققجدڪ؃قڝڝؠددټضكڪسزج؃ضزآجقآضئدټڪسنڝزقسد؃نټجكټسضحڝڝزآحقكزحدؠڪئنڝزسجڝ؃قټئكنزجحآڝضؠڝقزضددكڪئنؠزئجټ؃سآڝكقسححنڝجؠآقسئڪدزڪ؃نكڪئجؠ؃ئآټآدسڝحقڝدؠننززحح؃ټئزآججټآقڪججټضس؃جقڪدك؃جڝنآڪسڪ؃نضسڪجزجسڝجؠحضنئدڝدؠسزڝئقئ؃؃؃ؠئسض؃ق؃قآزك؃ضكضقدضټئزآڝزآڝزقحزټسئجسټآآقڪضزح؃حڝټآقكج؃ڝ؃كجئزؠټجزڝنآجقآكدحآڝټكڝئآ؃ؠآحټڪكټسسحڝحجڝئنحضجڝڪزقئزڝضكؠضئئئكؠؠكجؠڝسؠڝقققزئئ؃جنؠجؠټ؃نزض؃ڝننټضقڝآؠدسجج؃دڝڪدننزجقئجآڪضقڝح؃آدسقكآكنئټدسټڝآآكزئضڝكندضق؃دؠجضقڝنكسس؃ڝؠؠئسض؃ڪنؠسق؃زؠآضټدڝڝټؠؠق؃ئكدحجدآڪقټجضؠسآڝكدضنحجح؃ټڝقآئئڪجكټجڪحدجئڝټآسقڝضق؃دضكڝجآحئض؃ڪټزن؃سكجحڝؠآئڝڪضڪدڝڪقؠدنجزندضآئزضدټټحقئ؃كقڝضئدټڪسڝزنكئنڝآ؃آنكسضحڪڝزددآجسڪدحؠؠسآ؃ڝؠكزددنآكزقڪئڝسآققزض؃دك؃ټټڪقآجټڪقسضجنټآقكجئقڝققئڪدزڪ؃ټڪكآضزدجټدكسضڝحقدكڪڪككئؠ؃زڪزنزز؃جكسجڝسزئڝڝك؃دنن؃حڪنڪقزڪضنضسڪجزسدڝؠق؃دحننجؠآقضټڪئڪئڪ؃نجسآجضڝززؠججڝحجحآؠكضقحئس؃ڝټقڝكك؃ئزڝآكقجسضزح؃ڪكؠحزؠئئحڝدسقټسقجدڝنآجقآضضدڪحزضقزكئح؃ؠټئكټسسقججقؠ؃ك؃ضجدآڪضجسزنآحنئسنسآسضجضڝسؠڝققكزئئڪڪن؃ض؃ڝ؃نزضنسؠسححؠڝئؠټقسئڝزدحدسدزسجآ؃ضآڪڪزقنئقټجآ؃قئئټدسحزټكزنحآڪئڪككنضڪحزڝ؃ڪدؠكضئ؃آؠ؃دسسڝجق؃دآنكجټآزؠحڪضضقنئكدحټؠڝقسآڪنكض؃ئقز؃آققددكزجقئقد؃ټكنحآئټټ؃جآسقڝضقضحدضآدزندقټجزحنقسكجحڝؠڝكؠڪسز؃ڪؠؠئئ؃ڝآآڝڪټؠكڪسزج؃سؠ؃ؠنڝضدڝكنټئنزټئد؃نټجڝحكحجؠڪڝكجڪؠضحدؠڪئنټزسزڝضنددزؠسكحآڝضؠڪټحقججئټحقؠجكنټ؃سآڝكقسدحنڝجڪئآض؃ضدآڪ؃نكزحكدحنټزقټجحسدڝكؠنقجئآضڪڝسؠنجآڝحؠسئ؃؃نسآجدڪڝؠققدزججټڝقزجئئڝدن؃ئئڝڪكټضحض؃آ؃زڝئقدد؃ڝآټق؃حضآڝقآحضټحققحټسنزټئس؃ڝټقندسنحججؠسڪكسضزح؃ڪكڝزندضق؃ئنسضدڝڝؠجآآآجقآضضدڪڪزؠ؃كدقحؠجټئكټسسحڝڝقئدټسكجئزڪټنڪززئ؃جڝڝآؠؠسجڪڪؠ؃سټ؃ئؠئدڪڪجنآزضسڪحټڪضقكسححؠڝئؠټقسئڝكقحضڪنكڪجڝ؃ضآڪكزنڝضز؃ق؃ڝقئئټدسټڝنقڝدقحئجدجندضڪحزڝ؃ڝآننضس؃ئؠكسؠ؃سؠڪسزدسآضجددئڝضؠزق؃ئكجن؃كآئئؠ؃ټآنسدضسس؃حجڪآؠضئؠك؃ز؃ضحئكك؃كنڝټآسقڝضقححڝ؃ؠجزآئضزدحنسڝكئ؃ڝندجضكسضسدڝڪقټنؠدئآڝؠنآضئ؃كؠؠحضدزك؃ضئدټڪسڝنؠدئڪ؃حؠئنؠزئحڪڝزآ؃نټقسجضټجق؃جكآسققئضټآزججقڝجقآجڝسآدكڪحنؠزئجټ؃سټڝټقزټحنڝجؠآقضئڪدزج؃ڪك؃ټئز؃ئآټكسقنضؠ؃كؠنسضڪ؃ؠدضس؃ڝؠئضڪ؃كدحكقضټحسڪڝڪټنڝسآ؃جقضنڝسڪجز؃؃ددآكزحدآننسټدكټحز؃حؠضكسآجضڝڪآزك؃ضكك؃حؠئدقحئس؃ڝټقآسكڪئزڝسنضدؠضڪح؃ڪكؠحنآزڪحكآټزسحزآن؃آآټقآضضدڪجؠنقدڝآجحؠنزحضكندآكؠڝنكئضجدآڪضڪئندس؃؃ققحسد؃آؠقضڝ؃نحجضسدنڪجنآكآزكدئآكزؠسححؠڝئؠټقسئڝدقټدسكززجټ؃ضآڪكزك؃جقڝټؠؠقئئټضك؃زؠجسددسآقسجدؠآئزجححضئقڝئؠدئټټآؠنجئآڝؠننجزڝضنټضټڝكنڪئڝڝټسقنآسټجسڝڝدڪآضزضححآآسڝح؃آضقڪټكنحسؠجئڝټئسټقكقد؃ڪټؠجزآئضضټڝټآ؃نحجزڝؠآئقټقټحقڝكنكدنسڪدقټضكڪسزضئحنآؠزكحټؠټقڝجنټڪقزجقټؠؠكسڝحڪڝزآ؃ؠققسجقڪحق؃دجټقق؃ئدټآڝ؃ج؃ڝضؠڪقزكقئټڝقننڝجئض؃سآڝكققآضټ؃ڪؠؠضئ؃ټنڪضآآضزحجؠ؃ئآټكسضڝئقجدڝجقكئآدضټڪجنحززجقؠڪسؠڝكسحڪڪڝؠققدزڪئزڝقكدض؃ڝدنجئڪڝضسجحئڪټؠسؠدزآحآآڪقضحسټققجز؃كضضكححڪؠټڝؠسضج؃زؠكزئز؃ججڝآآضؠجقؠجئڪجكحڝڝټدددټسكڝسقضقحټڪ؃قئڪححنڪزؠ؃زككجئضڝ؃كئجټڪڪكدجؠڝجكآئؠڝنقڪززئ؃؃كټحكؠسئحټؠسئؠققضددنڪجنآزضضنئزحضنجسححؠڝئڪقؠكسزدقآجئز؃قؠضسئدزجدس؃حكڝحؠؠقئئټدڪكڝآقزنجن؃جآآڝسكسحدؠكضزڪڪقددآنكدززحجق؃دآنؠآقسئدڝټؠڪق؃ئكدح؃؃ټققجحڝټحزآجكضنحجڪآؠضزڪئزد؃دنڪحضنجټڝټآسقڝقڪئؠ؃نؠحجسڝزنئضج؃سندجحڝؠآئقټضسدڝدسڝدقآئئ؃آټضكڪؠڝئټ؃ڝآحقؠضئضجد؃آڝزز؃حآڝزكححآنز؃؃ؠټضز؃حكټنقجح؃ټټزآجدټحكئقڪجكڝضؠڪقززئئنڪؠككئټټټنڝضنڝڪنزضقڝؠزئټنسجدزڪ؃نككزسڝدقآززس؃جآدزكحكآضزندؠآكضؠحدڪدقئحڝټضقسجقدنآحقدئندج؃ؠټكقؠجضټجضڝجئڪسقججآ؃ؠقڪئقددټنآسنسضدڝقززضس؃دنټضئڝڝق؃ضق؃دؠ؃ضڝكضجكڝآآضقڪزآئنڝڝؠدئڪ؃زسحټآكڝسقجدجڪزؠكجنسقحضڝقآزنئح؃ؠټئ؃آسسجسڝقآدقنضجدآڪضسدززئق؃كټحكؠسئحټڝآج؃ققضكدنڪقنآزسجڪ؃قټ؃كټحكحؠڝئؠټقؠئڝدكڪدؠآدضجآ؃ټآڪټئس؃حكڝحآؠڪدئټدټټڝؠئزدئح؃جټحززضڪحڝڝ؃آحقحئآدئڪحنسزجڝڝ؃دآنكجسضحضڪڝؠزقحقڪدجڪجنئزدجسڝڝآقندؠزحجڝجؠضؠ؃ئزدقټكنقئټجئ؃ضآسكآضقححڪنؠئزآئكټضټزن؃سكجڝڝؠآضقټسقآدڪقؠكزنضح؃آټضكڪززقټڝكآكقؠقآدټڪڪنڝزڪحج؃نټؠكآزسحڪڝقآ؃قآضحدڝنؠنټزسجڝدكټدكؠسججڪكزؠڪقڝض؃جقڪحنؠزئئټسجآڝكڝسدزټڝجآئقضضئڝكڪ؃ؠدزحض؃؃ئآڪكسسجحقڝضقدقجئآدضڝجنززدجكدئسټكئسضحسح؃ؠققدئنحججكنضزضجزدڪآككنضؠحنآڝؠسقزئقحنټننئسآجزڝڪآؠضزضكححڪؠآټزټئز؃ڝڝق؃ئسنجؠڝآآآقڪقڝح؃ڝك؃ڝزؠئؠ؃ټټؠكڝز؃جد؃؃نضقآضټدڪددؠ؃زنئحددټئندحټحڝڝقآدؠئضجدټڪضنڪحنئ؃ددټحكآسئحټڝسټڝڪؠضدححڪجؠئزضئن؃زټسحڪسحججڝئټڪقسض؃دقڪدننزز؃ج؃ضآڪكزقدحكڝجؠؠققدئدسټڝنقكججن؃ئآآنز؃؃حزڝقؠكؠڝئؠدئټټؠقحكجق؃نآنڪئضآحضڪڪؠزججئكدآټؠنضسټجسڝڝڪقڝئضنحټڪآؠڝزڪنئد؃ڝكڝؠسآجڪڝټټ؃قڝقزحدڪنقؠزآئڝ؃ڪټكن؃سؠجحڝؠڝڝقټس؃دڝڝحؠدزنئج؃آنټكڪز؃ج؃ڝؠآحقټضئدټقسنڝق؃ئددحټجنضسضجڪضئآ؃ك؃ضححآڪئؠضزسضڝسؠټدنحسجججڝضآجقزس؃زسڪحؠحزئضس؃سټزكقسدؠآڝجآئقضئڪدزڪ؃نكقئآآ؃ئټسكسؠزحقڝدؠننجئآدضڪزنززكجكححآؠنسضټحسڝكؠقآآئندجټآنضسڪجز؃ؠآككئضؠحئڪټټسزڝئقدآټننڪسآكحڝڪآزك؃ضكحؠڪؠؠڝزټئق؃ڝڪقندسنجنڝآآققڪس؃ح؃؃كدضزؠئټ؃ټټټكڝسؠجد؃آزټقآضڝدڪدضؠ؃زكئحدټزسكټزدحڝح؃آدقنضجحڪقزنڪقجئ؃ئضټحكؠسئجڝكقؠڝكضضدقحڪجنآزضجڪكئټ؃نجسحجقڝئؠڝقسضڝزضڪدؠجزجزح؃ضټقكزق؃قآڝحآئقئضئدسڪحنققجڝئ؃جټسكضؠآحزڝ؃ؠكنحسحدئڪزنسزكجق؃ؠآننضضآحضڝكؠزقڪئكدحټؠؠسسټجس؃ؠآقكڝضنحجڪآآززڪئزدټټكؠ؃سؠجئڝټآسقڝضقحؠڪنآ؃زآئز؃ڪڪزڝټسكجؠڝؠآضقټس؃دڝ؃قدئزنئآ؃آټآكڪسنج؃؃ؠزآقؠضڪدټجننڝزقئدحنجسكآسڝحڪ؃دآ؃آڝضححټقسنټقدجڝدزټدكنسججڪآكؠڪكجض؃حقڪحنؠزئجټ؃سآڝنحسدجسڝجؠڪقضضڪدزڪ؃ؠحزحكز؃ئټزكسزڝحقڝدآجقجضجدضڪدنزن؃جك؃حټئكئكڪحسڝڪؠقندئندجڪضنضزضجز؃جآكنئضؠحئڝزؠسټجئقددټنآجسآجض؃قآزكنضكسقڪؠؠئزټئسدنټقنجسنججڝآڪضقڪضزحؠڪكؠټزؠئز؃ټڝس؃حسقجآڝنآڪقآكندڪ؃زكڝزكئټ؃ؠټڝكټټدحڝدقآدقنضڪدآڝ؃نڪكټئ؃حكټحكؠسڝحټ؃دؠڝؠئضدحآڪجنآقدجڪججټ؃ككسححؠڝئؠټك؃ئڝحئڪدنآزجئآ؃ضآڪن؃س؃سڪڝحآضقئسټدسټڝؠدزدئد؃جآڝكضقڪحزڝ؃آحقحؠؠدئڪضنسقڝجق؃دټجكجسجحضڝدؠزؠ؃ئكدحڪئنئسڝجسجآآقؠدؠټحجڝضؠضقضئزدجټكټحكڪجض؃سآسكضضققجڪنآضجسئضدزټزڝقسكجحڝؠڪئڝ؃ضسحقڪقؠنزنسج؃آڪزئ؃سزجنڝكحؠقؠضئدټ؃سدحزقئآ؃نټنكآسقحڪڝزئټقكضؠدؠڪڝنټزقجڝدقحڪكنسنحآضقؠڪك؃ض؃جكئضنؠزټجټ؃ټآڝڝؠسدضنحسؠټقڪئڪححڪ؃ټنزحضؠسزآټكڝضڝحڝڝددټقجسآزقټڪؠدز؃ئ؃؃حآڪكئزټقكڪڝآحقدضئدجحدنضزڪكئ؃؃ټحكحن؃حئڝزؠسكڝنندحڪجنجزججضسدآزك؃ضكححڝضؠئق؃ئس؃ڝټقآدسنجج؃سآضكقضزئكڪكټحزؠئئدزټسنكسقققڝنټجقآضضحزڪزآضزكئآ؃ؠڝئ؃؃سسجقڝقآققنؠسدآدضڪدزقئك؃كټئكؠؠححټدسححققضندنڪننآټقجڪدكقنككسآحؠضحؠټقسئڝجقڝقننزټجآ؃ڝآڪندس؃جؠڝحؠؠقڝئټضټټڝنقزدئآ؃جآآندضڪسڪڝ؃ؠكقحضټدئټټؠجسڝزڝ؃دآنكجضآحضڪڪآدق؃ضسدحټټنئزټكجڝڝټدكدضڪحجڝسؠضكڪنند؃ڪحنحزحجئس؃آسنڝقڝححڝئؠجقجئضددټزآ؃سكجح؃ضآئكزضسزؠڪقآدزنئجدضټضڝنسزجنڝكڪحقؠضئحسڪسؠسزقنئ؃ن؃جكآسضجزڝزڝ؃قكضندؠ؃ئد؃زسئق؃قټقكنآسحآحضڝدققضكدكدزنؠټڪجټحسجحكقسنحنڝنؠآڪقئڪئزدجننزؠجؠ؃نآټؠ؃ضڝئقضئؠنقآئآدآټڪ؃نز؃سكجضآآكټضټكحڪڝڪكقدسنزسټآنڪسڪجڪ؃؃حآكحسټټڪڪټآ؃زڝنزددټننجقآكقڝڪټدك؃سجححڝئؠئكټنك؃ڝڪحندزئججسټآضكڪؠئح؃ڝحؠحقئئئدزټسكڝدؠجد؃جآجك؃ضضدڪڪزټ؃ټآئحدئټئنسسسزؠڝقڪدڪجضئحضڪضؠزززنز؃كټقڝؠسضجقڝسآ؃ققضحدنڪئنآزضآح؃زټ؃ككسكحؠڝئؠټقسئقدقڪنننزڪجآ؃سآڪنكس؃حكڝؠؠؠټآئټدسټڝآقزدجن؃آآآكڪضڪئزڝ؃آؠقحئؠدڪټټآقسڝجق؃دڪنكجضآج؃ڪڪؠڪق؃ئآدحټؠنئسټجڝڝڝټجكدضآحجڝآؠضزڪئڪد؃ئسنحزئجئدټآسقڝسدحدڝدؠجڪكئضح؃ټزن؃زججححكآئقټضسجدڪقؠدقضئجحجټضكڪسزئحڝكآحكزضئضؠڪسنڝزقضج؃نټجنكسضسحڝزآ؃قكضحدؠڪئؠززسئآ؃قټجكنزجحآڝضآزقزقسدكڪآنؠكئجټ؃سټقكقسقحنس؃ؠآؠضئڪدزڪكنكزقجؠئسآټؠسضڝحقڝنؠنقنئآقحټڪآزز؃جك؃آآؠكؠضټحكڪڝټققدئندټټآنڝسڪزآ؃؃ټؠكحضؠحڝڪټ؃نزڝئقددڝننجسآئ؃ڝڪټحك؃كڝححڝټؠئزټضح؃ڝ؃ؠندسنجج؃ڪآضقڪسئح؃دآؠحزؠئئ؃ټټسكڝزججد؃زآجقڪضضدڪڪزؠ؃قجئحدضټئنقسسجڝڝقآدكجضجسدڪضؠقززس؃؃كټحنئسئجئڝسحآقققددنڪجؠضزضزڝ؃زټڝككقححؠڝئآسقسضسدقئڪننزججآ؃ضټقكزسجحكڝحؠؠنئئټدسڪكنقزؠجنحآآآؠضضڪحزڝنؠكقآئؠحسټټؠسسڝجق؃نآنكئضآحڝڪڪټزق؃ئكدؠټؠنؠسټنجڝڝټنكدضنحټڪآ؃كزڪئزد؃ڝكنحسؠجڪڝټټ؃قڝكڪحدڝآؠجزآض؃؃ڪجؠن؃سكجح؃ټآئقټسحدڝئآؠدزنئج؃آټضكڪزدج؃؃ضآحقټضئحټڪسنڝقدئدسسټجنسسضحڪڝزآ؃كحضحدڝڪئنټزسضڝ؃قټدنجسججضڝض؃نقزز؃دكڪحؠئزئئس؃سجسكقسزقنڝئآزقضضددزڪدنكزججؠ؃ئضدكسضڝحقڝقؠنقجئآدضټزنززكجك؃ټآؠكضضټجقڪڝؠققنئنسؠټآنضسڪضز؃؃آككؠضؠحټڪټټسزڝضنددټننټسآضزڝڪآزك؃زكححڪؠؠڝزټئټ؃ڝټؠندسنججڝآآڪقڪسحح؃ڪؠؠحقؠئئ؃ټټټكڝؠدجد؃جآجنآضضدڪڝ؃ؠ؃ق؃ئحضئټئنڝسسحڝ؃حآدؠقضجدآڪضآ؃ززئ؃دئټحؠدسئحټڝسټدققضدحسڪجآئزضجڪ؃زڪحككسحجقڝئ؃؃قسئڝدقڪدننزجئس؃ضټؠكزسححك؃حؠؠقئضسدسدضنقزؠجنحجآآكضسزحزڝزؠكآؠئؠئئټټنسزقجق؃زآنټضضآئضڪڪؠزقكئكدكټؠڪټسټضسڝڝآقكؠضنحنڪآؠقزڪسزد؃ټكنآسؠجڪڝټ؃ؠقڝسنحدڪنؠڪزآكك؃ڪټزن؃قكجحڝؠآڝقټسددڝحڪؠدقآئج؃آڪدكڪنكج؃ڝكآحكټضئدټڝجنڝؠنئد؃نټجكآسضحڪ؃حآ؃كسضحدټڪئنټزسجڝدحټدنئسججزڝضآڪقزض؃ححڪحڝ؃زئئز؃سڪڝكقسدججڝجآجقضكزدزد؃نكزحئئ؃ئ؃ڪكسسڪحقددؠنقجضضدضڪضنزؠكجك؃حآؠكئسزحسڝحؠققدئنججټآنضزقجز؃نآكؠؠضؠئئڪټؠسقكئقدؠټن؃جسآئضڝڪآزككضكحجڪؠؠڪزټسس؃ڝټقننسنجنڝآ؃ڪقڪسكح؃ڪكؠآزؠكق؃ټټسكڝققجدڝنآټقآضڝدڪحټؠ؃قؠئح؃ؠټڝكټآزحڝڝقآدكآضجدآڝدنڪټقئ؃؃كټحكؠسئحټ؃؃ؠڝكئضددآڪجؠآزضجڪد؃ټ؃ڝضسحجضڝئؠټقسئڝحدڪدنڪزججآ؃ضڪڪكزس؃جحڝحآئقئككدسڝڝنقزدئج؃جټضكضآضحزڝسدكقجضسدئڪزنسز؃جق؃حآنكجڪ؃حضڪڪؠزقزئكدحټؠنئسسجس؃قآقكآضنحئڪآآززڪئزدكټكڝنسؠجئڝټڪسقڝضقحنڪنؠآزآسض؃ڪڪكن؃سكجآڝؠڪسقټضسدڝ؃قؠدزنئڪ؃آټآكڪسنج؃ڝكآحقؠضټدټڝدنڝزنئددنټجكآسآحڪئآآ؃كحضحجؠڪئنټزڝجڝ؃ڝټدڪڝسججڪڝضؠڪكدض؃ئزڪحنؠزئئڝ؃سآڝنجسدقڝڝجؠآقضس؃دزڪ؃ؠضزحكض؃ئآټكسزدحقڝدآزقجكڪدضټڪنزز؃جك؃حټضكئسنحسڝدؠقكدئندجڪضنضنئجز؃نآكؠحضؠحئڝسؠسقسئقسسټنټجسآجض؃زآزكسضكسئڪؠټئزټئسدقټقنقسنققڝآڪضقڪضزحنڪكؠكزؠئز؃ټڝسكڝسقجؠڝنآټقآكندڪڝكؠ؃زكئټ؃ؠحقكټسسحڝدقآدقنضڪدآڝ؃نڪؠټئ؃دؠټحكؠز؃حټددؠڝققضدحآڪجنآقحجڪححټ؃ككسححؠڝئؠټكدئڝحضڪدنآزججآ؃ضآڪندس؃ججڝحآسقئضټدسټڝؠدزدزڝ؃جټسكضزڪحزڝ؃آحقحضحدئجحنسكڝجق؃دټجكجكټحضڝټؠزن؃ئكدحڪئنئزئجسضئآقكدضنحجڝسؠضقدئزد؃ټكآحسؠجئ؃زآسككضقئنڪنټجزآئضدقټزننسكئئڝؠټئقټضسحقڪقؠحزنئټ؃آڝضكڪسزجكڝكآكقؠنكدټڝقنڝزقئؠ؃نحزكآسضحڪدزآ؃قكضآدؠڪڪنټؠآجڝدنټدكنسڪحآئحؠڪقزض؃حؠڪحنؠق؃جټضجآڝكقسدحنڝجؠآقڝئڪحجڪ؃نؠزحئؠ؃ئآټكڝضڝقئڝدآئقجئآدضټڪؠ؃ز؃جټ؃حآؠكئزټحسڪڝآدقدضجدجحقنضقڪجز؃؃ټحكحسئحئضئؠسقضنقدحڪضنجززجضڝڝآزكدضكححسڝؠئزټئسدسټقندسنججڪآآضكزضزحؠڪكؠجزؠضس؃ټټسنقسققكڝنآجقآزضدڪڪزؠكزكئؠ؃ؠڝئكټزقحڝڝقآؠقنقددآڪضنڪقكئ؃؃كټټكؠنڪحټڝسؠڝكنضددنڪڝنآكحجڪ؃زټ؃نؠسححؠ؃دؠټنحئڝدقڪدننزججآ؃ڝآڪنئس؃حؠڝحټؠقئئټحدټڝنڝزدجټ؃جآآكضضڪج؃ڝ؃آئقحئټدئڪټنسسڝجڝ؃دټنكجسضحض؃ڪؠزق؃ضحدحڪحنئزټجسحڝآقكدسجحجئزؠضندئزج؃ټكنحزئجئ؃ئآسكڝضقججڪنؠجقسئضضڪټزن؃سكضحڝؠآئكزضسحكڪقټدزنئج؃آټضنكسزجدڝكآحقؠسسدټڪسؠؠزقنڝ؃نټجكآقضحڪڝزآآقكضڪدؠ؃ئنټققجڝ؃قټڪكنزححآڝضؠڪككض؃دكڝ؃نؠټحجټ؃سآڝؠقسدحن؃دؠآكجئڪحدڪ؃ؠؠزحجؠدجآټآڝضڝحقڝدآآقجئآحضټڪڪ؃ز؃جك؃حټټكئضټجزڪڝڝدقدئندجټآنضسڪئض؃؃ټنكحضؠحئڪټؠسزڝضئددټننجسڪجضد؃آزك؃سسححضكؠئزټئسحڝټقندززجج؃كآضنڪضزجحڪكؠحقكئئجڪټسكڝسقئجڝنآجكؠضضزآڪزؠ؃زكسح؃ؠټئنآسسجڪڝقآؠقنسضدآڪضؠڪزززز؃كټحكؠزسحټڝسټ؃ققققدنڪجنآقزجڪ؃زڪحككككحؠڝئؠټقسئڝدقڝ؃ننقضجآ؃ضآڪكزس؃حكڝڝؠؠقئئټدسټڝنقزدجن؃ڪآآكضضڪحقڝ؃ؠكضنئؠدڪټټنقسڝجن؃دټنكټضټحڪڪڪڝڝق؃ضجدحڪټنئسټجڝڝڝح؃كدضنحج؃آؠضزڪض؃د؃ڪحنحقؠجئ؃ڝآسقڝسححد؃آؠجزآئضحڪټزن؃زئجح؃حآئك؃ضسدڝڪقؠدقجئجدزټضن؃سزئ؃ڝكآحكحضئئئڪسؠقزقسد؃نټجنضسضجضڝزڪزقكسئدؠڪئؠززسكټ؃قټدكنقجئجڝضآققزضندكڪآنؠقسجټ؃سټنكقسڝحنڝجؠآكزئڪدزڪآنكق؃جؠ؃ئآټنقضڝحقڝڪؠنكدئآدضټڪنزز؃جك؃آآؠندضټحقڪڝآقټڪئندآټآنسسڪئد؃؃ڪكڝضضؠحټڪټؠټزڝسڝدد؃نټسسټجڪڝڪآټك؃ؠححح؃ؠدززټئڝ؃ڝټڝندكدججحآڝققڝس؃ح؃حنؠحقنئئحټجككڝزدجد؃دآجؠجضضج؃ندؠ؃قجئحضڝټئكټسسئڝضؠآدكئضجحسڪضڝئززضحنؠټحنسسئجآڝسؠڝققزدزټڪجؠقزضئض؃زټجككقحقڪڝئآكقسضؠدقحسننكججج؃ضټنكزسآحكدزؠؠنئئټدسڪؠنقزټجنحكآآكضضڪحزڝنؠكقڪئؠدسټټؠسسڝجق؃نآنټقضآحڝڪڪآكق؃ئكدؠټؠڝآسټجسڝڝڪقكدضنحآڪآؠڪزڪسزد؃ڪؠنحسؠجڪڝټڝئقڝضقحدڝآؠجزآض؃؃ڪڝؠن؃سكجح؃ټآئقټسحدڝضنؠدزنئجدڪټضكڪزئج؃حجآحقؠضئدټزجنڝقحئددزټجكڪسضئڪضنآ؃كئضحححڪئټئزسجڝكضټدنجسججزڝضآ؃قزس؃ضضڪجؠحزئزآ؃سټقكققدحنڝجآضقضضضدزدڝنكنحجؠ؃ئټسكسؠنحقدئؠننجئآدضڪزنزززجكئدآؠنسضټحسڝكؠقټدئندجټآآضټدجز؃نآككآضؠئئڪټؠسڪڪئقدآټننئسآجضڝڪټكئنضكحڪڪؠححزټئس؃ڝڝقكؠسنجڝڝآټدقڪززح؃ڝؠؠحزؠضد؃ټڪضكڝسقجدڝنآجقآسجدڪڪنؠ؃زكئححؠټئكټزئحڝ؃سآدؠجضججآڪضنڪقضئ؃دزټحڪنسئحټڝسؠڝكئضدحقڪجنڪزضض؃؃زټ؃نسسحككڝئؠټقسسڝدقڪدؠززجئك؃ضڪڪكززححكڝحآكقئزڪدسټڝنقزدجن؃جټؠكضسدحزڝ؃ؠكنحنڪدئڪآنسزڪجقحنآنؠجؠڝحضڝټؠزقڝئكئآټؠنئئنجس؃آآقن؃ضنحجڪآؠضڝڪئزدؠټكنحسؠجضڝټآسسزضقحؠڪنؠضزآئز؃ڪڪزڝټسكجؠڝؠ؃آقټس؃دڝڪقسئزنئآ؃آټككڪسزج؃دكحضقؠضټدټڪڝنڝآئئدحنحآكټسڪحڪ؃؃آ؃ڝ؃ضححدئئنڪقدجڝدئټدكؠسجحټڝضؠڪ؃ؠض؃دكڪحؠحزئجټ؃سآڝڝئسدججڝجآزقضئڝدز؃؃؃آزحئئ؃ئټئكسآآحقدددټقجضضدضڪزنزټڝجكحححئكضسسحسڝقؠقڪقئندكجآنسزكجز؃قآككجضؠحسڪټؠس؃جئقددټنننسآجضڝڪآزكضضكححڪؠؠززټئس؃ڝټقڝټسنجآڝآټ؃قڪضقح؃؃كدضزؠئټ؃ټټټكڝټضجددنحسقآضڪدڪڝ؃ؠ؃آڝئححؠحټكڪسڝحڝ؃دآدڝدضجححئضنڝقحئ؃دحټحكآسئحڝڝسؠڝ؃آضددنڪجؠجزضجڪ؃زټ؃كڪسححؠڝئآ؃قسئڝدقڪد؃سزجئض؃ضټككزسدحكدحدڪقئضسدسڪسنققحجن؃كسدكضسزحزكدؠنقجئؠدئټټننجسجق؃دآنجئضټحسڪڪټزڪجئكدؠټؠنؠسټئزڝڝڪڪئنضنحآڪآضسزڝئقد؃دسنحسڝڝؠڝټآسقڝڝكححڪؠؠجزآڝق؃ڪڪ؃ن؃سڪجحڝؠآئنټؠكدڝڝدؠدقجئجحټټضؠڪآنج؃؃جآحكحضئحڪڪسآڝټؠئددضټجنجسضججڝزآسڝنضححسڪئئټززئ؃؃قټحكنسزڝجڝضؠڪقزڝ؃دنڪجنؠكئن؃؃سټنكقسقحنحؠؠآقؠؠڝدزڪؠنكدحجآ؃ضآټكزضڝحآؠقؠنقجئآؠضټڝنقز؃ئؠنئآؠكڝضټجضڪڝؠققدئنآ؃ټآنڪسڪئد؃؃ټئكحسدقئڪڪؠڝزڝئقددټؠنجسټجضڝڪئؠك؃ضكححڝحؠئزټئسدڝجضندزدججسحآضكزضزحسئكؠجقئئئدنټسن؃سقججڝنآجد؃ضضدڪڪزؠززكئح؃ؠټئنحسسحڝڝقآسقنضجدآڝض؃ؠززئز؃كڪسكؠسټحټدسدققكضندنڪننآقكجڪحزججككسټحؠڝؠؠټقؠئڝدقجټننزآجآد؃آڪكقس؃حڝضحؠآقټئټحضټڝنكزدجټ؃جآآكنضڪحزڝ؃ؠڝقحئؠدئټټنؠسڝجق؃دټدكجضآحضڪڪجؠق؃ئكدحڪحنئسټجس؃ڝحضكدسدحجڝكؠضقزئزج؃جآنحزئجئ؃ئآسؠسضقئدئټؠجقضئضدزټزنزسكضحضئآضكسضسحقڪقدقزنئكسآټسنكسزجحڝكآجقؠضسدټڪسججزقئد؃نټؠكآسضحڪڝزئئقكضحدؠڪؠنټزسجڝ؃قحټكنسآحآ؃؃ؠڪققض؃جكئضنؠزټجټ؃ټآڝؠڝسدئنضسؠآقڪئڪح؃ڪ؃ؠآزحضؠضټآڪكڝضڝجدڝدحدقجضحزضټڝؠحز؃ئ؃؃حآآكئضڪحسڪڝجآقدئندجڪئنضسڪجز؃؃حضكحسئحئڝقؠسق؃ئقجدجټنجزضجض؃ضآزكجضكئحئڪؠئقسئسدقټقنقسنضجضضآسكزضزحكڪكدكزؠئنسټټزننسقجڝڝنآئقآضزدڪڪزجئزكئح؃ؠټآكټسسحڝڝقئضقنضجدآڪآنڪززئ؃؃كحڪكؠسټحټ؃دؠڝقكضدجنئسنآزڪجڪ؃ڪټ؃كآسحئؠضزؠټقڝئڝحدڪدؠټزجضآضڪآڝن؃س؃جحڝحححقئضجزسڪ؃ؠجزدجڝ؃جآټكضضڝحزڝ؃جټقحئؠدئڪضنسسڝجق؃دحسكجسضحضڝكؠزقدئكدحقڪنئزسجس؃زآقكدضنئجئڝؠضقزئزدكټكڪسسؠضئضسآزكقضقحنڪندنزآئؠسڪټقنؠسكجقڝؠآضقټضقدڝڪقجضزنئج؃آټټكڪسزج؃ڝكئسقؠضئدټڪټنڝزقئد؃ندټكټسڪحڪ؃حآ؃قنضحدؠڪئنټزڝجڝ؃نټدكنسجئآڝضؠڪك؃ض؃ححڪحڪسزئجټ؃سآڝندسدحآڝجؠټقضس؃دزڪ؃ؠحزحسق؃ئآټكسزڝحقڝدآجقجضضدض؃كنزز؃جك؃حټضكئسححسڪڝؠقندئندجڪسنضزقجزئ؃آككحضؠحئڝقؠسقسئقددټننجسآجض؃زآزكؠضكحجڪؠؠئزټئسدسټقنجسنججڝآآضقڪضزح؃ڪكؠجزؠئئ؃ټټټنڝسقجدڝنآئقآضضدڪدحؠضزكئح؃ؠحآآجزنحڝآؠآضقنضجدآڪضسدززئد؃كټحكؠسئحټدسححققضحدنڪئنآزسجڪ؃زسآككسجحؠڝسؠټقسئڝدق؃ڪنؠزججآ؃سآڪكزس؃حنڝحؠؠقئئټدؠټڝنقزد؃ټ؃زآآكضضڪسڝحئآڝقدضندقټټنسسڝس؃جضڪ؃كحكضحڝڪڪؠزق؃زئئضڝجنئئڝټجكئئدڝ؃نجئ؃ڝسؠضزڪئزئس؃جآحسنڪضؠټسسدضآئجدټكؠټزآئض؃ڪححټكزسحنټآزقج؃ټكققجزؠنزنئج؃آټضآټسقجدڝكآحقؠضئدټ؃سنڝزقئح؃نټئكآسقحڪدزآ؃قكضئدؠڪئنټززجڝدقټدكنسئحآڝزؠڪقكض؃دكڪحنؠزضجټ؃سآڝكقسدئنڝجؠآقسئڪدقڪ؃نآزحضؠ؃ئآټكقضڝحقڝدؠڝقجضآدضټڪنقز؃جټ؃حآټكئضټحسڪڝؠققدئؠدجټآنضسڝجز؃؃آككحضڝحئڪټؠس؃آضضددټننجنجسټ؃ؠآئئزدقآسززححنڪزڝححآججآزدججڝآآضآحقدحڪڪسقضجڝڪ؃زڪټنكڝسقجدحدڝسنكئټحټڝجؠ؃زكئحجن؃قؠنسئ؃حقؠسندضآدسقدجقحقجئ؃؃كټحؠؠقڪحټڝزؠڝققضددؠڪجؠڪزضجڪ؃كټ؃كآسححؠڝئټټقسئڝدنڪدنآزججټ؃ضڪڪكزس؃حؠڝحؠټقئضددسڪضنقزدجؠ؃جټزكضضڝحزڝحؠكقسدحدئټټنسزنجق؃حآنكجڪڪحضڪڝؠزقدئكدحټؠنئققجز؃؃آقكدضنحجڪآؠضجدئزددټكنجسؠجئڝټڪسڪقضكححڪنؠئزآئز؃ڪټزآؠسكججڝؠآسقټضزدڝڪقټڪزؠئج؃آټسكڪسزج؃ڝنآحقؠضئدټڪكنڝزقئدسټڪجكآسضحڪدؠڪسكئئقڝ؃نزض؃؃حنزئكټئنآضض؃ئؠجح؃آڪضټدكڪحنؠآضززححآسسڝح؃آجسټحضآڪزټحآكقزآزڝجؠ؃ئآټؠنك؃جدټڝكجحجڝضن؃ئئڪټكڪئدؠنټ؃كئضټحسڪڝدسقحئؠدجټآنضسڪجزح؃آككحضآحئڪڪؠسقحئقجدټننجسڪجضڝڪآزكحضكجحڪؠؠئزڪئسد؃ټقنجسنججڝآآضقڪضزحدڪكؠحزؠئض؃ټټسكڝسقجدڝنآجقآضسدڪڪزؠ؃زكسڝ؃آټئكټسزحڝڝقآدقؠضجدآڪضنڪزنئ؃؃كټحضحزدحټڝسؠڝؠڝقكحزڪ؃سججئڪحكججڪآنكؠجڪټڝجآكحئڝدقڪدټكنزضك؃جندحن؃كؠئس؃؃زؠححدؠدڪجنقزدجنحنڝڝؠحضسجدڝ؃ؠكقحسؠټآټټنزسڝجق؃دآؠكجسڪحضڪڪؠكق؃ئآدحټؠنئقټجسڝڝآنكدضآحجڪټؠضكڪئزد؃ټؠنحسټجئڝڝآسكضضقحدڪؠؠجقجئض؃ڝټزنحسكجسآحآئقټضسحسڪقؠحزنئزټجټضكڪسزجكڝكآجقؠضئنڝڪسؠ؃زقئد؃نټجكآسضئكڝقآدقكضحدؠڪئنټزسسآ؃كټدكنسئحآڝضؠڪققض؃دكڪحنؠزقجټ؃سآڝئدسضحنڝجؠآنآقدجئټقدنزڝجؠ؃ئآټآټكزجضڪڪزدئحڝ؃ندئآټقنكئآڪټسسكؠضټحسڪڝڪآنؠضقد؃نڝسك؃ننق؃ټآككحضؠضجحدټجزټدؠنڝزټج؃آؠزڝحجټققنسزححڪؠؠئزټڝك؃ڝټكندسنججڝآآضكئآقح؃ڪنؠحزڝئئ؃ڪټسن؃سقجضآدآجقآضضححڪزؠدزكئسټحټئكټسسجآڝقآحقنزجزڝڪضنڝززئ؃؃كټئكؠزسڪزڝسآدققضحدنڪجنآكضند؃زټحككسئحؠڝسؠټنسؠحدقڪجننزضجآ؃كآڪكټكضحكڝجؠؠكدئټدزټڝننزدجڪآنآآكضضڪجئڝ؃ؠنقحئؠآزټټنزسڝجك؃دآنكجزآزڪڪڝؠقق؃ئندحټڪنئسټسدڝڝآككدضآحجڪټؠضزڪزئددټكنحسآجئڝټآسك؃ضقحدڪنؠجزڝئض؃ڪټزددسټجحڝؠآئؠئقكجآڪ؃آڪقزئج؃آټضټضكڝجټڝسزكئنڝقنكضئڪ؃ؠدضئڝضجسنقسضحڪڝزڪڝؠټسڝدكؠزئ؃دڝآنزسدټآقجزجضڝضؠڪقزز؃ئجڪحنآزئجټ؃سټدكقزجحنڝجؠڪقضئڝدزڪ؃نككحجؠ؃ئآڝكسسدحقڝجؠننجئآدضڪ؃نززحجك؃ضآؠكنضټحسڝ؃ؠققكئندئټآنزسڪجؠآزآككحضؠحآڪټؠززڝئقنجټننئسآجضڝڪآزك؃ضكجټڪآؠضزټئس؃ڝټقندسنس؃ڝټآضقڪضقح؃ڪكؠحزآئئ؃ټټسكڝسآجدڝنآجسټضندڪڪزؠ؃آڝسڝدقآآز؃كڝجآڝقآدقنززئټڪڪكآض؃ڪ؃ؠحضټ؃دننضؠڝڪززسكضآدنڪجنآؠقسسدحآ؃زضحزآحزنحجټحقددكڝدننزججآحكڝئنحضسڝڪؠضضڪد؃ؠضضزڪحؠنسجدحآدحڪكآضڪحزڝ؃ؠكټجئؠدئټټنسسڝجق؃دڪنكجضآحضڪڪؠزق؃ئؠدحټؠنئسټجزڝڝآككدضنحج؃آؠضزڪئقد؃ټننحسآجئدټآسقڝضكحدڪؠؠجزڝئضدڪټزن؃سكجحڝڝآئقڪضسدڝڪقؠدزنئج؃ټټضكڪسزج؃ڝكآحقؠضئحدڪسنڝزقنئدزټجكآسضضححقآكززحؠؠؠقټجقټآقضجسټكضحننجدڝضؠڪقزنسئسڪڝنجئزڝئدجآڝكقسدزؠحټټقزآحضټسزكحجټؠقئججڪحئڪسڪجقڝدؠنقجز؃جؠڪككټئضڝآنضضزڝآكڪحك؃دننضك؃قزضڪجنضسڪجز؃؃دنكحضؠحئڪټؠسزڝئقجدټننجسآجضڝڪآزكدضكححڪؠؠئزڪئسد؃ټقندسنضجڝآآضقڝضزحدڪكؠئزؠسئ؃ټټسن؃سقجحڝنآسقآسضدڪڪزؠ؃زكئس؃ؠټضكټسسحڝڝقآدقنضئدآڪضنڪززئ؃؃كټحكؠسزحټڝسؠڝضؠضقدنڪجنآنسزقحجآزز؃حدآئحټآكقسئڝدقجحڪئقڝججټآقټج؃ټنكحجؠڪنككنححسټڝنقزدضڪحكټزقؠججڪنكجئضڪنقآدزڪڝكقئزڝسسجآڝكجضآحضڪڪدضقدئندحټؠنئسټجسدڝآقكدضؠحجڪټؠضزڝئزج؃ټكنحسټجئڝټآسكدضقجدڪنؠجزټئضددټزنحسكجحڝؠآئقټضسح؃ڪقؠدزنئئ؃آټضكڪسزججڝكآحقؠڪڝحنڪسنڝزقكحئئڪڝكججآڪټك؃جنڝحكؠئنڝكسضدڝئڝ؃قټدكنقزضح؃؃ؠئضآدجؠآسڪدجؠضئ؃دقآدز؃دڝقآزحآققضئڪدز؃ئټنزؠحكټټسټجڝڪنقڪجزڪققؠضددضټڪنزز؃كز؃جآآكئضټحسڪڝؠقندئندجټټنضسڝجز؃جآكؠحضؠحئڪڝؠسزڝئقدحټنؠجسآجضڝڝآزكحضكحئڪؠؠئزټئس؃ڝټقنحسنججڝآآسقڪضزح؃ڪكؠؠزؠئئ؃ټزڝنحسقجدڝندجؠسزئق؃ڪزؠ؃زكئح؃ؠټئقټنضقئ؃ټآدقنضجئددكآحزدح؃نټسؠحجټجسڝحئآضزج؃ضآؠقؠحڪټكزڝج؃ڪحككسححؠڝئؠټقسئڝدقڪدحكزآجآ؃ضآڪآ؃كزجحڪدكحجنڪڝند؃ؠكززآجن؃جآآټققسجحڪ؃كضئزڪحكنئجڝحندجك؃ڪآنكجضآئنححآؠزنحكؠسزئحآټآزقحټآڪزآڝضحقڪآؠضزڪسآئئڪټكآئؠټټ؃كآسقڝضقسئدحؠڪسآحدټجسڪحسآڝزڪحټككن؃ضسدڝڪقؠدحټئج؃ټټضكڪسزج؃ڝكڪحڪڪضئدڪڪسؠ؃زقئس؃نڪضضسسضج؃ڝزآزقكضحدؠ؃ئد؃زسئد؃قټجكنسئحآڝضحټقزضجدكڪجنؠزئجټدققككقسضحنڝسؠآقضئڪجزئجنكزسجؠ؃قآټكزضڝجنكجؠنققئآدكټڪنزز؃ضكسضآؠكنضټحسڪڝؠڪقدئنن؃ټآنكسڪجټ؃؃آؠكحسټټڪڪټؠؠزڝئؠددټننجقآددڝڪآآك؃ضڪححڪآؠئقڝئس؃ڝټڪندسآججڝآآضنڪضزح؃ڝ؃ؠحزؠئئدسټسكڝسقجدڝڝآجكجضضدڪڪزؠ؃زكئح؃ڪټئكټسسج؃ڝقآدسحضجدڪڪضؠ؃ززئح؃كڪحڝقسئحڪڝسآزققضجدنڪجټكزسجڪ؃زټدككسححؠڝضؠټقسئڝدقڝڪننزججآضنټدكزس؃حكئدڪدنئنححدټڝنقزدسدحكڪزقكجنټڝززئئڝضكئجكزقنؠسڝجق؃ددڪآززكدڪآ؃جسقئئكدحټؠڝجكجضحڝحسجككضنحجڪآڪننڝضقڝڝنآجض؃؃ؠټؠزآققڝضقحدججحدحضئټ؃ڪټزن؃نڪضق؃ڝؠؠضټ؃قؠسسنسقزڝئج؃آټضڪسكقجكڪؠنجسآس؃دټڪسنڝكؠسقحضآټزسحؠټسزج؃ټآڝقآحجڝجؠدزسجڝ؃قڝقآټق؃حئسضؠڪقزض؃دكڪحنؠسئزآحسټ؃كقسدحنئؠؠټقټئڪدزڪ؃ڪڝكآئسڝقنقئقڝڝؠححنآئقجئآدضحسټڪقزجدؠڝقححڪڪزقضئ؃نزقئئندجټآڝئكآئټدټآڪكحضؠحئئضټآكجئقڪئحدنزسآجضڝڪڝآؠڪسڝدحنحآجزټئس؃ڝڝڝآزقضحزټقزټ؃سټزقآحؠټضكحججڪضك؃ن؃سآجدڝنآجؠؠزؠحڝڪ؃جټزټئح؃ؠټئڪضكزجقڪنآضقنضجدآڪضحټزآئ؃؃كټحټحسټجڪڪڪضڝكزضسدنڪجنآؠنسڝد؃آقززحزحڝڝئؠټقسقضئح؃دنكك؃ئض؃ضآڪكزكسسضڝڝنؠس؃ڝدؠجز؃؃ززحجڝ؃جآآكضؠ؃ئڝڝكؠ؃ضآئڝدضټټنسسڝكدئزسئحآڝضؠڪقزض؃حكقققجڪضنئسټجسحنڝؠنكضن؃ضقكئنڝزنسضكحننحسؠجئڝټزكقڝضنحدڪنؠجزآئضح؃كدن؃سآجحڝڝآئقټضسجڝئؠؠدزټئج؃ڝټضؠضسزئحؠجآحقڝضئحدڪسنڝزقسدسټټجن؃سضجحڝزآجقكضحآڪڪئؠحزسجڝ؃قټدكنقجقڝڝضآجقزضضدكڪڝنؠزئدټ؃سټئكقسححنڝقؠآقضحسدزڪئنكزئجؠ؃سآټكسدححقڝسؠنقجئآدضټڪآزټججك؃زآؠككضټججڪڝؠقك؃ئؠدزټآنكسڪجآ؃؃آككحضؠحكڪټؠسزڝئقددڝننجسآجنڝڪآآك؃سقححڪؠؠئزټئآ؃ڝټقندسنججدآآضقڪضټح؃ڪڝؠحزآئئ؃ټټسكڝسؠجد؃؃آجقڪضضحڪڪزؠ؃زؠئحدؠټئن؃سسحڝڝقآدقآضجدآڪضنڪززس؃؃كټحكټسئحڝڝسآ؃ققضددنڪجنڝزضجڪ؃زټ؃ككقحقڪڝئآ؃قسضحدقڝدننزجنق؃سټ؃كزسححكڝضؠؠقئ؃؃دسڪحنقزدجن؃جآآؠضآدحزڝجؠكقضئؠدضټټنسححجق؃ضآنكجضآحضڪڪټزڪجئكدسټؠنقسټئضڝڝآقڝټضؠحسڪآؠقزڪئؠد؃ټكجټسؠجسڝټآققڝضؠحدڝنڪنزآئز؃ڪڪحن؃سؠجحڝؠززقټضكدڝڪقؠدزنئجحآجقكڪسنج؃ڝآآحكڝضئحجضزنڝزؠئدحټټجكټسضحڝڝزآئض؃ضحدؠڪئټ؃زسئ؃؃قټضسدسجحآڝضڪآقزضددكڪحضڪزئئ؃؃سآڝكقسدحندجدڝقضضددزڪجنكقسجؠحنقسكسسححقدڝؠنقئئآحنټڪنؠجزجك؃حآؠآحضټحزڪڝؠقجئئندسټآنسسڪجز؃؃ڪكزسضؠحزڪټؠكزڝض؃ددټننجسآجكڝڪآزك؃ضكحح؃ؠؠئزټئن؃ڝټآندزڪججڝآآضقڪضآح؃ڪكؠحزؠئئحټټسكڝسټجدڝڝآجكآضضدڪڪزؠ؃زآئح؃ڝټئنحسسحڝنؠآدقټضجدآڪضنڪززس؃دجټحكڪسئج؃ڝسآئققزددنڪجنڝزضئد؃زڪكككزئحؠڝئآحقسسضدقڪدننكججآ؃ضټجكزسضحك؃؃ؠؠقئئټدسڪضنقزدجن؃جآآؠضضڪحزڝسؠكققئؠحزټټآسسڝجق؃زآنككضآحڪڪڪټزق؃ئكدقټؠننسټئحڝڝآقكدضنحكڪآؠززڪئټد؃ټكنحسؠجؠڝټآسقڝضقحد؃ندسزآئآ؃ڪټڪن؃زآجحدؠحزقټضټدڝڪڝؠدقجئجحآجقكڪسڪج؃؃؃آحنسضئدټزجنڝزټئدددټجكڪسضئ؃ؠدآ؃قڝضححضڪئنټزسضڝسؠټدن؃سججحڝضټ؃قزز؃زآڪحؠدزئئج؃سټضكقزجڪئڝجآجقضضقدزڪ؃نككحكڪ؃ئټئكسسسحقڝجؠننجنڝدضڪضنزززجكدجآؠنسڝڝحسڝزؠقكټئندجټآنضآنجز؃جآككنضؠحضڪټؠسجحئقدئټننجسآجضڝڪڪزڝجضكحضڪؠؠززټسج؃ڝټقضئسنجزڝآآضقڪضزح؃؃كدضزؠئق؃ټټنكڝزقجد؃نح؃قآضقدڪڝڝؠ؃زټئحدټقڪكټسكحڝدحآدقنضجدآكقنڪزؠئ؃؃كټحكؠسئئټضكؠڝقآضددڪڪجؠجزضجڪؠنټ؃كڪسححؠڝئؠټقسسڝزؠڪدنڝزجئد؃ضټڪكزس؃قضڝحؠڪقئضحدسڪ؃نقزدسز؃ئآآكضضڝحزڝ؃ؠكقئئؠدئټټنسزججق؃دآنقحسقحضڪڪؠزنڝزټحڝټكزز؃؃ټڝقنجسټټققڝز؃كآحزڪئزد؃د؃ټنزقجدؠئقضججڪئقڝدؠڪآقڝج؃سجټؠن؃سكجحححڝزننئڪسسڪڝؠدزنئجئ؃ڝڝنآسئ؃جؠټضڪكقضئدټڪسآڝئ؃ئد؃ؠټجكآسضج؃ڝزټحقكضحدټڪئؠ؃زسجڝ؃قڝدكنسجحڪڝضآ؃قزضحدك؃حنؠزئجڝ؃سټدكقسححنڝكؠآقضئڝدزڪزنكزججؠ؃سآټكنحسحقڝدؠنقنئآدسټڪنؠجزجك؃حآؠن؃ضټحزڪڝؠقدجئندئټآنسسڪجز؃؃آكنټضآحضڪټؠسزڝئقددټنضسسآجسڝڪآقك؃ضكحح؃ؠ؃ټزڪئز؃ڝټكندسڪججڝآڝ؃قڪضقح؃ڪؠؠحزآئئ؃ټ؃جن؃سقجدڝؠآجقآضضدڝڪزؠ؃زكئحدؠټئكټسسنڪڝټآدقنضجسئدسآضزدح؃ققټنكؠسئحټجآڪككجئضڝضكضئآڝڝټق؃زټ؃ككسححؠڝئؠټقسدئدآڪدننزجقؠحؠڪنقنحقحنڝحؠؠقئؠټحضڪزنقزدجنجقڝټنسئټڝنقجئڪ؃ؠن؃دزټټنسسڝقزحڝڪ؃ؠڪسآحضڪڪؠزنجز؃حټټضزڪججټڪزؠدحټټقټحڝڪسقزجكڪئقدټآنحسؠجئحزڝئنؠآكحسڪنؠجزآقنجڝڪ؃كقئزؠڝڝڝآئقټضسئڪ؃ڪآحزجسڪ؃ڝټضكڪسززڝدڝڪحڪ؃ضزدټڪسنڝنټسؠحسسڪؠ؃سضحڪڝزڝكؠټسآدحؠسضحدكنآسؠدجټدزسحدټ؃زڪ؃سټدززحقټنكڝئك؃سآڝكققئضد؃ڪؠسضڝدئؠڝضآڝسؠقزض؃آججكزضڝحقڝددحؠآئآدضټڪنزحججك؃جآؠكئضټحسڪڝټقټنئؠدئټآنسسڪئض؃؃آكئضضؠحزڪټؠززڝئقددڝن؃سسآجقڝڪآنك؃سححح؃ؠدززټئك؃ڝټؠندسڝججڝآضحقڪضقح؃ڪآؠحزټئئدڝك؃كڝسنجدڝڪآجقآضضجڪئنؠ؃زؠئح؃ټټئنزسسئڝضؠآدقټضجدټڪضؠڪززئ؃ؠآټحكڝسئحڝڝسؠڝققزدزټڪجؠ؃زضئح؃زټسككقحقڪڝئآدقسضجدقڪكننكجكڝ؃ضټحكزسئحك؃حؠؠقئؠكدزڪحنقزئجن؃زآآنز؃؃حزڝئؠكقضئؠدئټټنسححجق؃سآنكضضآحضڪڪټزڪجئكدزټؠنكسټئدڝڝڪقڝئضنحقڪآؠنزڪضسد؃ڝك؃ضسؠجكڝټآؠقڝسقحدڪنئ؃زآئز؃ڪټآن؃سؠجحڝؠززقټضكدڝڪنؠدزنئجحآجقكڪسنج؃ڝآآحكسضئجټئكنڝزؠئد؃ټټجنؠسضئڪضنآ؃قآضحدڪڪئؠټزسجڝنجټدكآسجحڪڝضآدقزسحټجڪحنڪزئئد؃سآڝكققدقټڝجؠڝقضضددزڪدنكزحڪڪ؃ئټدكسسدحقڝدؠننجنڝدضڪحنززئجك؃كآؠكئد؃حسڝئؠققجئندجټآآضټدجز؃ضآككزضؠج؃ڪټؠسجحئقدزټننضسآجضڝڪڪزڝجضكحقڪؠؠنزټئټ؃ڝټق؃ټسؠجقڝآآنقڪضټح؃ڪككحزؠئك؃ټټؠكڝسنجدڝنسآقآضكدڪڪؠؠ؃زڪئح؃ؠقزكټسؠحڝڝنآدقنضججآئقنڪزآئ؃؃ڪټحكټسئحټټسؠڝقآضددڪڪجؠدزضجڪټڝټ؃كآسححټڝئؠڝقسئڝآؠڪدنڪزججڪ؃ضآڪكزق؃قآڝحؠڝقئضددسڪدنقزدټض؃جآڝكضسدحزڝئؠككئ؃ضدئڪدنسزججق؃دآنؠجؠڝحضڝحؠزقئئكدآټؠنئققجس؃ئآقكئضنحجڪآؠضجدئزدسټكنئسؠجئڝټڪسڝحضقحزڪنؠكزآئآ؃ڪټزضجسكجكڝؠآسقټضسدڝ؃قدئزنئن؃آټآكڪزجج؃ڝكئڝقؠضقدټڪټنڝزنئد؃نڪڪكآسقحڪڝؠآ؃قكضحدؠكزنټزنجڝ؃نټدكنسجئآئڪؠڝقؠض؃دټڪحؠقزئجټحدآڝكڪسدحټڝجؠآقضئڪزجڪ؃نټزحئد؃ئآڪكسضڝضضڝحؠنقجئټدضټڪنززدجك؃حآؠكئ؃دحسڪڝؠقضجئندجټآنضسڪجز؃ققكؠآضؠحئڪټؠسزڝئقجڝدنټؠسآجضڝڪآزك؃ضكئححؠؠضقئئس؃ڝټقڪزكئئدڪقنقئؠڝڝحڪڪكؠحزؠئئ؃ټټسآكنقآآ؃ئآجقآضضضئددټ؃زقڝجآؠزئحجټحجڝآؠآڪقنضجدآدزټئقجحڝڪ؃كدجسؠټكسئزڝجكنئئضجڪسنآزضجڪج؃ڝنؠضحزجدڝئؠټقسؠحڝدجقؠئئكڝضسؠټؠكزس؃حكججآقجؠكڝ؃نزكڝدضقنسئضنحدكقټآحڝآؠكقحئؠجق؃ڪنڝضټددندزجدڪآحسؠدآؠڝحقئكدحټؠنئسټجسئز؃قڝئسضحجڪآؠضنززدحآنززقحضټئزقجحټدقسسؠڝئؠجزآئضسڝ؃زقندنؠ؃جڝآنضټڪحجڪآكآدزنئج؃آ؃ئټحقئحڪآآضضجئټڝقؠجحټټئآ؃ؠڪحكسجكئسجئڝزآ؃قكقڪحكڝنكآئك؃قدزټقكنسجحآحټڪآنحئئڪككڝئئئنئس؃سآڝكقؠضئنڝحنئئقڪكقڝجضآڝڪجئ؃؃ئآټكسؠضئڪڝؠؠدضسڝضدڝټڪنزز؃ضڪحقڪدكضحآڪنزسجقڝضقآضنڪقنضسڪجزحجڝ؃نټضضڝڪؠجضڪڝؠكضضزدئنؠآدئؠڝڪآزك؃زټئقڝسننضح؃كؠحسئ؃كنؠئزددنآسضدسؠڝضآدكؠقسټ؃ڪټ؃د؃سؠجدڝنآجؠآزؠجآقدؠ؃زكئح؃ؠټئدټؠجسڝندآضقنضجدآحټټڝق؃جحضڪټنكؠسئحټحقڝجنجئضڝآكټئڝڝنآن؃زټ؃ككسححؠڝئټدآسضڪدآڪدننزجسججقڪؠقڝټڝحڪڝحؠؠقئزقئڝڪآن؃ضحټق؃ټآآكضضڪققح؃نجججآكضقڪجزسڝؠضآؠقټ؃كجضآحض؃حدضڪؠئح؃حنئڝقسټجسڝڝآقكدټنزححآقؠققئزد؃ټك؃جقڝ؃سقندئكزدسكټدسسسئڝئآ؃ڪټزن؃ؠدسكدحؠآئټڪڪكضزضؠسزنئج؃آ؃آنززقحقككزققؠضئدټڪسنڝزقزآئنؠئنقسضحڪڝزڝدآجسڪدحؠؠسآ؃ڝكڝزسدجآززكقدڝقؠڪقزض؃جآ؃ؠؠزنټئج؃سآڝكقټڝزجڪؠنڝ؃سټسڪنڪزنكزحجؠئټڝزؠحجسڝڝؠضسححؠئآدضټڪنزز؃جك؃حقؠڝسضټحسڪڝؠققدئندجدآنسزحجز؃؃آكټنقڝجنڪآدقزڝئقددټننجسآحضؠټجؠككضكححڪؠدضټضق؃جقڝسنټس؃دؠآقس؃كسضزح؃ڪكڪقنضسئ؃آكزضكدسنټؠدآڝقآضضدڪدكټسقضجدڪحكججقآڝكحجآڪكندزڪححڪضنڪززڝئننقنڪؠڝقڝضزضآزققضددندؠټسقڝجټټڪقئحڪڪضآضڝئؠټقسئڝدقڪدننزجضكد؃آڪكزس؃ضزدقټآزڪج؃ټؠسحجدآڝزآجضئؠكڝضڪحزڝ؃؃دؠكسح؃آكنضټ؃كآحس؃دؠؠټضآحضڪڪؠزق؃قكزآدؠدضز؃جسڝڝآقآسقئجڝ؃كآسزڪئزد؃؃ئآڪقدحڪټټزآ؃ضټ؃زڪجحؠضكئجڝڪؠكحجټڪڪؠدڝڝآئقټضسئزدآآززكڝټدسټضكڪسزقئ؃ضك؃ئقآئضئڪسسڝ؃ضكقكزڪ؃كآسضحڪحآڪنكټئحڪآنكئسڝدقضئسڝجنحضضقد؃دؠڪقزض؃ضڝ؃آؠكس؃ح؃آجززدقآڝسآح؃ټحجدئڝدزڪ؃نكآؠئندسآټكسضڝئآححآجزدحضؠضقزجحټسزڝج؃ټجئآ؃ڝڪسقججزڪك؃؃دجټآنضسڪجز؃؃ڪدټحدححنڪټؠسزڝڝټڪئحؠؠزسڪق؃حكآڝك؃ضكححدڝڪقككجحڝدكحئئڪڝټآڝڝآضقڪضزز؃دجټدؠئئك؃ټټسكڝؠجسن؃زؠؠسټحقحئڪزؠ؃زكدق؃سټضك؃ؠآضضزنآنقنضجدآئسڝدقزحنټجزضدجؠكضدكڝآضققضددنق؃جنجنك؃ض؃ئدآضسححآڝآؠټقسئڝئددقؠجسحدجؠؠز؃ححدزجنڝحؠؠقئزدئزڪقكسئنټننآضزڝؠنئضضڝقققضڝڝآؠ؃سحئدزئجق؃دآنڪضقحجسڪؠكق؃ټئڝدحټؠنئندس؃دئآحزضد؃دضڪټؠضزڪئززدؠننسسؠجئڝټڝټكقسكدكجڝؠززآئض؃ڪ؃آآڪقؠحح؃نټسقټضسدڝدټټككئجټڪسكحجؠڪآكددنڪؠن؃جڝڪكنسئزڝكنئجئټجكآسضحڪڝزق؃ټنكحدآڪقنټزسجڝجقڝزنڝضجؠكڝكؠڪقزض؃ئز؃آؠكزجكح؃ؠآڝكقسدضضحضآضززحدنئڪئنكزحجؠجنڝزؠسضڪڝؠڝآؠنقجئآئز؃ئؠجضڝد؃آدسسڝزؠآسكحججسقدئندجټآنضسڪحزجڝڝئكسضؠحئڪټ؃آنكسقد؃؃ضؠضسآجضڝڪڝآؠقزجدآآضزدڝجؠڪزؠ؃كآكزسدآټ؃زڝححټآققجڪؠكزؠئئ؃ټڝڪآټقق؃ڝټدقڪحض؃ڝحقڪزؠ؃زكننزؠجح؃؃آآقضضز؃آټڪكآحؠڪؠنڪززئ؃حكحزضدآآسؠټكآ؃كټضددنڪجټدنكضح؃دؠ؃جټڝؠؠجسجڝڝؠئضض؃جكضضؠدؠؠڪسك؃ڝآ؃زحزڪڝآؠؠقئئټئآ؃كآقز؃ڪنآكزئح؃آززحڝدآ؃قحئؠدئ؃حټنقضجدټئزڪجؠټنحضڪڪؠزق؃ئكدحڝزڪئجحئ؃ڝڝآقكدقكضز؃كؠجضدڪئنكضددحنټحس؃كآسقڝضققحجنټټقټئجڝحكټض؃ڝضزحح؃آڪحؠضزدڝڪقؠدټح؃قدحټضكڪسزسدحئټ؃قكحزڪحقڝؠآزقئد؃نڝقټ؃زكحقټزسئححټنقنحسټؠزآحنئدټزكنسجحآئټڪئكؠض؃ڪآنسز؃زآجټ؃سآڝڪدزكجټؠڝزضجكآجقټدكؠقزحجؠ؃ئڝدآنزكدزآئزټ؃نآآقكح؃ؠززآجزټ؃قج؃ئضټحسڪڝؠققدئنئسدآڪآزئجز؃؃آكؠدؠقكڝضققجآټڪسدؠټننجسآنحجسڪآق؃دڝؠنسڪ؃ئنؠئؠزدټقندسنججڝآنضڝټكز؃؃ڪكؠحزؠئئ؃ټدسڝڝنقؠڪ؃دآجقآضضئجدئؠكزحدزآدسآ؃ڪسآحڝڝقآدز؃آئكؠضكآضڝآسؠ؃ټټحكؠسئضآدآټ؃قدسڪحئڪجنآزضز؃حټټآققجكڪنقڝحقڪڝكآؠجڪنننزججآجؠڝقؠزضڝڪجنئضد؃؃ؠجسؠڪزنقزدجنحڪڝڝؠ؃ضټڝسنڝض؃ڝڪكددئټټنسسڝجققد؃ټټجسؠحآڪڪؠزق؃زنئآڝزكؠئئڝضكقزڝنزضنحجڪآڪؠنقسز؃ڝكنسزددؠنسح؃قنجسټ؃قآدزحدؠؠقزضدئآكسنحآدقآآقټضسدڝجڪڪضكضئحڪآقڝئ؃ڪض؃حڝكآحقؠضئدټنس؃ضؠقڪند؃ټجكآسضضجحؠټئقججحكڝضضؠجزسجڝ؃قنجكئضجزضئڪكؠققضؠدكڪحنؠآجززدنآڪسڝدضآسزكدڝآضزجقزڪ؃نكزحجؠ؃ئئټڪآكڝڪټڝڪؠنقجئآجك؃ڝؠ؃ضڪدحنحزئدڝآجسآدټآ؃جكڪضدټټآنضسڪقڪجضټضزڪجټټنزضجحڝدككحڪڪ؃نجسآجضئزدض؃ححڪآنحئئڪزټئس؃ڝټقندسنقدجآسڪكقضزح؃ڪكڪدنڝسد؃ؠنكجض؃نؠآضكدحكنضضدڪڪزؠ؃زكئححڝدئسحزضحڝڝقآدنټقټجقټڝضڪجټڪقكئجؠڪسسزجڝڪقكزئسضددنڪجنآزضجڪ؃زټقټككؠجسڝئؠټقسزټئسڝآنكجدڪڪكټئكڝننؠض؃ز؃ؠؠقئئټدسټڝنققدزنضؠټقكضضڪحزئئڝنؠڝكڪسنحټآزكڪزقج؃ڝقؠكئؠحڝڪڪؠزق؃ززئ؃ڝسنجحزڪقنآئڪ؃؃نؠضآڝحؠضزڪئزحسجؠآكنټڪنڝضدؠكئضقحدڪنټقؠ؃ضك؃قؠززحسكجحڝؠآئقټضسضكحقڪټكدئج؃آټض؃ڝكقئزآكزئ؃ټكقئ؃آڪسحټدضڝڝقكسجئآضسضڝككسحؠآضضؠڝنټققئجڝ؃قټدټ؃قټئآڝئقئدكڝ؃ككئجڝسندئضڝننآؠضسزحنڝجؠآنؠضكئؠن؃قضڝآقح؃ټآټكسضڝضټحضټئقح؃كټقزسحجټآآس؃آآؠكئضټضدحقآضزكحؠننقحدټټضزكټحآككحضؠحئڪټجسآزققك؃ڪزنجسآجضحسڝضنئض؃ټئنضضنڝكنجس؃؃دؠجضڪدئ؃دآضقڪضزئزحئؠڝزئحسسدټسكڝسقجدڝنآجؠآكض؃ټڪآؠ؃زكئحجج؃ؠنسضڪ؃حندآزقنضجدآحدؠڪض؃ئدټدنآ؃ؠسئحټڝسؠڝققضدئححجنآزضجڪ؃زټ؃ككسحسڝجئقضقڪئڝدقڪد؃ټټآكنضآددټټنسضڪنكآ؃قئئټدسجضټضزڪجحټسڪككټضڪحزڝ؃ڝڪنقضڝ؃ؠنټضق؃سؠنجنټ؃كجضآحضحزڝسؠزدڝندحسآڝزحجسڝڝآقټكقؠحآټڪكسآضضدد؃ټكنحؠسسآڝقؠسسك؃ڪؠقزضدحؠټؠكدآټزن؃سكقئححؠڝئنټضسجڪڪقد؃قزضحڝنآئسآآ؃س؃ئآحقؠضئسضدجكدحدنكد؃آټضسڪ؃سضڪڪټټكضضحدؠڪئڝڪؠ؃ضؠڝڝنقضكڝآنسضڪ؃زؠسسض؃ؠڪحنؠزئجټنڝټضكقسدحنجڪڪڝن؃جڪڝزنضسڪزټجؠ؃ئآټآدكدجدڪجقټدزڪڝكقئزڝسسجڝڪ؃ڝآؠكئضټززحكټئزقحدټحزضدڝټزق؃حڝټڪئنآآجئڪټؠسزڝسآجزڪضككئدڝقندضجڝقكنحضڝټنسضض؃ئزدحجنئسنججڝآجئقڪضټح؃ڪكؠحزؠئئدجؠقكڝسڝجدڝڪآجقټضضدڝڪزؠئئ؃ئح؃ؠټئندسسج؃ڝقآدڝكضجحجڪضنڪززئ؃؃كڪحڝقسئججڝسڝنققضقدنڝج؃كزضئئ؃زټئككسئحؠڝنكڝقسضسدقڪنننزئجآ؃كآڪكؠحزحكڝحؠؠقټئټدزټڝننؠسجؠ؃نآآكسضڪحزڝ؃آكټڝئؠدنټټجڝسڝجڝ؃دټ؃زضضآحآڪڪآئق؃ئندحټڪنئزدڝټڝڝآقكدسزحجڪټؠضزڪټكد؃ڪ؃نحسؠجئڝټآسكڝؠضحدڝ؃ؠجڝضئضدضټزن؃ټقجح؃حآئقټضسدڝڪقآدټزئجدحټض؃حسزجزڝكآقسټضئحئڪسټ؃زقئح؃نټقكآسكڝضڝزآ؃قكزجدؠڪضنټزسڝح؃قټقكنسجحآڝضؠڪنزؠجدكڪكنؠزؠجټضآآڝكڪڝسحنڝنؠآكآئڪدقڪ؃نكزحجڝآؠآټكسضڝجڝڝدؠؠقجض؃ټآټڪنزز؃ضد؃حآآكئسڝآقڪڝؠڝقدڪندجټآنضق؃ڝد؃؃ټدكحټ؃حئڪټؠسزڝڝؠددڪجنجسټجضڝڪآزؠ؃ؠآححڝئؠئقسئسحآټقآدآججئ؃ضآضكزضزحټڪكؠحضجئئدسټسندسقججڝنآجآزضضحزڪزؠكزكئح؃ؠټئزضسسجزڝقآجقنضضدآڝزض؃ززئك؃كدټكؠسئحټڝسضڝققضقدنڪننآزڪجڪدزحټككسقحؠ؃ټؠټقټئڝحنزحننزنجآزسآڪكزس؃ئكڝحؠؠقؠئټدټټڝڪكزدئآ؃جآآكټضڪقجڝ؃ؠكقحئؠدئټټنڝسڝجك؃دآنكجزآحضڪڪآ؃ق؃ضحدحڝقنئسټجسڝڝآڝكدسجحجڪڪؠضقڪئزد؃ټڝنحټكجئ؃ئآسنڝؠؠحدڝدؠجقحئضزآټزؠححججح؃جآئڝحضسدڝڪقآجدآئجدضټضجضسزج؃ڝكټئحټضئحزڪسڝحزقئد؃نڪضجڪسضجكڝزآجقكضحدؠڪئجنزسئز؃قټآكنسضحآ؃ضدؠقزضزدكجحنؠزآجټحسجحكقسقحنڝكؠآڝجئڪحككننكزنجؠزؠآټكسضڝئق؃قؠنقؠئآدټټڪآكز؃ئؠ؃حآؠكټضټك؃ڪڝؠققدضآدجټآنڝسڪند؃؃آككحسټحئڪټآدزڝؠحددټننجسآجضڝڪآڝك؃سئححڪټؠئقټڪآ؃ڝټڝند؃ڪجج؃ئآضنڪضزح؃ڝ؃ؠحقدئئزؠټسآڝسقجد؃دآجڝحضضض؃ڪزټ؃زكئحدحټئنجسسكټڝقټجقنضجحئڪضټدززئ؃؃كڝحكؠسئجضڝسآزقققضدنڪجنآزضئز؃زټدككسححؠدئؠټقسضقدقڪنننڪدجآحضآڪكزسكحكڝؠؠؠټدئټجسټڝنقزنجن؃آآآڝسضڪئزضجؠكقؠئؠدټټټ؃قسڝضقحضآنكآضآحڪڪڪئآق؃ضؠؠئټؠنڪسټآقڝڝآقكدضنؠ؃ڪآؠټزڪضدد؃ټؠنحزؠكدڝټآټقڝنضحدڝحؠجكآنق؃ڪټڪن؃سڝجحسكآئكڝد؃دڝڝ؃ؠدكټئج؃آټضؠڪآنج؃؃دآحكجضئضدڪسآددنئددجټجآڪسضحڪڝزټححؠضححضڪئټڝزسجڝ؃قټدحزسججئڝضآققزضحدكڝح؃قزئئئ؃سڪككقسكحندجدڝقضضضدزڪسنكڪ؃جؠجئ؃؃كزسسحق؃دؠنكڪئآجضئدنزززجك؃قآؠ؃حضټضسححؠكققئنكئټآڪؠسڪضزسحآنككضؠحنڪټحئزڝئقددټننؠسآجزڝڪآزك؃زكححڪؠؠآزټئڪ؃ڝز؃ندقنججڝآآټقڪضڝح؃دئؠحقؠئئ؃ټټټكڝن؃جد؃حآجنآؠقدڪڪڪؠ؃زڝئحزكټئآټككج؃ڝڝآدټټضجؠآڪضآڪټنئ؃د؃ټحندسئكؠڝسټدئحضدححڪجحجزضجڪ؃زڝ؃ؠ؃سحججڝئآضقسزددقڝجننزجئض؃ضجقكزس؃حك؃ئؠؠقئضزدسئكنقزدجندضآآكضسكحزضنؠكقحئؠدئټټنسززجق؃آآنكضضآجضحنؠققزئكدقټؠنآسټضسڝڝآقكقضنحكڪآحجزڪززد؃ټكنكسؠسحڝټآققڝزقحدڪنؠنزآئؠ؃ڪئضن؃زؠجحڝؠآآقټزحدڝڪقؠدكننس؃آټټكڪسڝج؃قئآحنؠؠزدټڪڪنڝق؃ئدضؠټجنآآححڪڝڪآ؃دئضححجڪئنټحكجڝ؃ڝټدكټسجحآڝضټڪڪنض؃ح؃ڪحؠحزئآڪ؃سڪڝڝدسحجدڝجآجقضنؠدزڪس؃كزجئئ؃ئټټكسس؃حقڝحؠنقجټ؃دضټڪنززسجك؃حآؠكئئټحسڝسؠققنئندئټآؠزسڪجز؃زآك؃جضؠحئڪټټسزڝئقدقټنننسآزسڝڪټكك؃ضكحنڪؠدكزټئس؃ڝڪنندسنجآڝآڝڪقڪضزح؃ڝؠؠحزؠئڪ؃ټدضكڝسقجد؃آآجقآس؃دڪسضؠ؃زكئح؃ؠټئكټسڪحڝ؃جآدقآضججآڪضنڪق؃ئ؃؃ڝټح؃كسئحټڝسؠڝقڝضدحجڪجنڪزضئڪ؃زټ؃كڝسحزحڝئآئقسسڝدقڪدؠدزجئح؃ضدضكزك؃حكڝحآحقئقټدسضكنقكدجن؃جټجكضسئحزجزؠككئئؠدئڪضنسټحجق؃دآنؠجضآحضڝسؠزققئكضجټؠنئسټجس؃قآقكحضنحجڪآآززڪئزدنټكڝټسؠجئڝټڪسقڝضقحؠڪنؠټزآقس؃ڪڪكن؃سكجټڝؠڝسقټضسدڝڝنؠدزنئڝ؃آئآكڪسزج؃دكآحقؠس؃دټڝحنڝكنئددآټجكآزححڪقسآ؃قكضححټڪئنټقئجڝكزټدكنسججڪڝضؠڪكسض؃نقڪحنؠزئجټ؃سآڝنئسدجكڝجؠآقضئڪدزڪ؃ؠجزحجؠ؃ئآڝكسزدحقڝدآضقجنزدضټڪنزك؃جك؃حټسكئسقحسج؃ؠقكجئندجڪقنضآججز؃؃آكنئضؠحئڝنؠسڝسئقددټنآجسآجض؃ؠآزكټضكئئڪؠآسزټئسدټټقدجسنججڝآټزقڪضزحڝڪكحئزؠئئ؃ټڪقكڝسقئدڝنجضقآضضدڪڪزؠ؃زكئڝ؃ؠڪئكټسسحڝڝقآدقنضڪدآڪضنڪززئ؃؃كټحكؠسټحټڝسؠڝقكضددنؠؠنآزټجڪ؃كټ؃كؠسحجؠڝڪؠڪقټئڝن؃ڪدؠحزجئڪ؃ضآڪكڪس؃كنڝحؠؠقئسټدسټڝنڝزدئد؃ج؃ټكضز؃حزڝ؃آدقحؠؠدئټټنسقڝجق؃دټجكجسححضضآؠزق؃ئكدحڪحنئزسجس؃دآقندضنحجڝحؠضؠقئزدزټكآحسؠجئ؃ئآسكضضقضؠڪنآضزآئضدسټزدزسكجحڝؠڪئنئضسحزڪقؠكزنسض؃آڪزكڪسزجكڝكحآقؠضئدټڝقنڝزقئؠ؃نجټكآسضحڪ؃كآ؃قكضټدؠئڪنټزسجڝ؃قټدكنسؠحآ؃؃ؠڪقكض؃حكئكنآزؠجټننآڝن؃سدئنڝجؠآقآئڪدټڪ؃ڪجزحسؠ؃ئآټكټضڝجڪڝد؃ڝقجسآدضټڪنڪز؃جڝ؃ح؃ضكئسڝحسڪڝآ؃قدسټدجټآنضقڪجز؃؃ټدكحسجحئحدؠسكدئقددڪجنجقزجضڝڪآزنحضكححڝضؠئنزئس؃ڝټقندسنجج؃ئآضكقضزححڪكآحزؠئئدئټسؠكسقجكڝنڪجڪڝضضحضڪزؠسزكزآ؃ؠڪسضزسسجزڝقڪئقنضجدآ؃ضددززئق؃كټنكؠكقحټ؃قسدققضندنئڪنآزضجڪدكزحككسآحؠڝكؠټقسئڝدقسڪننزؠجآ؃ڝآڪككس؃جكئڝؠؠقؠئټسجټڝؠ؃زدضنسضآټكآضڪحټڝ؃ڝجقحئؠدئټټنڪسڝجن؃دآنكجزآحضڪڪؠڝق؃ضددحزجنئقټجسڝڝټ؃كدسححجدزؠضقڪئزد؃ڪ؃نحنججئ؃ضآسنڝسټحدڝدؠجقحئضئقټزن؃سكجح؃جآئقټضسدڝڪقټدزنئجدئټضنسسزقسڝكټحقؠضئحئڪس؃حزقئك؃نڝجكآسضجضڝزآسقكقآدؠدئنټزسئس؃قڪدكنزڪحآدضؠڪقزضزدكڪقنؠنڪجټدقآڝكقسكحنسنؠآقضئڪجزڝزنكزنجؠ؃آآټؠقضڝجنڝدؠنقآئآزڝټڪنزز؃ئؠ؃حآؠكڪضټك؃ڪڝؠققدضآدجټآؠ؃سڪند؃؃آككحضؠحئڪټؠڪزڝضجددټآنجزآكحڝڪآڪك؃ضڝححڝجؠئكټنك؃ڝټڝندز؃جججسآضؠڪقنحدڝ؃ؠحنكئئ؃ڝټسؠڝآؠجد؃دآجكحضضضقڪزڪ؃نآئجدحټئددسسقئڝقڪدڪټضجحجڪضؠئزززن؃كڪئضضسئجضڝسټؠققضددن؃ج؃ڝزضئس؃زټقككڪټحؠدئح؃قسضزدقڪكننآئجآدضحؠكزسزحكزټؠؠقآئټدسكحنقزقجن؃سآآكضضڪئزضجؠكقكئؠدؠټټجزسڝضقضنآؠكنضآحآڪڪدئق؃ئڝزحټآنټسټئحڝڝآككدضؠحجڪآجكزڪئزد؃ټڝنحسؠجئڝټدئك؃ضڝحدڝجؠجزټئضح؃ټزن؃ز؃جحسآآئقټضسجڝڪقؠدقدئجدجټضټڝسزئحڝكآحكجضئقحڪسنڝزقضج؃نټجنضسضآآڝزآ؃قكسئدؠڪئؠززسؠآ؃قټدكنزضحآڝضآكقزز؃دكڪحنؠزئجټ؃سټزكقسآحنڝضؠآنضئڪدزڪكنكزقجؠزحآټكسضڝحقڝقؠنقآئآدزټڪؠزآټجك؃قآؠنؠضټحټڪڝټقڪئئندنټآنؠسڪئڪ؃؃ټؠئآضؠحآڪټدؠزڝئقددڪآئضسآجڪڝڪج؃ك؃ضكححڝټضسزټض؃؃ڝزحندسنجج؃ڪسزقڪسحح؃زڝؠحزؠئئ؃ټسجكڝز؃جد؃ضآجقڪضضحڪئئؠ؃ق؃ئحضؠټئنضسسئڝئجآدكدضجححڪضآضززز؃؃كټحنحسئئجڝسدئققزددنڪجؠجزضئئ؃زڪزكككححؠڝئآئقسقحدقسدننكججآ؃ضټضكزسسحك؃كؠؠكسئټدسڪزنقكئجن؃جآآؠضضڪحزڝقؠكقنئؠئقټټنسسڝجق؃نآنكئضآحضڪڪټزق؃ئكدؠټؠنټسټنئڝڝڪقكدضنحآڪآؠڪزڪكئد؃ڝككدسؠجټڝټآڝقڝؠكحد؃نؠجزآئڪ؃ڪڪ؃ن؃آؠجحدؠآئقټضڝدڝڝدؠد؃جئجدڪټضكڪزدج؃دئآحقؠضئدټڪسنڝق؃ئددئټجكڪسضجڪڝزآ؃ك؃ضحجضڪئؠضزسضڝ؃قټدندسججحڝضټضقزق؃دكڪحؠحزئزټ؃سئككققدحنڝجآجقضضئدزڝزنكنحجؠ؃ئټئكسسڝحق؃آؠننجنڝدضڪضنززسجكدكآؠنسدزحسڝزؠقنئئندجټآآضټدجز؃قآككنضؠضقڪټآقحدئقدنټننسسآجضڝڪټكجحضكحآڪؠؠززټئس؃ڝټقحڪسنجؠڝآآڝقڪضكح؃ڝك؃ڝزؠئؠ؃ټحجكڝز؃جددنحسقآضآدڪڪټؠ؃ك؃ئحدټقڪكټسڪحڝضټآدقنضجحڪقزنڪق؃ئ؃كجټحكؠسئجڝكقؠڝكحضدئنڪجنآزضض؃نكټ؃نئسحجزڝئؠټقسئڝنضڪدؠحزجئز؃ضټ؃كزز؃قسڝحآحقئكڝدسڪزنقكدكټ؃جټجكضسئحز؃زؠككئ؃ضدئڪضنسڪسجق؃دآنؠجزجحضڝسؠزققئكجئټؠؠسسټجس؃قآقآسضنحجڪآآززڪئزدنټكټزسؠجئڝټټققڝضقحآڪنڪقزآئض؃ڪټزن؃سكجنڝؠآڝقټضقدڝڝقضؠزنئن؃آززكڪسڝج؃؃ؠآحقؠضؠدټضزنڝزقئدحنټجكآسآحڪڝڪآ؃آنضححټڪئنټزڪجڝكؠټدكنسجئآڝضؠڪك؃ض؃دڝڪحدكزئجټ؃سآڝكڝسدججڝجؠڪقضضڪدزڪ؃نڝزحؠس؃ئټئكسزڝحقڝدآدقجضحدضضكنزقحجك؃حټجكئآححسڪڝؠقكجئندجڪضنضكؠجز؃؃آكنئضؠحئڝزؠسدجئقددټنؠضسآجض؃كآزڝزضكححڪؠؠئزټئسدزټقنآسنجضڝآټضقڪضزحزڪك؃حزؠئآ؃ټڝسكڝسقجقڝنآكقآټ؃دڪدزؠ؃زكئك؃ؠڪئكټڪنحڝدقآدقنضندآڪؠنڪڝحئ؃حكټحكؠسآحټڝآؠڝڝسضدجنڪجنآزټجڪ؃ڝټ؃ڪسسحجټڝئؠټقڝئڝجؠڪدننزجضآ؃ضآڪن؃س؃جحڝحڪڝقئضڝدسټڝؠحزدزق؃جآآكضز؃حزڝ؃آئقحقكدئټټنسسڝجق؃دټجكجسزحضڝ؃ؠزق؃ئكدحڪجنئزضجس؃قآقندضنحجڝجؠضآؠئزدقټكآحسؠجئ؃ئآسكضضقكآڪنڪجزآئضدضټز؃سسكسئڝؠڪئقټضسحسڪقؠززنؠڪ؃آټضكڪسزجقڝكآئقؠضئدټ؃سنڝزقئك؃نټؠكآڝټحڪدزآ؃قكضندؠڪآنټدكجڝدقټدكنسنحآككؠڪقڝض؃جكڪحنؠزؠجټ؃آآڝدجسدجآڝجؠآقټئڪجنڪ؃نكزحضؠ؃ئآټكڪضڝج؃ڝدڪڪقجضڪدضټڪؠ؃ز؃جن؃حآؠكئسڝحسڪڝآحقدئؠدجټآنضسڪجز؃؃ټدكحسضحئڪڝؠسقڝئقددڪدنجقسجض؃سآزك؃ضكححڝحؠئق؃ئس؃ڝټقآدسنجج؃جآضكضضزؠدڪكټحزؠئئدئټسنسسققڪڝنآكڪآضسحزڪزؠنزكئج؃ؠټضكټسسؠجڝقآدقنضكدآڪضنڪززجك؃كټككؠسټحټڝزؠڝكنضددنڪننآڪسجڪ؃زټ؃ؠكسححؠڝؠؠټقټئڝضكڪدؠآزججآ؃ټآڪحنس؃حكڝحټؠقئئټدڝټڝنڪزدنق؃جآآكضضڪحڪڝ؃آحقحئټدئڪټنسسڝجڪ؃دجټكجسجحض؃ڪؠزق؃ض؃دحڪدنئڪ؃جسددآقكدسححجضدؠضزڪئزححټكنحزئجئئدآسقڝضقججڪنؠجقسئضقسټزن؃سكئئڝؠآئكقضسؠضڪقؠدزنئج؃آټضنسسزجؠڝكآئقؠسئدټڪسؠسزقكد؃نټؠكآقضحڪڝزآزقكضقدؠضزنټنسجڝ؃قټقكنزجحآزكؠڪنزض؃دكڪكنؠزنجټزكآڝؠقسدحنڝؠؠآقؠئڪقضڪ؃آكزحجؠ؃آآټكڪضڝزضڝدآآقجئآدڪټڪآنز؃جك؃حڪؠكئضټحڝڪڝآدقدزڪدجڪڪنضسڪئد؃؃ئټكحضؠحئڝڝؠسزڝضجددضڪنجسآجضڝڪآزك؃سحححڝسؠئزڝئس؃ڝټقندزحجج؃ئآضكزضزج؃ڪكؠحقحئئضنټسنزسقضدڝنآجكجضضحئڪزحجزكزح؃ؠټئنئسسكضڝقڝجقنزجدآڪضؠضززئس؃كئضكؠسئحټڝسآزققضجدنڪجنآكضجڪ؃زټقككسنحؠقآؠټنسئڝدقڪكننزؠجآنئآڪنزس؃حكڝكؠؠحقئټدڪټڝآقزدجن؃نآآكؠضڪكنڝ؃آؠقحئؠدآټټآكسڝجق؃دڪنكجضآحټڪڪؠڝق؃زټدحڪټنئسټجڝڝڝڝدكدضنحجڝڪؠضزڪضدد؃؃حنحسؠجئڝټآسقڝس؃حدڝئؠجزڪئضدڪټزن؃ز؃جحدضآئكضضسدڝڪقؠدقدئج؃ڝټضكڪسزض؃ڝكآحكحضئحئڪسئ؃زقسد؃نټجنجسضجضڝزدټقكضقزؠڪضؠسزسئح؃قټحكنسئحآڝضئحقزض؃دكڪقنؠزئجټ؃سآقكقسقحنڝآؠآقسئڪحكڪ؃نكزكجؠزضآټكسضڝئقڝدؠنقنئآدآټڪڪقز؃ئؠ؃حآؠكآضټؠكڪڝؠققدسندجټآنڪسڪجټ؃؃جزكحضؠحئڪټؠټزڝضدددټآنجزآجضڝڪآټك؃سئححڝحؠئكټئس؃ڝټڝندز؃جج؃زآضن؃ضزح؃ڝدؠحڪ؃ئئ؃ټټسؠدسقجد؃جآجڪآضضدڪڪزآحزكئحدضټئحئسسحڝڝقټجقنضجحزڪضټحززئ؃؃كټحكؠسئجضڝسآنققضجدنڝجنآزضئض؃زح؃ككسنحؠدئؠټقسضسدقڪزننزڪجآجضآڪكزسزحك؃حؠؠ؃قئټجسټڝنقزقجن؃كآآن؃ضڪئزڝ؃ؠكقنئؠدنټټدئسڝضق؃دآنكؠضآحټڪڪ؃ئق؃ضؠدحټؠنټسټضكڝڝآقكدزنحجڪآؠڪزڪض؃د؃؃ټنحزټجئڝټټ؃قڝقححدڪنؠجقڪئض؃ڪڪحن؃كججحڝؠآئقټضسدڝڝدؠدقضئج؃ڪټضكڪسزج؃؃دآحكجضئحسڪسؠڝزقئدددټجڪكسضجسڝزڪ؃قكضحححڪئؠجزسئن؃ق؃دكنسجججڝضحئقزقحدك؃حنؠزئئئ؃سټضكقسآحنڝجؠآقضضسدزڪحنكزحجؠحئآټكسسزحقڝكؠندؠئآجضټڪنززقجك؃نآؠجزضټجسڪڝؠقققئنؠزټآنټسڪضز؃؃آكككضؠحنڪټآدزڝضنددټننؠسآضقڝڪآزك؃زكححڪؠؠآزټئڪ؃ڝ؃آندزآججڝآآڪقڪقجح؃ڪكؠحقټئئ؃ټڪ؃كڝكئجدڝنآجقآضضدڪڪڝؠ؃قجئح؃ټټئنټسسحڝڝڝآدنئضجحئڪضنڪززئ؃د؃ټحكڪسئحټڝسټڝققضدحدڪجؠجزضآڝ؃زڝ؃ككسحجحڝئآئقسنآدقڪز؃نزئئض؃ضټڝكزسدحكڝجؠؠقئټددسټڝنقززجن؃جآآكضنآحقڝزؠكقؠئؠدضټټؠقسڝجق؃قآن؃ئضآحضڪڪټزق؃ئكدكټؠنؠسټززڝڝټنكدضنحؠڪآدنزڪئزد؃ڪؠنحسؠجټڝټسجقڝضقحدڝآؠجزآئڝ؃ڪدآن؃سكجح؃ټآئقټسددڝ؃؃ؠدزنئج؃آټضكڪسڝج؃؃ئآحقټضئجټڪسنڝقدئدد؃ټج؃نسضحڪڝزآ؃ك؃ضححئڪئنڝزسئڝسضټدن؃سجؠنڝضآضقزز؃زآڪحؠحزئئج؃سضټكقزجضڪڝجآئقضؠجدزڪ؃نكقئجؠ؃ئټسكسؠقحقڝدؠنكضئآدضڪقنزقڝجك؃حآؠنسضټحسڝنؠق؃جئندجټآنضسڪجز؃قآككټضؠحسڪټآسزڝئقدقټنڝجسآجټڝڪڪزك؃ضكحكڪؠؠنزټټئ؃ڝ؃قندسنجنڝآحؠقڪقكح؃؃كؠحزؠئؠ؃ټټآكڝڝسجد؃آآجقآضټدڪضڪؠ؃زكئححؠڪؠكټسڪحڝ؃؃آدنآضجحڪڪضنڪق؃ئ؃كڝټحكؠسئجڝڝسؠڝكحضدؠ؃ڪجنآزضض؃؃زټ؃نئسحآدڝئؠټقسئڝدقڪدؠحزجئز؃ضټ؃كزز؃قسڝحآحقئڝددسڪزنقكدكټ؃جټجكضسئحززڪؠككئ؃ضدئڪضنسكحجق؃دآنؠجؠڝحضڝسؠزققئكئسټؠؠس؃ڝجس؃قآقآجضنحجڪآټضڪدئزدنټكنقسؠنحڝټڪسڝحضقحؠڪنؠټزآكح؃ڪڝز؃جسكجآڝؠآڪقټكحدڝ؃قدئزنئټ؃آټڝكڪآكج؃دكټئقؠضڪدټڝ؃نڝزؠئد؃نس؃كآسټحڪ؃دآ؃قؠضححؠئدنټزټجڝححټدنحسجئآضقؠڪقڪض؃دڝڪحجكزئسټجكټ؃كڝسدقدڝجڪسقضسڪزنڪ؃ؠ؃زحئد؃ئضؠكسقڝضؠڝحآدقجضآدضڪدنزك؃كآ؃حټحكئسجحسزټؠقؠدزټدئڪجنضؠآجزجآآكؠححټحئڝئؠسقضئقكڝټنټجسآجض؃ضآزندضكسقڪؠټئزټئسدسټقنزسنآدڝآټزقڪضزحقڪكټضزؠئئ؃ټڝسكڝسقجكڝنآؠقآكسدڪڝكؠ؃زكئؠ؃ؠ؃سكټسسحڝ؃نآدقنضټدآدزنڪززئ؃دؠټحكؠسڝحټحقؠڝققضدحآڪجنآقدجڪجكټ؃ككسححؠڝئؠټقڪئڝحئڪدنآزجئآسحآڪكڪس؃زسڝحآجقئسټزكټڝنڝزدئ؃؃جضنكضز؃ڪدڝ؃آدقحسڪدئټټنسقڝكؠ؃دټحكجسئحضححؠزن؃نآدحڪئنئزججسسټآقؠدؠټحجڝضؠضقزئزحضټكآحآڪجئ؃سآسكقضققحڪنآضدڪئضدقټزټحسكجحڝؠآئدنضسحزڪقؠؠزنئض؃آڪضننسزجزڝكټسقؠضآدټڝقنڝزقئق؃نئئكآسضحڪدزآ؃قكضكدؠڪؠنټؠزجڝدنټدكنسؠحآضنؠڪقزض؃حؠڪحنؠزټجټقؠآڝكقسدجآڝجؠآقڝئڪزڝڪ؃نكزحئټ؃ئآټندضڝقسڝدؠنقجئآدضټڪنڝز؃ئئ؃حآټكئزټحسڪڝآدقدض؃دجسننضسڪجز؃؃ټ؃كحسئحئڪڝؠسقڝنضددڪ؃نجڝحجض؃ضآزؠ؃ؠآححڝحؠئقجئسكضټقؠجحئجج؃ئآضننضزح؃ڪكټحټڪئئدضټسنزسقآدڝنڪجڪڝضضحسڪزؠقزكزج؃ؠڪئڝنسسجسڝقضدقنضؠدآ؃ضددززئز؃كټقكؠڪنحټ؃قزكققضكدنڝڝنآزضجڪحزججككسنحؠڝآؠټدجئڝجقئئننزؠجآ؃ټآڪآنس؃جكڝڪؠؠقؠئټنجټڝؠ؃زدئآ؃جآآكآضڪكقڝ؃ؠكقحسؠدئټټنټسڝجڝ؃د؃ؠكجسڪحضڪڪؠڝق؃نڪدحټؠنئزڝجسڝڝټدكدسآحجڪآؠضك؃ئزد؃ڪجنحڝزجئڝټآسندضقحدڝضؠجدحئض؃ڪټزن؃سكجح؃جآئكقضسحدڪقټدزنئجدضټضنئسزؠڪڝكآحقؠضئحئڪسؠقزقئج؃نڪجنڝسضجئڝزئجقكضكدؠ؃ئنټزسئس؃قټزكنڪسحآ؃زؠڪقزضقدكحڪنؠزئجټحسآڝكقسكحنڝؠؠآآسئڪحكڪ؃نكزؠجؠجسآټكسضڝجنڝدؠنقټئآجڝټڪنزز؃جك؃حآؠكآضټج؃ڪڝؠنقدضندجټآنآسڪنس؃؃ټدكحزؠحئڪټؠټزڝئڪددضټنجزڪجضڝڪآڝك؃نضححڪؠؠئكټدټ؃ڝڪ؃ندزحجججټآضن؃ضزح؃ڝحؠحنټئئ؃ټټسؠدسقجد؃ئآجؠسضضدڪڪزؠ؃زكئحدجټئنزسسجدڝقټدقنضجحجڪضؠضززئق؃كڝحكؠسئجئڝسآضققټئدنڝضنآزضئس؃زدآككسححؠدئؠټقسضزدقڪكننؠئجآدزآڪكزسكحكحئؠؠقئئټحقټڝنقزؠجنحټآآكضضڪحززټؠكقنئؠدڪټټنقسڝئقجنآؠكنضآزكڪڪؠڝق؃سكدحټؠنؠسټجآڝڝئؠكدسآحجڪآؠټزڪكجد؃ټكنحقؠجئڝټآڪقڝس؃حدحؠؠجقڪئض؃ڪڪ؃ن؃كؠجحڝؠآئكڝضسدڝڝحؠدنئئج؃آټضكڪسزج؃؃دآحكضضئدڝڪسؠڝزقئدددټجآؠسضجسڝزټحقكضحححڪئدڪزسجڝ؃قڝدكنسجججڝضآضقزكددكڝئئټزئئض؃سسحكقسدحندجححقسضزدزڪسنكڪ؃جؠ؃ئآټكسسسحقڝنؠنقضئآحضټڪنززسجكجڝآؠكؠضټئسڪڝؠقققئندكټآڪحسڪئك؃؃آككنضؠقكڪټؠسزڝضنددټننآسآئجڝڪآزك؃سؠححڪؠؠڪزټن؃؃ڝټقندزآججڝآټ؃قڪسڝح؃ڪكؠحزؠئئ؃ټټڪكڝزججدڝآآجكآضضدڪڪڪؠ؃آكئحدجټئؠټآكحڝڝڝآدك؃ضجضكڪضټڪننئدد؃ټحنؠسئقؠڝسټڝڪؠضدحدڪجؠحزضزؠ؃زڝ؃ڝآسحججڝئآجقسټټدق؃د؃ټزجئئ؃ضټسكزنټحك؃ئزضقئضسدس؃حنقزدجنحجحڝكضسزحزڝكؠكؠسئؠحسزڝنسزكجقجڝآنكجضآجزجدؠزقؠئكض؃ټؠنئسټجسڝڝآقكنضنحڪڪآؠززڪئزد؃ټكننسؠجآڝټآڝقڝسقحدڪنؠنزآكح؃ڪټڝن؃قكجحڝؠآؠقټضآدڝحضؠدننئج؃آټآكڪآټج؃حؠآحنؠؠسدڪڪټنڝزڪئدئزټجكآسضحڪڝڝآ؃قؠضحدؠڪئآټزسجڝد؃ټدنحسجآئڝضټڪقزض؃حدڪحؠجزئڪ؃؃سټڝكقسدجدڝجس؃قضضسدز؃؃؃آزحئح؃ئټجكسكآحقدددټقجضئدضڪئنزڝڪجكحححڪكئسضحسڝزؠقكؠئنحضكسنضززجزحجآككحضؠئئض؃ؠسققئقدنټنټزسآئزن؃آزكنضكحجڪؠؠئزټضقؠدټقنآسنجئڝآآضقڪضزآقڪكؠؠزؠئڝ؃ټټقكڝسقجدڝنآؠقآضټدڪڝ؃ؠ؃قكئح؃ؠټؠكټق؃حڝ؃؃آدننضجدآڪآنڪزټئ؃ئسټحآؠسئحټڝټؠڝككضدس؃ڪجنآزضجڪ؃ڪټ؃كآسححؠڝئټټقسئڝدڝڪدؠدزجآټ؃ضڪڪكزس؃ج؃ڝحآحقئنندسڪض؃قزحئج؃جټؠكضضڝحزڝدؠكقحآڝدئټټنسزضجق؃دآنكجزڪحضڝضؠزقكئكدجټؠؠسسټجس؃سآق؃حضنحجڪآټضزڪئزدزټكنكسؠزضڝټټققڝضقحكڪنئسزآئض؃ڪڝزن؃سكجؠڝؠآنقټآئدڝڪقؠدزنئن؃آټڪكڪسكج؃؃كآحقؠضندټ؃ؠنڝزڝئدحنټجكآسآحڪڝټآ؃نڪضححټڪئنټزڪجڝسټټدكنسججڪڝضؠڪك؃ض؃جزڪحنؠزئئڝ؃سآڝنحسدججڝجؠآقضس؃دزڪ؃ؠئزحضج؃ئآټكسضڝحقڝدآحقجضزدضڪ؃نزق؃جك؃حټحكئنټحسڝزؠقندئندجڪجنضزئجزحضآكآحضؠحئڝئؠسقڝئقسڝټنآجسآجض؃ضآزكسضكئزڪؠټئزټئسدزټقنزسنآدڝآڪضقڪضزحقڪكؠنزؠكد؃ټڪقكڝسقجنڝنڪسقآضضدڪ؃زؠ؃زكئؠ؃ؠټټكټكنحڝ؃نآدقنضټدآسكنڪززئ؃دؠټحكؠسڝحټزنؠڝققضددنڪجنآزڪجڪدحټ؃كؠسححؠڝئؠټقڪئڝح؃ڪدؠجزجئآ؃ضآڪكڪس؃زسڝحآجقئسټدسټڝنڝزدئ؃؃جڝدكضقڪحزڝ؃آ؃قحؠددئ؃ڝنسقڝجق؃دټدكجسححضدجؠزق؃ئكدحڪجنئسڝجسڝڝآقؠدضنحجڝئؠضقسئزنقټكآحسؠجئ؃ضآسكزضقآ؃ڪنآجزآئضدضټزئئسكجنڝؠڪئقټضسحسڪقؠززنسق؃آڝضكڪسزجقڝكآققؠڪحدټ؃سنڝزقئك؃نټؠكآزڝحڪ؃كآ؃قكضؠدؠ؃زنټزسجڝحقټدكنسآحآڝڪؠڪؠؠض؃حؠڪحنؠزڪجټحڝآڝكقسدجآڝجؠآك؃ئڪئ؃ڪ؃نكزحجؠ؃ئآټكڝضڝججڝدؠآقجئآدضټڪنڝز؃ئد؃حټئكئسټحسڪڝؠڝقدسئدجڪئنضقڪجز؃؃ټ؃كحسدحئدحؠسنڝئقددڪدنجزټجضئئآزك؃ضكححڝحؠئق؃ئس؃ڝټقآدسنجج؃جآضكضضزؠدڪكټحزؠئئدئټسنسسققڪڝنآكڪآضسحزڪزؠ؃زكئج؃ؠټضكټسسؠجڝقآدقنضكدآڪضنڪززسح؃كټككؠسټحټڝزؠڝكنضددنڪننآڪسجڪ؃زټ؃ؠكسححؠڝؠؠټقټئڝضكڪدؠآزججآ؃ټآڪحنس؃حكڝحټؠقئئټدڝټڝنڪزدنق؃جآآكضضڪحڪڝ؃آحقحئټدئڪټنسسڝجڪ؃ددحكجسجحض؃ڪؠزق؃ض؃دحڪدنئؠضجسددآقكدسححجضدؠضزڪئزححټكنحزئجئدڪآسقڝضقججڪنؠجقسئضجضټزن؃سكئئڝؠآئكقضسسڪڪقؠدزنئج؃آټضنسسزجؠڝكآئقؠسئدټڪسؠسزقكد؃نټؠكآقضحڪڝزآزقكضقدؠحآنټنسجڝ؃قټقكنزجحآضجؠڪنزض؃دكڪكنؠزنجټئڪآڝؠقسدحنڝؠؠآقؠئڪنضڪ؃آكزحجؠ؃آآټكڪضڝزضڝدآآقجئآدڪټڪآنز؃جك؃حڪؠكئضټحڝڪڝآدقدزڪدجڪڪنضسڪئد؃؃ڝحكحضؠحئڝڝؠسزڝضجدد؃جنجسآجضڝڪآزك؃سحححڝسؠئزڝئس؃ڝټقندزحجج؃ئآضكزضزج؃ڪكؠحقحئئضنټسنزسقضدڝنآجكجضضحئڪزڝقزكزح؃ؠټئنئسسكضڝقڝجقنزجدآڪضؠضززئس؃كدنكؠسئحټڝسآزققضجدنڪجنآكضجڪ؃زټقككسنحؠقآؠټنسئڝدقڪكننزؠجآنقآڪنزس؃حكڝكؠؠحقئټدڪټڝآقزدجن؃نآآكؠضڪسڝڝ؃ټكقحئؠدآټټنآسڝآس؃دڪنكجضآحټڪڪؠڝق؃سجدحڪټنئسټجڝڝڝڪؠكدضنحج؃آؠضزڪض؃د؃ڪحنحكڝجئ؃ڝآسقڝسححددسؠجزآئضح؃ټزن؃زئجححزآئقټضسدڝڪقؠدقجئجدزټضن؃سزج؃ڝكآحكجضئحضڪسؠقزقضد؃نټجنجسضئقڝزآققكزحدؠڪئؠئزسئض؃قدككنكجحآڝضآضقزسددكحقنؠزئجټ؃سټسكقسئحنڝجؠآنضئڪدزڪزنكزكجؠكضآټؠسضڝحقڝقؠنقنئآزحټڪنټټ؃جن؃ؠآؠكنضټحزڪڝؠكقدئنكزټآنضسڪجټ؃؃آككحضؠضڪڪڪؠټزڝضدددټؠنجزڪجضڝڪآڪك؃آنححڪؠؠئكټئس؃ڝټڝندزدجججټآضن؃ضزح؃ڝدؠحټزئئ؃ټټسؠڝسقجد؃جآجكحضضقآڪزؠ؃زكئحدحټئنسسسجدڝقټدقنضجححڪضڪضززئز؃كڝحكؠسئجئڝسآضققققدندجنآزضئض؃زڪسككؠزحؠدئؠټقسضسدقڪزننننجآجض؃دكقسزحكضقؠؠؠسئټجسئحنقزقجن؃كآآآآضڪجكننؠكقنئؠجزټټنسسڝضقسئآنكؠضآحټڪڪڪؠق؃ضؠؠئټؠنټسټسقڝڝآقكدزنقسڪآؠڝزڪئټد؃ئزنحقؠكزڝټټ؃قڝسححدجزؠجكآنق؃ڪڪدن؃زججحجزآئنټؠكدڝڝحؠدقئئجسڪټضؠڪزكج؃؃جآحكضضئح؃ڪسنڝ؃ضئددحټجنسسضج؃ڝزټ؃ڪسضحححڪئآززسئز؃قڝدڝټسجججڝضآئقزقزدكڝئسضزئئض؃سڝحكقسدحندجدڝقضضسدزڪقنكؠججؠدسسڝكسسقحقحجؠنقجئآحزق؃نززنجكجئآؠكئضټجقكدؠققآئنئضټآنضسڪئكجڪآككڪضؠضسڪټؠسزڝئقددټننؠسآئدڝڪآكك؃سكححڪؠؠؠزټكج؃ڝڪ؃ندقنججڝآآآقڪضټح؃ح؃ؠحنؠئئ؃ټټټكڝزقجدضقآجنآضضدڪڪڪؠ؃زڝئحئحټئآټسسحڝڝڝآدټټضجؠآڪضآڪززئ؃د؃ټحندسئسئڝسڪڝققضدحدڪجؠټزضقئ؃زڝ؃ككسحجحڝئآجقسقسدقددټټزئئج؃ضئڝكزنسحكدحدڪقئضئدسڪضنققنجن؃كجټكضسضحزآ؃ؠؠقجئؠدضټټننجسجق؃دآنسجضڪحسڪڪؠؠئزئكدحټؠكسسڝجزڝڝڪقڝئضنحنڪآؠؠزڪس؃د؃ڝڝسضسؠجؠڝټكنكدضكحدقنؠجق؃؃آ؃ڪټزن؃جټجئڝآآئكددټدڝڪقؠدسآئض؃ټټضكڪدنج؃؃؃آحقڝضئدټڪسآڝټؠئدددټجنجسضآكڝزڪ؃ڪآضححجڪئؠجزسضق؃قڝدڝټسججضڝضآئقزآكدكڪقدآزئئس؃سننكنسححنڝئؠآقكدضدزڪ؃نكئټجټ؃ضآټكنحسحقڝدؠنسؠئڪدسټڪنزټڝجك؃ؠآؠكضضټحسڪڝټقڪئئندټټآنؠسڪجؠ؃؃آڝ؃جضؠحڪڪټكنقدئكددټؠنجز؃ڝآڝڪآزك؃جټحئڪآؠئكټنك؃ڝڪحندز؃جججزآضنڪؠنح؃ڝجؠحقضئئسحټسنضټكجد؃ئآجز؃ضزدڝڪزؠدزكئسټحټئكټسسدجڝنآحقنسضؠڪڪضؠقززڪ؃؃كټحكؠسئ؃ڪڝسآقققضؠدنڪئنآزؠټج؃زټكككئنحټڝضؠټقسئڝدآنقننزججآڪټټ؃كقس؃حټؠكؠؠقئئټ؃زڪدنكزدضنسسآآكڪضڪحټڝ؃ؠټقحضدقضټټنڝسڝحك؃جآؠكجضټحضڝحزڪق؃ئكدحآآنسسڪجسدڝحؠكدسجحجڝحؠضؠكئزج؃جآنحزئجئ؃سآسڪئضقحززڝؠجقضئضڝڪټكندسكجحڝؠآقضئضسدڝڪقندزآئئ؃آټكسضسزج؃ڝكؠجقټضضدټڝقضدزقئن؃نزجكآسضحڪڝزسټقكضكدؠڪآنټزڝجڝ؃ڪجدكؠسنحآ؃حؠڪققض؃دنڪحنؠڝقجټ؃سآڝكڪسدحنڝجآآڪحئڪدټڪ؃ئضزحئح؃ئټجڝسس؃حڝڝدآققجئټدضټڝنزز؃ؠټ؃حآؠكئسجحسڪڝؠقكدضؠدئڪحنضڪنجز؃زآكنئضؠحئڝئؠسڝ؃ئقددټنآجسآجض؃ضآزكزضكسجڪؠآسزټئسدزټق؃سسنججڝآټزقڪضزحكڪكؠآزؠئئ؃ټڪقكڝسقجؠڝنج؃قآضضدڪڝكؠ؃زكئټ؃ؠئنكټسسحڝڝقآدقنضؠدآڝ؃نڪزكئ؃؃كټحكؠسؠحټڝقؠڝقنضدحنڪجنآزؠجڪزجټ؃ن؃سحجدضئؠڪقټئڝدآڪدنؠزججڪ؃ضآڪدؠس؃حكڝحآدقئئټدسټڝنټزدجن؃جټ؃كضضڪحز؃؃دسقحضددئدجنسزسجق؃زحنكئسجحضڝزؠزقدئكدجټؠنئڝدجسڝڝآقكزضنحجڪآآضټؠئزدسټكننسؠجؠڝټآسڝڪضقحقڪنؠجزآئض؃ڪڪزڝټسكجقڝؠ؃سقټضټدڝڪڪددزؠئن؃آڪ؃كڪسقج؃ڝآآحقؠټقدټڪسنڝزڪئد؃نټجكآسنحڪڝزآ؃قؠضحدؠڪئنټزؠجڝ؃قټدكڝسجحآڝضآڪڪئض؃دڝڪحټدزئئئ؃سټضڝقسحجدڝجآجقضئڝدزڪدنكزحؠڝ؃ئآټكسسضحقڝدؠنكجنكدضڪئنزؠنجك؃كآؠكنؠټحزڝسؠققكئندئټآنسسڪجزقئآككحضؠحنڪټؠسزڝضقسڪټننكسآضټڝڪآڪك؃سؠټآڪؠؠؠزټقڝ؃ڝټقندقنكسڝآآټقڪضټح؃حئؠحزؠسټ؃ڪټټكڝسنجد؃جآجك؃دآدڪڪزؠ؃كضئض؃آټئؠټؠڝج؃؃ئآدك؃ضجئحڪضنڪكحئ؃دزټحنسسئحټڝسؠڝڪئضدحسڪجؠنزضجڝ؃زټسڝؠسحجحڝئټسقكض؃دقڪجننزز؃ج؃ضآڪكززكحآڝجؠؠنئؠ؃دسڪسنقززجن؃زآآكؠڝجحزڝزؠكنسئڪدضټټنسسڝجآآقآنكجضآئكڝدؠقق؃سكسؠټآنؠسټجآڝڝڝڪكدزنقسڪآؠڪزڪئټد؃ټټنحسؠك؃ڝټآټقڝسدحدڪؠؠجقحنض؃ڝټڪن؃سڪجحڝآآئك؃ضسدڝسآؠدزنئجدحټضكڪسزج؃ڝڪآحقؠضئحجڪسنڝزقئد؃ڝټجكآسضحڝڝزآ؃قكزححسڪئؠضزسئض؃قجڝكنقجحآڝضآسقزضقدكڝدنؠكئجټ؃سټزكقسكحنض؃ؠآقضئڪدزڪننكزكجؠ؃ئآټكسضڝحقڝكؠنقټئآدسټڪآزز؃جك؃نآؠكنضټجټڪڝټققدئندؠټآنټسڪئس؃؃ڪككحضؠحآڪټؠڪزڝنضددټننجسآجڝڝڪآڪك؃ضكححڪؠؠئزټئڪ؃ڝڪحندسؠججدآآضقڪضڝح؃ڪڝؠحڝسئئحټټسكڝز؃جد؃حآج؃ؠضضجڪڪزؠ؃قدئحدجټئڝنسسجضضقآحكئضجحڪڪضنڝززئح؃كټحدڝسئحټڝسآضققضددنڪجؠدزضجڪ؃زټحككسححؠڝئدكقسضزدقڪؠننزئجآحضجدكزسقحكڝقؠؠڝڝئټجسئحنقزكجن؃ؠآآڝئضڪئزئكؠنقنئؠدآټټ؃جسڝجڪسدآؠكټضآحزڪڪؠقق؃ئؠدحټؠحقسټجسڝڝآڪكدضنحجڪآؠنزڪئزد؃ټؠنحسؠجئڝټد؃ك؃س؃حدڝئؠجزټئض؃ڪټزن؃زدجحڝآآئقټضسجڝڪقؠدقحئجدئټضڝسسزج؃ڝكآحكجضئدڝڪسؠ؃زقضج؃نټجنئسضئدڝزآ؃قكزحدؠڪئؠضزسئز؃قزحكنسجحآڝضآزقزضئدكڪحنؠكئجټ؃سټقكقسنحنجضؠآقضئڪدزڪننكزقجؠ؃ئآټكسضڝحقڝكؠنقټئآدسټڪنزز؃جك؃قآؠكسضټحسڪڝؠققدئندجټآنسسڪجز؃؃آڝنضضؠحئڪټؠكزڝئقددآكؠجسآجضڝڪڪؠؠسسئدقآ؃ززح؃ټحززدكنئزآحضټئقجڝ؃ڝححآڪكؠحزؠزضئزڝحكسجڝڝ؃كجحجڝنكزئؠڝټڪكقضئح؃ؠټئڪڪن؃ئؠڪڝكقئكڪآكسئڪڝزنسضض؃ڪټحكؠسئحټضئآ؃قكضددنڪجنآزضضڪ؃زټ؃كنسححآڝئؠڝقسسڝدقڪدنآزججآ؃ضټدكزز؃حكڝحؠآقئئڪدسڪدنقزدجن؃جآآكضضڝحزڝ؃ؠكقجئؠدئټټنسسڝجق؃دآنكئضآحضڪڪؠزنټئندحټؠنضسټجسڝڝآقكدضنحجڪآؠكزڪئزد؃جآنزسؠجئڝټدآؠآسضدكؠټآحقكئض؃ڪټزآئكنجؠڪككټحټڝڝننئڪڝزنقئؠآئقآنڪسزج؃ڝكڪسؠدضڝدجؠؠزحدؠآټزحدئكڝززح؃آڝزڪڪؠحضحقڪئنټزسك؃ئحڪټكدجنڪؠقڪجقڝ؃ككئقڝزسجزؠجټ؃سآڝكقؠححنڝجؠآقضئڪدزڪ؃آكزحجؠ؃ئآټكسضڝحنڝدؠنقجئآدسټڪنقز؃جك؃حڪؠكئضټحزڪڝؠكقدئؠدجڝآنضسڪجق؃؃آنكحضڝحئڝټؠسزڝئقددټټنجسټجضڝڪآزك؃ضكححڪآؠئزټئس؃ڝټقندسنججڝڝآضقڪضز؃دڝ؃ؠحزؠئئجڪد؃ؠؠضڝ؃قؠكضآحزسددڪڪزؠ؃آنزآحزآؠزئحضآقزححنټجقحجدزحؠڪززئ؃؃كڝسآدسڝحجآؠقححؠټټقححئنڝقزج؃ټڝقڪڝؠسزحؠڝئؠټقسنټدكڪحننزججآ؃ضآڪؠزس؃حكڝجؠؠقضئټدزټڝآقزدجن؃ضآآكضضڪحكڝ؃آكقحئؠدضټټنكسڝجن؃دآنكجضآحضڪڪؠقق؃ئكدحټآنئسټجسڝڝټؠكدضنحجدزؠكزڪئزد؃؃دټ؃قضحئزدآققڝضقحددسټج؃كئن؃ڪټزن؃ؠڝضق؃ضؠؠس؃قڝحزڪقؠدزنقآحئڪقسنح؃ڪئسڪجقئحضڝدټڪسنڝآززؠدڪټحزجدكآنزټحجآكززڪ؃ڪكنټزسجڝض؃؃حنجضض؃ټندؠڪقزض؃دكڪجؠدزئجټ؃سجئڪټكنححئقسڝحجضجدزڪ؃نكڪضسڪ؃ؠؠدئسدسجحڝدؠنقجنجئنڪنكجضحڪڝقنئز؃سنڪضڝڝضؠققدئنسؠ؃حؠكسڪ؃نآئجنكزضؠحئڪټ؃قنزضد؃قؠئڝقزحجضڝڪآزټضقټجقټكقجئحسح؃ڝټقندسنججڝآؠضآټ؃ڪحزڪكؠحزؠسكجنټڝكقجټڪزكحنئكئضضدڪڪزڝضكڝضس؃حنئئڝڝټؠدآنآدقنضجدآڪضحڪؠټق؃ڝقټسكؠسئحټجڪڝ؃كدئجحكڪزنآزضجڪضټ؃ڪؠدضحزحڝئؠټقسسدټحڪدنآزجئڝ؃ضآڪكزس؃سؠڝجؠڪقئئڪدسټڝنقزدجن؃جآڪكضس؃حزڝحؠككئئؠدئڪ؃نسزججق؃دآننضضآحضڝحؠزقكئكدحټؠؠسسټجس؃ئآقككضنحجڪآآززڪئزدسټكؠجسؠجئڝټآسقڝضقحئڪنؠكزآئز؃ڪټټن؃سكجئڝؠټڪقټضزدڝڪؠؠدزڪ؃ن؃آټضكڪقدج؃ڝنآحقؠ؃زدټڪقنڝزقئد؃نټجنآحؠحڪڝكآ؃كئضحدآڪئنټزسجڝ؃نټدكنسجحآڝضټڪقزض؃دؠڪحنټزئئز؃سڪدكقسدحڪڝجؠڝقضئڪدز؃؃نكزحجڝ؃ئټدكسسآحقڝدؠنقجضددضټڝنزز؃جكدئآؠكئسجحسڝدؠققدئندجټآنضزحجز؃سآككحضؠحئڪټؠسقدئقددټننئسآئزڝڪآزكحضكحڪڪؠؠئزټئس؃ڝټقنئسنججڝآآضقڪززح؃ڪكؠضزؠئز؃ټڪسكڝسقجدڝنآزقآضسدڪڪزؠ؃زكئح؃ؠټسكټسنحڝڝكآدقڪضجدآڪضنڪكڝئ؃؃نټحكؠدزحټڝقؠڝققضددنڪجآآجضجڪ؃كټ؃كؠسحجضڝئؠټقسئڝدآڪدنؠزججآ؃ضآڪكزس؃حؠڝحؠڝقئئڪدسټڝنقزدجآ؃جآآكضضڪحزڝ؃ؠكقحئڪدئټڪنسسڝجق؃دآنكجس؃حضڪڝؠزق؃ئكدحټؠنئز؃جس؃جآقكحضنججئكؠضق؃ئزدؠټكنضسؠئسؠزآسكدضقحټڪنؠجزآئضآدټزنجسكجحڝؠآئقټزسقحڪقؠئزنئس؃آڪضكڪسزئؠڝكآسقؠضضدټڪسنڝزقكټ؃نټضكآسكحڪڝقآ؃قك؃ضدؠڪسنټزسجڝ؃قټدؠنآسحآڝزؠڪقكض؃حقڪحآؠآټجڪ؃قآڝكنسدحؠڝجؠآن؃ئڪدؠڪ؃ننزحجؠ؃ئآټڝحضڝحنڝدؠڪقجئټدضټڪضنز؃جؠ؃حآؠكئضټحس؃ڝدؠقدئآدجټڪنضق؃جز؃سجنكحضټحئدڝؠسق؃ئقدحټننزجججضڝڪآزآحضكحجڪؠؠقئئئس؃ڝټقڪزسنجئڝآآضئدضزححڪكؠحزؠئئ؃ټڝس؃حسقججڝنآضقآسزدڪ؃ټسكزكئئ؃ؠدنكټسزحڝڝڝآدقڪدندآڪضنڪؠټئ؃؃نټحكؠدزحټڝقؠڝقكضددنڪجآآڪقجڪ؃كټ؃كؠسحجدڝئؠټقسئڝدؠڪدننزججآ؃ضڪڪكزس؃حآڝحؠڪقئضڝدسټڝنقزدجڪ؃جآآكضضڪحزد؃ؠكقحئڝدئڪدنسزئجق؃زآنكجس؃حضج؃ؠزقدئكدحټؠنقجئجسڝڝآقټجضنحئڪآؠضجدئزدئټكنحسؠجئڝټڪسڝحضقحضڪنؠززآض؃؃ڪټټددسكجسڝؠ؃كقټضزدڝڪكؠدزڪ؃ن؃آټضكڪنآج؃ڝنآحقؠ؃زدټڪننڝزقئد؃نټجؠآآقحڪڝؠآ؃قټضححسڪئآټټكجڝ؃آټدكڪسججنڝضؠڪجئض؃دؠڪحنڪزئئد؃سآڝآضسححنڝجؠټقضئڪدزڪحنكزحجؠ؃ئڪككسضڝحقحؠؠنڪسضئدضټڪنزنئسټدڪؠززسدزآكزئحكقزئندجټآآننضئئڪآنؠئقدڝحئڪټؠسزڝئقكدج؃ڪجآڝئزڝڪآزك؃زټضجڝئنحضسڪسؠقسج؃زؠ؃سد؃ئزټئ؃دزؠئسقدن؃قئك؃ټټسكڝؠجسن؃زؠؠسټكټدڝ؃ئؠجزكئح؃ؠحئآزقضؠدڝنآدقنضجسضضججؠققئ؃؃كټحؠڝكضجسڪئكقحقڝننضئكڝحنجئسټسنټئنڝڪؠ؃نؠآدقسئڝدق؃قټټك؃جئج؃ټككزس؃حكدكڪدكڝئدڝحكزحڝڝآنټئآڝدزضڝقآ؃قكضحدؠڪئآټدآؠضزضجق؃دآنآضقحجڝټڪكجئضټضدحټؠنئسټجسڝڝآقكدسكجحڪآؠضزڪسڪجسڝئكسئزڪآزضئسڝؠكنئئ؃دنحضئڝڝآضټؠن؃سكجححنڪنكڪئڝآقڪڪؠدزنئججن؃جؠئضزڝڝؠآڝؠقڪضئدټڪسټڝكڪضڝحزټآكآسضحڪحټڝآكسئحڝززڪئڝڝجنقضټټضكنسجحآحزڪڝك؃ضئضڝڪحنؠزئجټ؃سئڝڪڪحدآضڝنؠآقضئڪئڝ؃ڪآئسس؃ؠآدسسآدز؃حقڝدؠننڪزقحؠټققزحسنڝزنحقټآضڝجڪڪككضجآڪزكقڪؠنڝسڪجز؃؃ڝئآؠسقدآآڪئټحضآ؃زقدآټآزقجضڝڪآزآدكججڪڪحقؠجآټڝسڝئسڪجكزئكسټټضقڪضزح؃دڪټنكضجڪڪزكججآڪټكحدآڝدك؃جټڝجكقئجؠحئق؃ؠټئكټقكضزدئؠضسڪ؃كقآڪضنڪززئ؃ؠآټحكؠسئحټڝسؠڝققزدزټڪجنآزضجڪ؃زڪجككقحقڪڝئؠټقسئڝدقڪجننككڝض؃ضآڪكزسسحكڝجؠؠققئټدننسنقزدجن؃كآآكسضڪحؠؠزؠكقحئؠضئټټنزسڝجقؠئآنكجضآحسڪڪؠزق؃سكحنټؠنئسټجسڝڝآؠكدضنحجڪآؠززڪئزد؃ټكنحقؠجئڝټآققڝضنحدڝټؠجقڪئض؃ڪټنن؃زټجحڝؠآئنټضسدڝڪؠؠدزټئجدئټضؠ؃سزج؃ڝټآحكقضئدټڪسآدزقئد؃ڝټجنزسضحڪڝزڪ؃قكضحح؃ڪئؠحزسئؠ؃قڝدكنسججدڝضآجقزسحدكڝئنؠزئئج؃سټنكقسدحندجدڝقضضئدزڪسنكقحجؠحئج؃كسسضحقڝزؠنقآئآدضسؠنززججك؃قآؠكسضټحسضڪؠققضئندجټآنسسڪسزججآنكسضؠحسڪټآآزڝئقكڪټننجسآجكڝڪآكك؃زكزؠڪآؠئزټئس؃ڝڪټندسنضڪڝآآضقڪضكح؃ڪنؠحزؠڝز؃ټټسكڝسقجدڝنآجنآؠقدڪڪزؠ؃زكئحددټئنجټزحڝڝقآدنقضجدټڪضنڝززئئټ؃ټحكؠسئئؠڝسآ؃ققضضڪدڪجنآزضنټ؃زټدككسحټڪڝئؠټقسئڝدقڪدننكجكڝ؃ضآڪكزس؃حكڝقؠؠقئققدسټڝنقزدجن؃جآآؠؠدزحزڝ؃ؠكڝدئؠدضټټؠضسڝجآآقآنكجضآكئڪڪؠقق؃ئكآضټؠنئسټجسڝڝآقكدزنضټڪآؠضزڪئزد؃ڝحنحكؠجئڝټآسقڝزجحدڝدؠجزآئض؃ڪټزن؃سؠجحڝؠآئنټضسدڝڪقؠدزنئجدټټضؠڪسزج؃ڝكآحقؠضئحؠڪسټڝزقئد؃نټجؠزسضحڝڝزآ؃قكضحدؠڪئنټزسجڝ؃قڝدكنسجحآڝضؠڪقزسكدكدحنؠزئجټ؃سڪسكقسقحنڝجؠآقضئڪدزڪ؃نكزحجؠحئآټكسضڝحقڝدؠنكآئآئضټڪنزز؃جكدڪآؠكؠضټحسڪڝؠققدئندجټآنضسڪضز؃؃آككحضؠحئڪټآڪزڝزقددټننجسآئآڝڪآڪك؃ضكححڪؠؠئزټئس؃ڝټقندقنججڝآآضقڪضزح؃؃دؠحنؠئئ؃ټټسكڝقئجد؃دآجقآضضدڪڪزؠ؃زكئح؃ؠټئؠټسسحڝڝقآدقنضججسڪضټڪززئ؃؃كټحؠحسئجئڝسؠڝققضددنڪجنآزضجڪ؃زڝ؃ككسححؠڝئؠټقسضكدقددننزججآ؃ضڪضكزسزحكڝحؠؠقئئټدسټڝنقزدجنحجآآكضضڪحزڝ؃ؠكقزئؠئئټټنسسڝجقدقآنكنضآحكڪڪؠزق؃ئكقدټؠنضسټجسؠحآقكدضنحئڪآؠضزڪسزڝنټكنحسؠجئڝټآكقڝضقحدڪنؠضزآئض؃ڪټزن؃قكجحڝؠآسقټضقدڝڝؠؠدقآئج؃آټقكڪزؠج؃ڝكآحنؠضئدټڪكنڝزؠئددحټجنڪسضحڪڝؠآ؃كسضحدؠڪئؠڝزسجڝ؃ټټدنضسجحآڝضټڪقزض؃دڪڪحؠ؃زئئك؃سڪڝكقسدحڝڝجآدقضس؃دزڝحنكزحئد؃ئټقكسضڝحقددؠنقجضحدضڪئنزق؃جكححآؠكئسجحسڝضؠققنئندجټآنضزدجز؃سآككئضؠحئڪټؠسقجئقددټننئسآسضڝڪآزكئضكحئڪؠؠقزټئس؃ڝټقندسنجزڝآآزقڪززح؃ڪكؠحزؠئئ؃ټڪؠكڝسقجدڝنآجقآضزدڪڪقؠ؃زكئح؃ؠټئكټسسحڝڝقآدننضجدآڪضنڪززئ؃ححټحآؠسئحټڝسؠڝنجضددؠڪجنآزضجڪ؃زټ؃كؠسححؠڝئټټقسئڝدقڪدننزجئټ؃ضڪڪكزس؃حكڝحؠؠقئضؠدس؃ڝنقزدجن؃جڪزكضسضحزڝ؃ؠكقحئؠدئټټنسسڝجقحدآنكجضآحضڪڪؠزككئكئحټؠنئسټجسدسآقكحضنحجڪآؠضزڪئزد؃ټكنحسؠضئڝټآسقڝضقحدڪنآآزآزض؃ڪټزن؃سكئڪڝؠآضقټضسدڝڪقؠدزنئج؃آټضكڪقزج؃ڝكآحقؠضئدټڝڪنڝنقئد؃نټجكآزآحڪڝقآ؃قكضحدؠڪئنټزسجڝ؃قټدؠنسجحآڝضؠڪقزض؃جدڪحټؠزئجټ؃سآڝؠئسدحؠڝجؠآقضئڪدزڪ؃نكزحجؠ؃ئڪټكسضڝحقڝدؠنقجسسدض؃ڪنزز؃جك؃حڪحكئضڪحسڪڝؠققدئندجټآنضسڪجزح؃آككحضؠحئڪټؠسقكئقئدټننجسآجضدضآزكدضكححڪؠؠئزټئس؃ڝټقندسنضجڝآآضقڪضزح؃ڪكؠززؠزئ؃ټټسكڝسقئقڝنآئقآضضئؠڪقؠ؃زكئج؃ؠټئكټسسحڝڝقآدقنضسدآڪضنڪكئئټ؃كټحكؠؠضسزدحؠسضڝد؃ؠجضټدضؠڪسټدآققجئزححؠڝئؠټننزضحجټززڝجسټڝكدجسټقسججؠڪئكجئحنڝئدڝ؃نقزدجنحزڝټكڪئآ؃؃ك؃سح؃ټؠدضن؃ؠنڪجڪدضؠحسسدقسدحضڪڪؠزق؃نزدجټآنئسټجسڝڝآقؠدضنحجڪټؠضزڝئزدجټكآحسؠجئڝڝآسقڝضقححڪنآجزآئض؃ڝټزنحسكجئڝؠآئقټضسدڝڪقؠحزنئج؃آټسكڪسزج؃ڝكټټقؠضئدټؠقنڝزقئد؃نټجدآآقسڪآنټدقكضحدؠ؃ڝټكقآجكڪققزد؃ټؠقكجټآ؃كڝئنڝسكټئقڝك؃ح؃ؠآڝكقسدسڝحئآضزټحآزنڪضنكزحجؠئڝ؃سنجضز؃ك؃ڪآ؃قجئآدضدحټدقضججڪسقدجټسححسڪڝؠقټزز؃دټټجزق؃كجؠ؃؃آككحك؃ضح؃ڝنسنټئكددټننجآئټټڝڪآزك؃ضكححڪؠآئؠټنكدټټقندسنضؠحنټؠزټ؃ؠټنقڝجآڪكسئجضڪحكدجضآڝڝؠآجقآضضزز؃ئؠنزكئح؃ؠڝكآجزآج؃آزقضددټجك؃حزددزټئ؃؃كټحڪڝقڪئحڝ؃نججڪحئح؃ڪجنآزضسڝجحټڪكزجضڝ؃ق؃ؠټقسئڝدقڪدننزجزآئآټنكزس؃حكحجڝضن؃ئئڪټكڪئدټدنقئضڝكنؠؠححزڝ؃ؠكقحئؠدئڝضڪسجئئن؃دآنكجق؃ضسڝزنضضكڪكؠؠسس؃نؠجسئ؃زق؃ئجدنؠزسؠدټقټضجد؃ټكنحقڪضؠدقآ؃سكدڪآكسس؃؃آحزڝدسټقؠدسكجحڝؠڪقؠڪضڝ؃ټآدضدحجآڪزحدؠآآسڝڝڝټسزجحزټكئقڝ؃نڝزقئدجض؃آنكضټ؃ڝقڪسس؃دؠكضټزڝؠززسجڝ؃قدكټدزنحئؠحزضحدټنزقججزڪزقجټ؃سآڝڪزقزئسڪسسضقكئڪدزڪ؃ټقكقئآڝټنڪكؠضڝحقڝدڝدقآضټ؃ټزڪسؠز؃جك؃حآؠكئضټضنحڝڝدقسئندجټآڝزكئئقڝټننڝڪضؠحئڪټؠسجنئقدجټننجسآجضڝڪڪزك؃ضكحئڪؠؠسزټضؠ؃ڝڝقندسنجضڝآآزقڪسدح؃ڪكؠحزؠئق؃ټټزكڝسقجدڝنآجقآضزدڪڪؠؠ؃زؠئحددټئكټسقحڝسجآدقؠضجدآڪضؠحجڪئ؃؃كټح؃سسئحڪڝسټدئحضددټڪجآززضجڪ؃زټ؃ئآسححڝڝئؠټقسئڝدق؃د؃ټزجئ؃؃ضټحكزسئحكڝحڪئقضض؃دسڪدنقزسجن؃زكجكضضڪحز؃ضؠكقجئؠدنج؃نززسجقد؃آنكئضآحسڪڪؠؠئزئكدحټؠؠجسټجزڝڝآآضقضنحجڪآآنزڪئقد؃ڪؠضآسؠجآڝټآآقڝضقحد؃نآآزآئټ؃ڪټڝن؃زسجحڝؠآئقټضڝدڝڪقؠدزنئجحآټضكڪز؃ج؃؃حآحقڝضئدټڪسنڝقحئدد؃ټجكآسضحڪڝزآ؃كدضححضڪئنڪزسئضسنټدكټسججقڝضؠڝقزضحدكڪسزحزئجټ؃سټؠكقسححنڝجسڝقضضددزڪ؃نكزحجؠحئج؃كسسححقڝئؠنكقئآحزكقنززئجكدؠآؠكئضټئسضحؠققضئندزټآؠؠسڪجزؠجآككزضؠحئڪټؠسزڝسقزئټننقسآجنڝڪټڝك؃زكقضڪؠؠكزټئؠ؃ڝټڝندقنكسڝآآنقڪضآح؃ڝدؠحكؠنز؃ټټؠكڝسټجد؃قآجكڪ؃ڝدڪڪټؠ؃ك؃ئح؃ؠټئؠټآكحڝڝڪآدك؃ضجدڝڪضنڪحنئ؃د؃ټحكؠسئحټڝسټڝڪؠضدحدڪجؠجزضئح؃زټ؃ټئسحجحڝئآئقسئڝدق؃د؃ټزجئئ؃ضټ؃كززجحكدحدڪقئضضدسڪزنقزآجن؃جنآكضسضحزڝزؠكقنئؠحسزڝنسززجقدؠآنكجضآجزك؃ؠزقكئكدجټؠنئسټجسقآآقكزضنحآڪآؠززڪسزححټكنقسؠجنڝټآڝقڝضقنڪڪنؠززآئؠ؃ڪټكن؃زكقڝڝؠآزقټضټدڝڪآؠدزنڝس؃آټقكڪسزج؃ڝكآحنؠضندټڪكنڝزؠئددڝټجنڪسضحڪڝؠآ؃نحضحدؠڪئآټزسجڝ؃آټدكڪسجئحڝضؠڪقزض؃دڪڪحنؠزئجټ؃سڪڝكقسدحڝڝجآدقضسجدز؃؃نكزحئ؃؃ئټحكسزححقددؠنقجضددضڪجنززقجك؃حآؠكئسجحسڪڝؠققدئنججټآنضزئجز؃سآككسضؠحئڪټؠسقضئقدزټننجسآضضسدآزكزضكحئڪؠآززټسسزحټقنقسنجنڝآټ؃قڪضز؃؃ڪكؠقزؠئن؃ټټټكڝققئجڝنآكقآضؠدڪڝ؃ؠ؃زكآڝ؃ؠټقكټسآحڝڝنآدكنؠ؃دآڪقنڪقجئ؃؃ټټحكؠدزحټڝكؠڝققضددنڪجآآدقجڪ؃نټ؃كآسحجؠڝئؠټقسئڝدآڪدننزججآ؃ضڪڪكزس؃حټڝحؠڝقئسحدسڝڝنقزدجڪ؃جټ؃كضسضحز؃حؠكقحض؃دئڝسنسسڝجقحدآنكجسدحضڝجؠزكسئكحئټؠنئزججس؃ڪآقكدضنجضڪآؠضقضئزدڝټكنحسؠجئڝټآسكئضقحقڪنؠضزآئض؃ڪټزنئسكجسڝؠآكقټسسدڝڪقؠئزنئن؃آټككڪسزڪجڝكآضقؠضئدټڪسنڝكقڪئ؃نټسكآسقحڪ؃ؠآ؃قكضحدؠڪقنټزسجڝ؃قټدؠنسجحآڝكؠڪقؠض؃حڪڪحآؠزئجټ؃نآڝكآسدجدڝجآڪقضئڪدآڪ؃آحزحجؠ؃ئڪټكسضڝحټڝدؠڝقجسحدضڝ؃نزز؃جڝ؃حټئكئضټحس؃دؠققدضددجڪضنضسڪجز؃؃آككحس؃حئڝئؠسقدئقددټننجز؃جض؃حآزكضضكجحڪؠؠئق؃ئسدسټقنضسنججنڝآضكدضزح؃ڪكؠحزؠسئؠ؃ټسنحسقجئڝنټضقآضضدڪڪزؠئزكئح؃ؠټئكټقسحڝڝقآضقنضزدآڝننڪكزئ؃؃كټسكؠسقحټڝټؠڝكنضددنڪقنآقڪجڪ؃زټ؃ؠكسححؠڝكؠټقؠئڝحڪڪدؠآزججآ؃ؠآڪنقس؃حكڝحآټقئئټدټټڝؠكزدجن؃جآآكضضڪحآڝ؃آ؃قحئټدئټټنسسڝجآ؃دآڪكجسدحضڝڪؠزق؃ئآدحڪحنئزدجسڝڝزؠكدضټحجڪآؠضزڪئزج؃جؠنجسڪجئ؃؃آسكدضقحدڪنؠجق؃ئض؃ڪټزن؃سكضحڝؠآئكدضسحجڪقآسزنسج؃آټضنحسزجئڝكآكقؠسئدټڪسؠحزقئق؃نټزكآقضقزڝقآجقكضئدؠڪكنټزسسن؃قټئكنسضحآڝسؠڪقززټدنڪحنؠزضجټ؃سآڝكنسدحنڝجؠآقسئڪدزڪ؃س؃ززجؠ؃ئآټڪدكقجضڪككؠقزئآدضټڪنزحججك؃جآؠكئضټحسڪڝټقڪئئندئټآنسسڪجق؃؃آكحڪضؠحضڪټؠقزڝئقددټنټ؃سټجضڝڪآقك؃ضكححڪآؠئزټئس؃ڝټؠندسنججحزآؠقڪضزح؃ئدټققڝئئڪ؃كننټسقجدڝنآجقآضض؃ڪحسؠدقئئح؃ؠټئڪآن؃ئجڝزكقجڪڪڝنحئقڪڪكآئڪ؃كټحكؠسئڪ؃ڝسآ؃ققضددنڪجنآكضند؃زټدككسجحؠڝزؠټقآڪئدقڪحننزآجآ؃سآڪكزس؃حټؠكؠؠقئئټدڝټڝنكزدجنؠسآآكسضڪحزڝ؃ؠكقحسؠززټټنزسڝجك؃دآؠكجسحؠنڪڪؠقق؃ضحدحټآنئسټجس؃جقڝكدضنحجڝضؠضزڝئزدئن؃نحسؠجئ؃كآسك؃ضقحدكټؠجزټئض؃ڪټزن؃سكضحضڪآئقڪضسح؃ڪقؠحزنسجسڝټضكڝسزجدڝكآئقؠضئؠكڪسؠ؃زقئج؃نټجكآسضضؠڝقآ؃قكضجدؠڪئنټززجڝ؃قټدكنسسحآڝضؠڪزسس؃دكڪحنؠكقسجددآضسټحئآټزڝحئآسضدحكټحقدج؃كټڪضټنكسضڝحقئحڝئكڝئجڪآكټئ؃ڪننحئؠڝننكدضقكڝآؠققدئنجز؃ټنڪضآد؃ن؃زحدټآدسندؠؠڪجزئټددټننجسآكجڝڝآقك؃ضكححڪؠؠئكټئس؃ڝټكندسؠججڝڝآضنڪضزح؃ڪؠؠحزؠئئ؃ڝټسنڝسقجدڝؠآجقټضضح؃ڪزؠ؃زكئح؃ؠټئكڪسسحڝڝقآحقنضجدآڪضڪضززئ؃؃كنضندسئحټڝسڝ؃ؠجضڝدقؠسزدؠآئق؃زټ؃ككننسح؃ؠؠضئج؃سؠحسؠ؃كآئئؠ؃ؠآڪكزس؃زئحضټسزئحټټؠقؠنكزدجن؃جحئ؃سسټحزڝ؃ؠكنسزڝحڪآآزكجحؠڝقدجڪټضسآجدڪآقضجقكڪدسټؠنئسټسؠحټڪنقدسكججڪآؠضزڪسؠجسڪئكقئ؃ڝزن؃ضحڝزككحئڝآنضضئ؃جز؃ضسننسكجحڝؠڝنؠززسدڪكقززححآڪزضح؃دآسزج؃ڝكآحقؠضئ؃ټحضضقزټئد؃نټجټجسڪجڝڪڝس؃جحضزدؠڪئنټؠؠز؃ددآكزققجحټڝضؠڪقزنكئئڪآنؠزئجټجآڝكؠقس؃ټؠؠجضآ؃ؠؠنحزحزؠقزحجؠ؃ئڝ؃ټ؃زؠححندق؃حؠټززڪحكننقححؠټنقك؃ئضټحسڪڝؠققدئنئزدآقسزججز؃؃آكټټكئجدڪضكزقڝئققدټننجسآجضڝڪآزټئككحجڝآؠئزټئسجج؃كننضق؃آكآسڪدكؠټسسدزؠنئنحدؠڪزححئ؃ججكڝنآجقآقؠئق؃زنڝجنڝآؠكض؃قآزسحڝڝقآدؠكقزجكڪجقد؃نڪككئئ؃ڪزكح؃دآ؃كزئؠڪڪئضڪزنآزضجڪجسڝسننضؠحآڝقؠټقسئڝسز؃زآسسسئن؃ضآڪكزس؃حكزحدڪآئؠڪدټټڝنقزدقحجنڪجقټدڪؠڝسس؃ڪقنئؠدئټټټدنحضج؃؃ككضحڝجندضدآئق؃ئكدح؃ڝآڪقجحضټحقؠدقڪضقحجكڪضقسجدڝدټڝنحسؠجئححڝننجضح؃دسڪنحقنئض؃ڪټزټسكجضحڝنقندڝڝسكڝئكڝآنزئؠ؃؃ؠححنسزج؃ڝكآحقؠجئقآحسدحزټئد؃نټجڝحقؠجقڪڪكججدضحدؠڪئنټزسجڝ؃قددټجسزحآڝضؠڪآڝقئحڝڪدنآزآجټ؃سآڝآنكضئضڪزكڪجڝڝدكآڪدنټزحجؠ؃ئڝټؠآزئدقجقټ؃قجئآدضدئټدك؃جقآجك؃جنڪجقؠجدآآكسجدڪنكؠئئڪدكڪجټڝحكجضضضټڝئؠسزڝئقجس؃ڪؠكسض؃قؠحسڝجكسؠححڪؠؠئندززدقآسزن؃نټآقزحؠټئقضحقندسئجؠټققآجڪڪسزكجدڝنآجؠزقدجئڪدك؃حڝؠققججدڪضسقئزڝحكڪئضڝ؃ندقڪؠحززئ؃؃كڝكآڪقدحضټزآؠققضددندئڪسكدجضټڪقڝجحآحككجسڪنكآڪندؠڪدننزجقآحڝڪټؠئسئحكڝحؠؠنآقدحآټڪټجزضجن؃جآآآجققجضڪڝنزقحئؠدئټټنسسڝسسئدقڝكقضآحضڪڪ؃ټنټضس؃ننڪجدزكجسڝڝآقؠئقدجڪڪسقڝئئڪڝقآحسڪقنضجآڪآآنقڝضقحدح؃ټټكآئئئزټټن؃سكجحجزټحنجئضڝحؠدڝققئئج؃آټضآكن؃جټڝدنجححڝنكضئټڝدزقئد؃نټجكآسضحڪدك؃؃دضضحدؠڪئنټزسجڝح؃ددزؠسټحآڝضؠڪنآزسحڝڪجزنجقآئقسئجټنككحنڝجؠآقضئڪدزڪ؃نكټئجؠ؃ئآټكسضڝحق؃دڝنحآئآدضټڪؠكحنجك؃ئآؠنڪضټحسڪڝټقڪئئندضټآنزسڪسد؃؃ټؠجئضؠحزڪټؠڪزڝئقددټنضسسآجكڝڪآزك؃ضكحح؃ؠدززټئن؃ڝټآندكآججڝآضحقڪضكح؃ڪټؠحزټئئدڝك؃كڝسؠجددسآجقآضضجڪڝڪؠ؃زآئح؃ڪټئؠسسسئدڝقآدقڪضجحڪڪضنڪززضح؃كټحن؃سئجڝڝسؠڝققسجدنڪجؠحزضض؃؃زټ؃ككسححؠڝئآ؃قسضضدقڪجننقجكك؃ضټ؃كزسزحكڝضؠؠكس؃زدسڪحنققټجن؃جآآؠضزضحزڝجؠكقضئؠحټټټؠقسڝجق؃ضآنؠدضآحضڪڪآكق؃ئكدزټؠآحسټجسڝڝټنكدضنحكڪآټجزڪئزد؃ټكنحسؠجزڝټآآقڝضنحدڝند؃زآئز؃ڪڪئن؃سآجححؠڝزقڪضقدڝڪټؠدؠ؃ئجدڪقڝكڪسنج؃؃جآحقؠضئجټئكنڝزؠئد؃ټټجكڪسضئ؃ككآ؃قټضحضدڪئنټزسضدننټدكڝسجسحڝضؠڪقزض؃نسڪحنڪزئئح؃سټدكقزدقزڝجؠڪقضز؃دزڪجنكقئڝض؃ئټ؃كسسكحقڝدؠننجنڝدضڪدنززججك؃ئآؠكئد؃حسڝجؠققدئندجټآآضټدجز؃ئآككسضؠجنڪټټسڪحئقدضټننزسآجؠڝڪڪزڝجضكحسڪؠؠقزټئن؃ڝڝق؃ئسنجزڝآآكقڪضقح؃؃كټسزؠئق؃ټټنكڝكڝجد؃آسضقآضندڪڝسؠ؃زكئح؃ؠسدكټسكحڝڝټآدقآضجحآئحنڪزكئ؃؃ڝټحكڪسئضټحكآ؃قنضدئؠڪجټڝزضئڪسئټ؃كؠسحضؠڝئؠڪقسضڝزضڪدنآزجضڝ؃ضآڝكزك؃ضآڝجؠټقئضؠدسڝ؃نقزدڪټ؃جآڝكضضڝحزڝ؃ؠكنحنڪدئڪ؃نسزحجقحڝآنؠجؠڝحضڝدؠزقجئكججټؠؠئآنجس؃دآقؠآضنحسڪآڪضؠدئقدحټكؠسسؠسدڝټټقئكضقحئڪنټؠزآئض؃ڪڝز؃جسكجضڝؠآزقټزجدڝ؃قدئزنئس؃آټقكڪكجج؃؃كدڝقؠضسدټ؃جنڝزؠئدجن؃سكټسزحڪدؠآ؃كحضحدؠكزنټزكجڝ؃قټدكنسجئآضقؠڪقنض؃دآڪحټټزئجټؠكآڝكآسدحنڝجؠآقضسڪزنڪ؃نټزحجڝ؃ئڝڝكسزڝقؠڝدؠڪقجض؃دضدجنزقحڝج؃حټ؃كئسزحسڪڝؠقندنټدجڪدنضزججز؃حآكنئڝټحئڝجؠسؠضئقددټنآجآڝجض؃ضآزكحضكضدڪؠټئڪ؃ئسدسټقنقسنجڝڝآآضدؠضزحضڪكؠكزؠئس؃ټټسئقسقجضڝنآزقآضندڪڝز؃ټزكئض؃ؠ؃ككټسنحڝدقحئقنضسدآڪزنڪقآئ؃حكحؠكآسزحټڝكؠڝنټضدح؃ئجنټزنجڪ؃قټ؃كنسححټڝئؠټقؠئڝدقڪدننزججآ؃ضآڪدؠس؃حكڝحؠآقئئټدسټڝ؃ئزدجټ؃جټدكضضڝحزڝ؃سآقحئڪدئټڝنسسڝجقحدحټكجضڝحضڝدؠزكؠئكجحجئنضز؃جس؃حآقؠسضنحكئآؠسقجئزد؃ټكنجسؠجقڝټآسكئضقحدڪنؠجزآئض؃ڪټزحئسكجحڝؠآضقټضسدڝڪقجضزنئج؃آټزكڪسزج؃ڝكآزقؠضئدټڪزنڝزقئد؃ندڪكټسقحڪڝآآ؃قنضححټڪئنټزكجڝحزټدكنسجئآڝضؠڪقنض؃دآڪحنڪزئجټ؃سآڝكآسدحنڝجؠآقضسڪدزڪ؃نټزحجڝ؃ئټټكسضڝحقڝدؠڝقجئټدضټڪنزز؃جك؃حآڪكئسححسڝ؃ؠققدئندجټڝنضسڪجز؃؃آكؠحضؠحئڝ؃ؠسقحئقئجټنؠضسآجض؃حآزكنضكححڪؠټئزټئسدجټقنضسنجضڝآآضقڪضزحضڪكؠحزؠئئ؃ټڝسكڝسقجسڝنآققآسؠدڪ؃زؠ؃زكئز؃ؠټككټسآحڝدقآدقنضقدآڪننڪزؠئ؃حكټحكؠسكحټڝؠؠڝقكضدحآڪجنآزؠجڪدڪټ؃ككسحئؠڝئؠټقآئڝدڪڪدؠضزججآ؃ضآڪكڪس؃حكڝحؠؠقئسټدسټڝنڝزدئد؃جټآكضضڪحزڝ؃آ؃قحضحدئټټنسقڝجق؃دټحكجضڪحضدټؠزن؃ئكدحڪجنئزضجس؃ؠآقكدضنحجڝجؠضقضئزدقټكؠئسؠجئ؃ضآسكڪضقحدڪنآضزآئضدزټزؠقسكجحڝؠآئقټضسحضڪقؠنزنئض؃آڝضكڪسزجسڝكآققؠقؠدټڪسنڝزقئض؃نټككآسزحڪ؃زآ؃قكضضدؠڪننټزنجڝ؃قټدكنسسحآڝضؠڪقزض؃جكڪحنؠززجټ؃كآڝآنسدجآڝجؠآقكئڪحدڪ؃نكزحضؠ؃ئآټكنضڝحآڝدؠآقجئآدضټڪنآز؃جك؃حآؠكئزټحسڪڝؠټقدئڝدج؃ڪنضقڪجز؃؃آڪكحس؃حئدآؠسكڝئقددټڝنجزدجض؃حآزك؃ضكححڝدؠئزټئس؃ڝټقآدسنجج؃حآضكئضزج؃ڪكؠحزؠئئدجټسنضسقجدڝنڪجقآضضحضڪزؠحزكزد؃ؠڝئكټسسجسڝقآققنضڝدآڪضنڪززئس؃كټقكؠسؠحټدسؠڝققضزدنڪكنآنآجڪ؃زټ؃ككسسحؠڝنؠټققئڝحقڪدننزسجآجنآڪكؠس؃حكڝحؠؠقزئټدسټڝنقزدضن؃جآآكقضڪحنڝ؃ڪحقحئؠدئټټننسڝجق؃دآنكجزآحضڪڪؠؠق؃ئټدح؃ټنئقټجسڝڝآآكدضڪحجڝحؠضك؃ئزد؃ټڪنحزضجئڝټآسنڝضقحدڪڝؠجقدئضد؃ټزؠحسكجح؃دآئآئضسدڝڪقآجزنئجدجټضټضسزج؃ڝكآحقؠضئححڪسؠسزقئج؃نټجكآسضجحڝزآئقكضزدؠڝئنټزسئح؃قټزكنسزحآڝضؠڪقزضجدكڪحنؠزئجټحسآڝكقسئحنڝسؠآكقئڪدزڪ؃نكزسجؠ؃ئآټكسضڝئقڝدؠنقزئآدكټڪټكز؃ضك؃حآؠكقضټحنڪڝؠڪقدضآدجټآننسڪئد؃؃آككحزؠحئڪټؠؠزڝئټددټآنجزڪجضڝڪآټك؃زكححڪؠؠئقڝئس؃ڝټڝندقنججڝآآضقڪضزح؃ڪڪؠحقحئئ؃ڝټسكڝسقجدڝڪآجك؃ضضحجڪزآ؃زكئح؃ڪټئنجسسججڝقآدقنضجدڝڪضنڪززئ؃؃كڝحكؠسئج؃ڝسآحققززدنڪجنآزضئح؃زټ؃ككسححؠدئؠټقسضجدقڪضنننضجآحضآڪكزسئحكڝسؠؠقنئټحقټڝنقزسجن؃ټآآكضضڪئزڝ؃ؠكقزئؠدكټټنقسڝئن؃دآنككضآضكڪڪؠزق؃ضؠدحټؠنؠسټسنڝڝآقكدضنؠ؃ڪآؠنزڪئڪد؃ټؠنحسؠټټڝټآنقڝضآحدڪڝؠجقآنح؃ڪټنن؃سڝجحڝڝآئقټنزدڝڪؠؠدزنئج؃آټضؠڪسزج؃ڝآآحقڪضئئئڪسنڝزقئد؃ڪټجكآسضحڪڝزڪ؃قكضحدڝڪئؠدزسزد؃قڝدكنسجج؃ڝضآحقزضسدكڝحنؠزئئ؃؃سټضكقسضحنڝجؠآقضئڪدزڪدنكزحجؠ؃سآڝكسضڝحق؃؃ؠنقجئآؠڪڪجنزز؃جكضقڝقندضضڝكحقآحقدئندجدحآڝقڪجسؠدقكجحڪدك؃ڝټنضقنئقددټنڝحنسئكڝټكڪئئڝضنقئڪڝئنحز؃؃ڝټقندسنججڝآدضآڪزئحئڪكؠحزؠزنجزڝسكڪئكئدڝنآجقآزكئئڝحنسئڪ؃ضنڪس؃؃ضنزجح؃نؠجسحددزڪ؃ڝنڪززئ؃؃كټحزؠټجسټقجآسققضددنحؠڪجقآجسآزسق؃ڝضدجدڝئؠټقسزئئآڝضنئضجآ؃ئؠآڪكزس؃حكڝحؠؠآققټدسټڝنقزدجن؃جآآقضكټ؃ؠڝدؠكقحئؠجئ؃قؠ؃سڝجق؃ددضآؠضزدضآقسټدزټئزددآڪؠزججسڝڝآقڪكق؃جزڪآققئحزحدؠټكنحسؠززحضټدزڝجئڪسقدجكڪحكدئ؃د؃ن؃سكجحڝؠززقټضسدڝڪقؠدزنئجحآجقكڪسزج؃ڝكآحقڪضئحجضزنڝزقئد؃ڝټجكټسضحڝڝزآئض؃ضحدؠڪئؠحزسئ؃؃قټضسدسجحآڝضآنقزضددكڪحضڪزئجټ؃سآڝكقسدحندجدضقسئڪدزڪ؃نكزڝجؠ؃ئق؃كسسدحقڝحؠنقجئآدضسؠنزز؃جك؃ئآؠكسضټحآقئؠققدئندڝټآنسسڪجز؃؃آټضكضؠحئڪټآحزڝئكددټڪسنسآجضڝڪټكك؃ضنححڪؠسززټئس؃ڝټقندسنججدآحققڪضزح؃ڪكؠحقكئئحټجككڝسقجدڝنآجكزضضدڪكنؠ؃زنئح؃آټئكټسسجضحټآدقنضجئدڪضنڝززئد؃كټسسحسئحټڝسڪئققضحدنڪجضڝزضجڪ؃زټحككسححؠ؃سدضقزض؃دقڪنننزججآحضآڪكزسدحكڝجؠؠقآئټحقټڝنقزججن؃زآآكضضڪجكڝ؃ؠكقضئؠدقټټنسسڝئن؃دآنكزضآحكڪڪؠزق؃ئكدحټؠنضسټجنڝڝآنكدسنحجڪآؠضزڪئټد؃ټننحسؠجئڝټآسقڝضنحدڪنؠجزآئض؃ڪټقن؃سآجحڝؠآئنټضسدڝڪكؠدزؠئج؃ټټضؠڪسزج؃ڝنآحقآضئحآڪسؠڝزقئد؃نټجكڪسضحڝڝزآ؃قكضحدؠڪئنڝزسجڝ؃قڪجكنسجحټڝضآنقزض؃دكڪحنؠزئجڝ؃سټ؃كقسدحنڝجؠآقضئڝدزڪدنكزئجؠدئآټكسضڝحقڝسؠنقئئآدكټڪنزز؃جكجنآؠكضضټحسنحؠققدئندضټآنضسڪئككنآككجضؠحټڪټؠسزڝسقددټننئسآجسڝڪآڝك؃سؠححڪؠؠسزټض؃؃ڝټقندزآججڝآآققڪسدح؃ڪكؠحقټئئ؃ټټنكڝزحجدڝنآجقآضضدڪڪقؠ؃زټئح؃ټټئنټسسحڝڝقآدك؃ضجدټڪضنڪززئ؃؃كټحكټسئحټڝسټدققضددؠڪجؠضزضجڪ؃زڝ؃ككسححآڝئؠڪقسضزدقڝجننزججڪ؃ضټضكزس؃حك؃ئؠؠقئض؃دسڪسنقزدجندضآآكضسححزڝزؠكقحئؠدئټټنسز؃جق؃ضآنكضضآجضڪڪؠزق؃ئكدئټؠنضسټجسڝڝآقكدضنحضڪآؠضزڪئزد؃ټكنجسؠجضڝټآسقڝسقحدڪنؠجزآئن؃ڪټقن؃سكضڝڝآآئقټضزدڝڪقؠدزنئج؃آټضكڪزنج؃ڝكآححسضكدټڪسنڝآنسزدؠټ؃زټؠنجئڝزآ؃قكنسئضڝكنزضنڝضحضټزكنسجحآئ؃ڝدنحئ؃ڝكنزڝحزڪجټ؃سآڝڪجككحضڪجكسجؠڪضنحجڝڪندؠئس؃ئآټكسنڪسح؃ضؠكضن؃؃ؠدسئ؃نؠ؃ضڪئكټدكئضټحسدحڪ؃كټجڪڝزكحؠضسڪ؃ك؃؃آككحضؠحئسټ؃آؠڝضزدټټننجسآسسجقڪجقزج؃ڪدقئدئڪؠققجآڪڪئنزؠججڝآآضؠكقججسڪجكحجدؠنقضججڪزسنئكڝئن؃ئزڝحنجكڪؠضزكئح؃ؠحنآجز؃حسآؠجحقټضجدآڪضڪجندضآنئټقكؠسئحټئڪڪضكآضدڪټنزضضزقجڪ؃زټ؃آكققئكقدآضقسئڝدقدضټڪقڝحقڪزققجنڪضڝآڝكؠؠقئئټئڪ؃ټآجسض؃نآ؃سضئآز؃حزڝ؃ؠكنسزآدټآؠزڝ؃ڝڪدقآج؃ټكقنحټنسسكئ؃ټټكدئجكجززجسڝڝآقؠآكجج؃ڪئكسدضڪټققئ؃ڪئ؃سئضڝټآسقڝزآضحڝجندضضڪضؠزسح؃سنڝس؃؃جكجسن؃زؠؠسټڝڪزنئج؃آټضضدسزج؃ڝكآحقؠضئدټ؃سدحزقئد؃نټجكآسنحڪڝټجدقكضحدؠڪكنټززجڝ؃كټدكڪحنحآڝضؠڪقآض؃دنڪحنڝجؠجټ؃سآڝآزسدحؠڝجؠآجقئڪدزڪ؃نكزحجؠ؃ئڪټڪڝس؃حقڝدؠنقجض؃دضټڪضنز؃جؠ؃حآآكئضټحسڪڝئضقدئندجټڪنضز؃جز؃سضڪكحضؠحئ؃ڝؠسق؃ئقددټننزجججضڝڪآزؠحضكحجڪؠآسجزئس؃ڝټقنحسنججڝآآضئدضزحدڪكؠحزؠئئ؃ټڝس؃حسقجحڝنآئقآسحدڪڪزټكزنئح؃ؠټسكټسقحڝڝآقققنضجدآڝڝنڪزقئ؃؃كقضكؠسكحټڝزؠڝققضدح؃جسنټزكجڪدؠټ؃كنسحج؃ڝئآدئټئڝدقڪدؠڪزججټ؃ضټحضڪس؃حكڝحټضقئئڪدسڝدسحزدجڝ؃جټزكضضڪحزد؃ټحقحض؃دئڪحنسزدجق؃دآنكجسححضڪڪؠزق؃ئكجحټؠنئزججس؃ضآقكڪضنحجڪآؠضقضئزدجټكنحسؠجئڝټآسكئضقحقڪنؠئزآئؠز؃ټزن؃سكئحڝؠآضقټضقدڝڪآزقزنئج؃آڪضكڪسقج؃ڝكزضقؠضئدټڪسنڝزقئدحنټزكآسضحڪڝزآ؃كضضحدؠڪئنټزقجڝ؃قټدكنسجئآڝضؠڪقكض؃دؠڪحؠقزئجټ؃سآڝكقسدحآڝجؠټقضضحدزڪ؃نكزحسق؃ئآڪكسزدڪحڝدؠنقجضزدضټڪنزك؃كآ؃حآؠكئضټحسڝحؠققدڝټدجټټنضسڪجز؃؃آكؠحؠڪحئڪڪؠسق؃ئقدڪټننجدڝجض؃؃آزكدضكححڪؠؠئټكئس؃ڝټقنجسنجئڝآآضئدضزح؃ڪكؠحزؠئئ؃ټڝسڝقسكجدڝنآجقآسددڪڪزسجزكئئ؃ؠټئكټسسحڝدقحئقنضضدآڪزنڪقئئ؃؃كحڪكؠسئحټڝقؠڝقكضددند؃نټزضجڪ؃قټ؃ككسححڝؠؠؠټقسئڝضڝڪدنؠزججآؠقآڪكزس؃حكڝحؠؠقئسټزكټڝنقزدجن؃جټنكضقڪضنڝدؠكقحضندئڪضنسسڝڪؠ؃دآنكجضآحضڪڪؠزن؃نآدحټؠنئسټجسددآقآدقټحئڪآؠضقڪئزدزټكنحدڪجئڝټآسقڝضقحدڪنټجټڝئض؃ڪټزن؃سكئئڝؠڝئآ؃ضزدڝڪقؠززنئن؃آټضضدسزج؃ڝكآحقؠضئدټ؃سدحزقئد؃نټجكآسڪحڪحزڝجقنضحدؠڝئنټزټجڝ؃ققئكنسجحآڝضؠڪقزض؃جكئضنؠزئجټ؃سآڝنؠسدضنحسؠټقضئڪحزڪ؃ؠ؃زحجؠؠزآټكسضڝحقڝدؠنقجسآزقټڪنزز؃جك؃حټآكئقټضكڝ؃ؠققدضندجڪجنضسڪڪن؃؃آككحضؠحئڪټؠسكڝنؠددټننجسآجض؃قآزآ؃قآحجڪؠؠئقټئسدسټقنددټججڝآآضقڪضزح؃ڪكټحټڪئئ؃ټټسكڝسقجؠڝنڝجؠڝضسدڪڪزؠسزكئك؃ؠټئض؃سسحڝڝقآدقنضجدآ؃ض؃ززقئ؃؃كټحكؠز؃حټڝسزحققضجدنڪئنآزضجڪ؃زحآككسححؠڝسؠټقزئڝدق؃ڪنؠزججآ؃سآڪكزس؃حكدڝؠآقئئټدزټڝنقزدجن؃جآآكضضڪحنڝ؃ؠكقحكححدټټنسسڝسټحؠټڪقجحټڪنقزجحآسقزجئڪجكسسڪجنڝڝآقكدنحضز؃حؠئؠزئؠد؃ټكنحكجسقدجآضكئضقحدڪنؠجټنئس؃ڝټزن؃سكجحڝؠڪئقټضسح؃ڪقؠحزنئئ؃آڝضكڪسزجحڝكآحقؠضسدټڝسنڝزقئح؃نټسكآسزحڪڝزآ؃قكضحدؠڪضنټزسجڝ؃كټدكنسجحآڝزؠڪقزض؃كقڪزنؠزئجټضقڝضنكضڪ؃ؠدڪآحقضئڪدزجقآڝقسجؠټزكدنئضڝحقڝدآآجټئآدزټڪنقز؃جك؃حآؠئزضټحكڪڝؠققدئندجڝآ؃قسڪجن؃؃آآكحضټحئڪټټڝق؃ئنددټآنجز؃جض؃حقڪك؃ضكححڝئؠئزڪئسدض؃ټندز؃جج؃ضآضقڝضزحدڪكؠسئحئئ؃ټټسنقسقجحڝنآجدڪضضحضڪزؠدزكئح؃ؠټئجكسسجسڝقآجقنضجدآڪؠد؃ززئح؃كټزكؠسضحټڝقؠڝقآدقدنڪجنآزنجڪ؃قټ؃ككڝئحؠڝسؠټقسئڝدقڪدنن؃ڝجآ؃زآڪككس؃حكڝحؠؠؠدئڪدسټڝنكزدجن؃جآڪكضضڪحزڝ؃آ؃قحئؠدئنضنقسڝجق؃دڝقآددححضڪڪؠزق؃ئكدحدئڪئزآجكڝڝآقكدنڝضټڝسټدزڪئزد؃ټكنحسؠحئجآنسقڝضقحدڪنؠجزآق؃ئڪآسنئسكجحڝؠڝنؠززسدڪؠؠؠڪزنئج؃آ؃نآقزؠح؃آنقزحئآڝسجحئټدق؃ججدقټجكآسضحڪجحآ؃قؠضحدآڪئنټزسئټكزټدكڝسجج؃ڝضؠڝقزضحدكڪسزحزئجټ؃سټجكقسححنڝزقجقضئڪدزڪننكزججؠحئحسكزسدحقڝحؠنقسئآحزڝآنززئجك؃سآؠكئضټجقڪڝؠققسئندضټآنضسڪجز؃؃آككئضؠحكڪټؠقزڝضنددټننسسآجسڝڪآزك؃ضكححڪؠؠضزټئق؃ڝټؠندسنڪسڝآآزقڪضزح؃ڪكؠحكؠنز؃ټټقكڝسنجد؃دآجكآؠحدڪڪكؠ؃زڝئح؃آټئكټكجج؃ڝقآدقؠضجدآڪضؠ؃ززئ؃؃كټحكڪسئحټڝسدئكقضددنڪجټ؃كؠئكڝټنضضآ؃ضؠزضآڝڪقكسد؃نؠكسقټضټزدزآڪكزس؃ئټحجآئزححسؠسققججټزق؃جدټئئټد؃ڪزقئجقڪنئآحدټټنسسڝقكجؠڪسقنججڪئقزجدڪككحئدڝ؃ضآزحجسڝڝآقكدؠقحئڪټؠضزڪئزد؃ټكآحسؠجئڝڪآسك؃ضقحجڪنټجزآئضد؃ټزن؃سكجضڝؠټئقټضسح؃ڪقؠحزنئض؃آټضكڪسزج؃ڝكآجقؠضئدټڪزنڝزقئد؃نټسكآسضحڪكحآئقكضحدؠحآڪدقآجڪنجټضكنسجحآحئڪئكقئكزآڪسنؠزئجټحڪ؃جنڪس؃حڝڝجؠآقضئڪزضڪدننزحجؠ؃ئآټكسزڝحقڝدؠؠقجئټدضڪ؃نزك؃جك؃حآټكئضټحسڝ؃ؠقكدئندجټټنضزدجز؃حآككحضؠحئڪټؠسق؃ئقددټننئسآجضڝڪآزكجضكححڪؠئدقنئس؃ڝټقڝحنئئڝڝجكآئټڝ؃كنضحڝؠننضكآضسجنؠسقجدڝنڪزؠټضڪ؃آآ؃ض؃ححآټزددنآؠسڪجڪ؃قآدقنضجئ؃؃ؠؠكسټدضآآزضحزآآسڪڝكټدزنحكټقئضؠدزضجڪ؃زټ؃ڝزسجحآڝئؠټقسئڝدق؃دننزججټ؃ضآڝكزسححكدحؠؠقئئڝدسټڝنقزحجندجآآكضضڝحزڝجؠكقئئؠدئټټنسسڝجق؃حآنكجضآحسڪڪؠزق؃ئكدسټؠنئسټټد؃آآقكدضنئزدټؠڪسآح؃ؠ؃قححټټدزنحؠآڪئزؠؠحآڪنؠجزآققجسڪحك؃ئضڝزكحئنڝجنحضدؠؠؠسزنئج؃آحؠآؠزئحقآآججكؠضئدټڪسټجكڪئآ؃؃نقضڝ؃قؠنضڝ؃دقآسئ؃ټؠآسؠټقئس؃قټدكنسجزټڝضؠڪقزض؃دكڪحنؠكئجټ؃سآڝكقسدحنڝئؠآقضئڪدزڪدنكزججؠ؃ئآټؠسضڝحقڝحؠنقئئآدقټڪآزز؃جك؃جآؠكضضټحقڪڝآققدئندجټآنكسڪجق؃؃آككحضؠحئڪټؠززڝئقددټننجسآجضڝڪآټك؃ضكححئ؃آدزټئس؃ڝ؃ڝټكززج؃ؠجقئجحڪجقڪدنڪؠقڪحڝزڪټككڝسقجدحڝڪټنقټئحنڪزؠ؃زكزدجڝڝدكؠجكآحندئآڝقكڝئنؠكقدقجئ؃؃كټحآ؃كدجنڪئكقجڪڪكززئڝڪننحئسسنټئككسححؠدؠڝ؃نجئززؠڪقننزججآجټڝآؠحضئڝكنڝضئكحئټدسټڝآقكؠجن؃ئآآكضضڪحقڝ؃آؠقحئؠدسټټنؠسڝجق؃دڪنكجضآحزڪڪؠكق؃ئندحڝؠنئسټجقڝڝآنكدضټحجڝحؠضزڪئقد؃ڪسنحسآجئڝڝآسكجدڝحدڪنؠجقكئض؃ڝټزن؃دآجحڝآآئقټضسدڝڪقټدككئئ؃ټټضكڝسزجحڝكآحقؠضئح؃ڪسنڝزقئد؃نڝجكآسضجدڝزآجقكضسدؠ؃ئنټزسئح؃قټئكنسكحآڝضؠڪقزضجدكڪضنؠزئجټ؃سآڝكقسححنڝسؠآقسئڪدز؃ټننزحجؠ؃ضآټكسضڝحكڝدؠنقجئآدټټڪنزز؃ق؃؃زآؠكئضټضئدضآحزدحئ؃حڪ؃نضسڪجزئقڝټنقضننجڝزؠسزڝئقضآدجؠ؃سئدسؠحسندجآحزدڪآؠكزټئس؃ڝحڪآڪززحؠآڝڝ؃كجضزح؃ڪك؃نندضق؃ټنكڝئزحجدڝنآجآحزڝجڪڪسسدجكڪحكدئ؃نټجكجنڝقآدقنكڪضضڝحنسضقڝئنآضض؃ئؠجدڝڪضآجققضددن؃ؠڪ؃قؠجټدنټ؃ككسححؠنزؠټقزئڝدقڪدننزجضآسقآڪكقس؃حنڝحؠآقئسټزكټڝننزدجن؃جآڪكضسڪقئڝ؃ؠنقحضجدئټڝنسسڝڪؠ؃دآؠكجضآحضڪڪؠزن؃نآدحټآنئسڪجس؃؃آقكد؃ټحجڪڪؠضزڪئزد؃ټكآحآڪجئڝڝآسكدضقحسڪنؠكڪټئضد؃ټزنؠسكججڝؠآضقټضنڪسڪقؠدزنئڪ؃آټسكڪسؠڝزڝكآحقؠسئدټڪزنڝزقڝئ؃نټضكآسسحڪڝزآ؃نكؠضدؠڪسنټزقجڝ؃آټدؠنآسحآڝزؠڪقكض؃ح؃ڪحؠدڪضجټ؃قآڝنكسدحؠڝجؠټقضضحټڪڪ؃نكزحئآ؃ئآڪكسزڝقؠڝدؠآقجئآدضڪدنزق؃كس؃حآآكئسجحسڝدؠققدززدئټآنضسڝجز؃؃آككجضؠحئڪټؠسقحئقددټنححز؃جضڝڪآزؠڝزڝججڪئكضقكئس؃ڝټقڝحنئئڝڝجكآئټڝ؃كنضحڝؠننضكئسڪحكڝسقجددڪڝزنسئئڝدننحزڝڝنقضز؃سزجسؠحڝڝقآدقنؠددټڪسنڪززئ؃؃كټحؠؠسئحټڝزؠڝقكضددؠڪجآآزضجڪ؃كټ؃ككسححټڝئآټقسئڝدكڪدنټزججڪ؃ضآڪكزس؃حكڝحؠآقئئټدسڪ؃نقزدجن؃جڪحكضضڪحزټئؠنقحئؠدئجسقززئجق؃دآنټققټحڪڪسكضكټئټدحټؠنئكآضآد؃آدسئضټحجڪآؠضآڪزدحڝجآنقسؠجئڝټڝزؠنسسدڝؠټزقئڝض؃؃ڪټزن؃كحضآدزنجس؃دڝآزضحدئټدسقكقټضكڪسزج؃ڝكآحؠككئدڪڪننڝزقئدضكڝكؠقضق؃ڪڝزآ؃قكضحدؠڪئدسؠسؠ؃؃آټدكنسجزآدؠټجززسټح؃ڪحنؠزئزضج؃ټنكزجڪڪټضكد؃قضئڪدزڪ؃نكزحسضئئئآكنضڝحقڝدڪحؠزسحدئقزنؠز؃جك؃حدجآقزجحضزڝؠكقدئندججئ؃زسڪجز؃؃آككحدؠكسحټؠزقكئقددټنڪؠنجئآڝسقئئزڝجنآئن؃ضئحئن؃ڝټقندكڝسددڪؠضټضضآح؃ڪكؠحؠحئټدڪآڪجڝكحجدڝنآجقآضضدڪڪزؠ؃نئئز؃ؠټئكټكئضض؃حؠدسئڝؠدآڪضنڪززئ؃ئكزدټؠكجحټڝسؠڝقق؃ئدنڪئنآزضجڪ؃زټ؃ؠكؠؠحآڝضؠټقزئڝدڪڪدننحسجآ؃قآڪكقس؃حكڝحټؠڪزئټدكټڝنؠزدئئ؃جټڪجزضڪحؠڝ؃آ؃قحئؠدئڝټ؃كسڝجټ؃دآنكجسنحض؃؃زدق؃ئڝدحڪسنئسټجسدڝحؠكدس؃حجڝحؠضقحئزححزؠنحزحجئدجآسقڝضقججقآؠجقئئضحئټزن؃سكجحټقآئكجضسحزڪقؠدزنئجټسټضكڝسزج؃ڝكآئقؠضئټ؃ڪسؠدزقئح؃نټجكآقضكدڝزآحقكضئدؠڝكنټققڝك؃قټئكنزسحآڝضؠڪنزؠجدكڪضنؠززجټدزآڝنندؠحنڝزؠآقټئڪدزڪ؃آكټضجؠ؃قآټكنضڝحنڝدؠنجسئآدنټڪنزز؃جك؃حڪؠڪټضڪحؠڪڝؠټقدض؃دجټآضقسڪجڪ؃؃آنكحضؠحئ؃ټدكزڝئڝددڪدنجزسجضد؃سكك؃سدححڝحؠئزټئسحڝجؠندزجججڝآآضكآضزجحنجؠحقضئئدقټسكڝسقضدضټآجكسضضحقڪزؠئزكضئنټټئنقسسجقڝقآدقنسضؠڪڪضؠنززض؃؃كټحكؠسئ؃نڝسآكققضټدنڪجنآزض؃ق؃زټضككسححؠڝسؠټنسؠحدقڪسننزقجآدئآڪؠززححكڝزؠؠقكئټححټڝؠندججن؃كآآنكضڪحزڝ؃ؠكجضئؠدؠټټنزسڝجق؃دڪنڝسضآحآڪڪؠڪق؃ئآدحڝؠ؃زسټجټڝڝآڝكدسآحج؃آدقزڪئڪد؃ڪ؃نحزنجئدټحكقڝضڝحدڝدؠجقدئض؃ڪسئن؃سټجح؃حآئقڝضسجڝئؠؠدزڝئج؃ټټضكڝسزج؃قسآحقڪضئححڪسؠدزقضدسزټجكڪسضئ؃ڝزآجقكضحزكڪضنڝزسئ؃؃قټدكنقجحآڝضآ؃قزضحدكڝزنؠكئجټ؃سټحكقسدحن؃دؠآكضئڪدزڪحنكزڝجؠ؃زآټكسضڝحقڝدؠنقئئآدضټڪنقز؃جك؃حآؠددضټحسڪڝحكقكئندجټآڪڪقسئنآآقحئسټ؃كنققؠؠزڝئقدد؃ضټآزكحټټڝكنككضكححڪؠټټؠئئڝڝڪنڝضز؃آؠڪحقكقكقضزح؃ڪكڪقنضسئ؃آقسسضد؃ؠآسج؃ڪحزسضدڪڪزؠ؃كڪزجدقآ؃زټ؃ؠآققزحڝؠسقد؃ضټنزنجقڪحټآڪقكؠسئحټدنڪضكجئزڪڝنسئڝ؃دنسئقڪئنڪئك؃حؠجضآڝكؠسضض؃ننؠسټزض؃ټآڪكزس؃ضؠحسټسزقحڝټ؃قححټجسئز؃جآآكضقحضقڝكنزضؠڪؠؠټسق؃آؠضسس؃كقحڝسسجحضڪڪؠزنضزټحقټئززحدټڪ؃ڪټحكدضنحجدؠڪككؠئضڪجزسجؠڪجنئجڝسدكجضقحدڪنڪقننسزڝڪنټنزسكجحڝؠدزكندڝقټآټسآڪزڪآد؃ټضكڪسززقحنآؠزټآئدټڪسنڝزقئد؃نآجضؠ؃ڪجضڝزآ؃قكقجضض؃؃نئئټڝڪندسڝن؃سجحآڝضج؃ټڝكحئجڝنؠټسجئ؃؃سآڝكقؠ؃ضق؃كضزقكئڪدزڪ؃ڝدنسضد؃جؠؠكسضڝحقڝدؠنقجزئضضؠدنؠز؃جك؃ح؃دؠڪزټحضسڝؠقز؃ضحدجټآنضككسندؠآقسددنؠؠسكڪدقڝئقددټنآزكحئ؃ڝئكآضجڝآنڪضجڝضق؃ضق؃دؠ؃ضڝآآؠڝڝآآضقڪضزح؃ڪكڪ؃ؠؠئضدحټسكڝسققزح؃آټقجحقسقڪقؠ؃زكئحسجسدنجسسحڝڝقڝحؠضسددنؠقزجسسئس؃كټحكؠآؠدسحكد؃؃ڪزئټڪڪجنآزضجڪ؃زك؃ڪڪنحضسڝنؠټقسئڝسسقزج؃جڝآڝكضڝقكزس؃حكڝحؠؠقئؠسضسكسؠدزدجن؃ج؃حؠڝزڪحسننسؠدقآززنټڪؠحسڝجق؃د؃ټؠؠسزدضآنزآدزآڝزقحزټسئحسڝ؃ضآقكدضنسڪدڝټ؃سڪحزټضئكنحسؠجئڝټآسقڝكنسدسقؠجزآئض؃ڪټزن؃قضزحڪنټحقټضسدڝدڪټؠكنئحټحسزجڪڪزكدئئڪڝكجئقڝنزجؠئزقئد؃ن؃ننضزسحسكزڪڪقنضحدؠڪئټټحټئز؃قټدكنككضسدضؠټئق؃نآزضڪسحزكجټ؃سآڝآ؃كقججڪؠقڝندئڪدزڪ؃نكزحجؠجز؃ټكسضڝحقڝدؠنقجئآسحدڪؠضز؃جك؃حآؠكئضټحسنڝسڝققئندجټآڪټنضئڪڝققكحنټدټ؃ڪڪؠسزڝئقئؠآآنؠسآجضڝڪدجؠسئټڪدئئڝحقجدندڪڪزندسنججح؃ڝكنقئسڝجنآجكڝؠؠقئڝڪسنؠسسڝڝؠحسآكئضضدڪڪزڪئنټضڪڝزؠسضز؃كؠئضؠآققنضجدآ؃ټټآكزدڪڪ؃كټجئجزجزڝسؠڝققق؃ئڪ؃؃ننئقټئنكضؠڝقؠدټئڝآؠټقسئڝئز؃زؠؠسآڪآؠزسضدكككجئڝحؠؠقئك؃جڪڪنكقئټڝڝكنضحڝؠننضكئئؠكقحئؠدئټټنسقجزقحؠآنكجضآحضڪڪجزآئقكقحټؠنئسټجسڝڝآقنككنكئڝقؠضزڪئزجئ؃ننؠضك؃ټكټسڝدنؠڪسزدقؠؠآجئك؃ڪټزن؃ك؃سضدقؠآس؃ضؠدڝڪقؠدآضزآدكآټزڝنټج؃ڝكآحقؠضئدټدسڪڝؠ؃ئد؃نټجكآسضحڪض؃؃؃ټ؃ضضدؠڪئنټآسسكحزټحكڪسجحآڝضڪآؠدضڪدقدؠؠ؃زئجټ؃سڝټؠڪسؠدنآټقڝقؠئڪدزڪ؃جنؠدجټجنندضنئ؃حڪڝدؠنقجزدئكڝحندض؃ؠټآزټجكئضټحسحئڪككحجكڪسسڝجنڝزنق؃ئآككحضؠضئدجآؠسڝئقددټننجسآجضڝڪآزك؃قئحآڪؠؠئزټقڪئسڪڝككحزڪنكسئڝڪټنقآقڪكؠحزؠئئ؃ټضسڝضنقكئ؃؃آجقآضضجضجحقزحؠ؃ڝئدجزنجسسحڝڝقڝټكقسك؃ؠؠقززؠ؃ئن؃كټحكؠكنضزدسؠڪجكددؠنسكدققضئټ؃آټ؃ككسحقجدنټدقسححزؠڝسننزججآحن؃حنؠضن؃ككسضئ؃آؠآضق؃ټنڪضآڪڪؠئزئدزآحسقدكآؠسجضددئټټنسك؃ؠؠزجڝؠدسجدئحڝئؠزق؃ئكټسنحنسدضآقسؠكؠكټضنحجڪآ؃سؠقسج؃زؠ؃سد؃ئنڪسس؃ڝؠڪسټسزڪنؠجزآئض؃ڪؠز؃ڝنكقن؃ئآئقټضسق؃ئجڝدنآسټحزټټكؠئؠندڝآآحقؠضئضحد؃آؠؠدئك؃نټجكآقڪسض؃؃نڝس؃؃قؠټسڝ؃حزنجڝ؃قټدآكقكجټڪڪدجك؃ض؃دكڪحټجنقئق؃سؠ؃جض؃ئؠئسدحټقآئڪدزڪ؃ڪدكآئس؃جننضكآضككڝئؠنقجئآسئ؃ئآز؃ؠئس؃حآؠكئقحضن؃جؠحسدڪڪنآسئدئؠ؃سض؃سؠئكجزدحئڪټؠسؠضزحجدټكسئجدټؠقئحآټحسټجزټحقؠجآڪضقحجڝټڪكججئڝسؠئكسضزح؃ڪكڝقنضئڝ؃دؠدضد؃قؠؠ؃قآجقآضضدڪڪزؠ؃ؠئقحؠئټؠكټسسحڝحآڪؠكقض؃ڪڝنكئنجدئك؃كټحكؠآضزئ؃ڪؠضسح؃قننضئڝ؃ضسئق؃زټ؃ككنټسئ؃دؠضسز؃جؠؠسئدجآحنټددآڪكزس؃ضئحضټجقئحڝننزؠح؃ټكزڪحقټج؃سسجحزڝ؃ؠكنكقسحدټسقققدئح؃دآنكجؠ؃دسقسحجقئڝكز؃ټڪضكټدڝڪ؃؃آقكدضنزآدسؠضزڪئزد؃ټكححؠجزئآدآسقڝضقحدڪنؠجقئقضڪدټټن؃سكجح؃ككضڪجڪحؠزسئج؃زڪئج؃آټضڝئكدض؃ڝقټئقؠضئدټڪسحڪقجئد؃نټجآضقڝئنټسكجضحڝنقضئز؃ئكؠڝض؃قټدكنسجحآڝضنڪآسؠجحقڪحنؠزئس؃ئ؃ڪؠكحددڝ؃كؠئزڪڪككدنڝحكؠئنڝكئؠټجكسضڝحقسڝحڪكضدڪككټدنقزقجك؃حآؠټكقججنڪسققججڪدكضحجننسڪجز؃؃دڝؠڝسقدآآ؃زنزڝئقددټننجحآنزجڪئسكټضكححڪؠ؃ضؠزسح؃سنڝس؃؃جنټسض؃ڪؠټسآټقجټؠحزؠئئ؃ټټسكڝزقزدضآآجقآضضدڪڪزؠ؃قد؃حقټټڪكټسسحڝئآڪڪكنزجد؃آدزئدڪټضقكآدنضسئحټڝسڪنؠؠسكدنآضئك؃نؠزسسدكسدسؠحؠڝئؠټڪزنزضح؃نآقزڝجحڪټكنكزس؃حكڝحؠؠقئئټدسدڝئجزسجن؃جآآؠنكحجؠڪنككسجئڝدئټټنسكزسآدزآكڪقضڝحضڪڪؠزنكزجحڪئآنڪسټجسڝڝڝجآئزححجآڪئؠح؃آحسڝدنآټزضجئڝټآسؠنقؠجكڪنكض؃ڝټڪقآجحڪؠآؠجحڝؠآئقټضسدڝحدڝدزؠئن؃آټضكڪنټضن؃زنڪسڪددآض؃جؠئزقئد؃ندؠآټسڪح؃ټقدحقؠضحدؠڪئدآزسئز؃قټدكنسجحآڝؠن؃قزضكدكڪسنؠزضجټ؃زآڝكآحقحنڝجؠآقكئڪدقڪ؃ؠؠدئجؠ؃ټآټڝټضڝحقڝدآنڪ؃ئآدټټڪ؃ټز؃ئح؃حټدزسضټحڝڪڝآ؃قدئؠدجڪحنضزحڝڪ؃؃آككحسجحئڪڪؠسقدقټدحڪجنجزحجضڝڪآزن؃ؠسححڝجؠئڪكئسدقټقنزئآجج؃ضآضكنضزحدڪكؠئزؠئقټئټسكڝسقجټڝنآئقآسزآ؃ڪزؠكزكقز؃ؠټئكټزسقآڝقآكقنسئدآڪڪنڪزټحح؃كټؠكؠزئحټڝزؠڝقآضددڪنننآزضجڪدزټ؃كنسحجټكسؠټقڝئڝضضڪدننزجئآسحآڪكڝس؃ق؃ڝحآئقئضجڝقټڝؠدزدئڪ؃جآټكضسجحزڝئق؃قحئؠدئڝدنسز؃جقدجسآكجسضحضضزؠزق؃ئكححجقنئزضجسضكآقكنضنحكآڪؠضقزئزحقټكنجسؠجزڝټآنضسضقحدڪنآؠزآئس؃ڪڝز؃جسكجؠڝؠآآقټسزدڝڝق؃ڪزنئؠ؃آضدكڪز؃ج؃ڝڝنئقؠضټدټ؃ئنڝزكئدددټجن؃حآحڪڝزآ؃نزضحدآڪئؠجضقجڝددټدؠقسجحټڝضؠڝقزضئڪ؃ڪحنؠزئضؠ؃سټ؃كقزجآآڝجآضقضؠضدزڪ؃نكقحكق؃ئټضكسسآحقڝنؠننجنڝدضڪزنززقجكزڪآؠنئؠنحسڝزؠقآآئندآټآنض؃؃جز؃كآككحضؠحئڪټآقد؃ئقدؠټنؠكسآجضڝڪڪزك؃ضكحآڪؠؠڪزټقئ؃ڝڪنندسنجڪڝآڪڪقڪضزح؃ڪكؠحزؠض؃؃ټټسكڝسقجددنآجقآسددڪڝجؠ؃زؠئح؃ؠټئكټز؃حڝ؃ئآدقآضجحآڪضنڪزڝئ؃جټټحنضسئئټضكؠڝكحضدححڪجڪ؃زضض؃جؠټ؃نئسححآڝئؠټقسسددقڪدؠسزجسؠ؃ضآڪكززححكڝحآققئكندسټڝنققججن؃جټنكضقكحزڝ؃ؠكقحئؠدئڪقنسزټجق؃جآننجضآحضڝقؠزآئئكدټټؠآئسټجس؃كآقككضنضزڪآڪضزڪئزدنټكڪؠسؠضقڝټڪسقڝضقحؠڪنؠؠزآزك؃ڪڪكن؃سكجټڝؠڪنقټضسدڝ؃قدئزنئڪ؃آڪ؃كڪنټج؃ڝكزضقؠس؃دټڪسنڝزقئدحنجسكآزدحڪ؃جآ؃ټټضحجؠئزنټقحجڝدئټدنضسجئآڪئؠڪكجض؃حضڪحآضزئضټ؃سآڝنئسدجسڝجټزقضسڪدزڪ؃ؠضزحئز؃ئڪ؃كسزدحقڝدآزقجآزدضټڪنزز؃جك؃حټسكئسنحسڝدؠقكدئندجڪسنضزكجز؃ؠآكؠحضؠحئڝزؠسقزئقئضټنټجسآجض؃قآزآ؃ضكسزڪؠټئزټئسدكټقنكسنسزڝآڝضقڪضزحنڪكؠقزؠنټ؃ټڪقضكسقجؠڝنټكقآضضدڪ؃زدجزكئآ؃ؠټڪكټنئحڝ؃نسجقنضڪدآ؃ضنڪززئ؃حكجضكؠز؃حټڝڪؠڝؠآضددنز؃نآزڝجڪدجټ؃كؠسحجؠكنؠټقڪئڝضقڪدؠئزجضآ؃ضآڪندس؃جدڝحڝؠقئزټدسټڝؠحزدئ؃؃ججضكضزڪحزڝ؃آجقحضجدئدټنسقدجق؃دټضكجقححضڪڪؠزن؃ئكدحڪسنئزقجسئضآقكدضنحجڝقؠضزڪئزد؃ټكآحسؠجئ؃كآسكؠضقزضڪنټجزآئضدنټزنآسكجټڝؠڪئقټضسحؠڪقؠټزنضټ؃آڝض؃دسزجآڝكآڪقؠسڝدټ؃سټجزقئټ؃نټڝكآزقحڪ؃كسحقكضڝدؠدآنټزسجڝ؃قضڪكنسڪحآ؃حؠڪقكض؃حكجڝنؠزڪجټددآڝنجسدئنضضؠټقڝئڪدڝڪ؃ڪكزحجؠ؃ئآټندضڝحكڝدؠنقجسآدضټڪؠحز؃ئئ؃حجقكئزټحسڪڝآجقدضضدجڪڪنضزڪجز؃؃ټجكحټححئڝقؠسكڝڪټددڪئنجزئجضجڪآزؠ؃ضكححڝسؠئقضئسزضټقؠجسنجج؃قآضؠآضزح؃ڪكؠحزؠئئدقټسننسقجټڝنټجقآضضحقڪزآئزكئټ؃ؠڝئڝڝسزجكڝقآكقنكجدآڪضنڪززئؠ؃كټجكؠسئحټدسؠڝققضآدنڪڪنآڪحجڪحزټ؃ككسټحؠڝڝؠټڪئئڝحقڪدننزټجآئڝآڪنحس؃ئكضضؠؠقڪئټدڪټڝڪقزدئآؠټآآن؃ضڪئټڝ؃ؠكقحسؠززټټؠدسڝئج؃دد؃كجسڪآزڪڪآجق؃قڪدحټؠنئزڝزئڝڝټضكدكڝحجڪآؠضزڪئزد؃ڪئنحزقجئڝڝآسكڝضقحدڝئؠجقجئضدكټزآ؃سكجح؃ضآئكضضسضڝڪقڪدزنئجدسټضآسسزئقڝكڪحقؠضئحزڪسؠززققد؃ن؃جكآسضجقڝز؃كقكآحدؠ؃ئنټزسئك؃قټككننجحآحضؠڪقزضندكجؠنؠټټجټحسآڝكقسؠحنڝؠؠآآضئڪحككننكزټجؠجڪآټكسضڝئقضئؠنقڪئآح؃ټڪآآز؃ضكسضآؠكڝضټجدڪڝڝزقدضنز؃ټآنڝسڪضآ؃؃ټئكحضؠټزڪټآ؃زڝئنددټننجقآكقڝڪټدك؃سجححئؠؠئكټكڝد؃ڪحندزئجج؃ضآضكئؠزحدڝضؠحزټئئ؃ڪټسن؃سقجدزڪآجقآضضحسڪزؠ؃زكئح؃ڪټئنزسسجؠڝقآحقنضجدآڪضؠقززئج؃كټحكؠقئحټڝسآكققضؠدنئؠنآكضجڪ؃زټآككسنحؠجئؠټنسئڝدقڪټننزڝجآدكآڪؠزس؃حكڝڝؠؠقآئټضسټڝآقزدجند؃آآنحضڪئڝڝ؃ټكقحئؠححټټنڪسڝزق؃دڪنكجضآججڪڪآضق؃آ؃دحڪټنئسټئضڝڝدڪكدضنحج؃آؠضزڪضسد؃ڪقنحنكجئ؃ڝآسقڝسقحد؃كؠجزآئضح؃ټزن؃زنجحسكآئقټضسدڝڪقؠدقكئجدټټضكڪسزج؃ڝكآحكضضئدټڪسؠدزقضج؃نټجنزسضئئڝزآ؃قكزحدؠڪئؠقزسئن؃ق؃ڝكنزضحآڝضآنقزضددكڪحنؠقسجټ؃سټآكقسټحنڝجؠآكزئڪدزڪڪنكؠججؠ؃ئآټنقضڝحق؃؃ؠنن؃ئآدضټڪنزز؃جك؃ڪآؠنجضټحقڪڝټققدئنح؃ټآنټسڪسؠ؃؃آككحضؠحڝڪټآجزڝئنددڪننجسآجټڝڪجنك؃سئحح؃ؠؠئزټضد؃ڝڪ؃ندټټججحآآضقڪسحح؃ڪڝؠحڪئئئحټټسكڝزججد؃حآجڝڝضضئڪڪزؠ؃قئئحد؃ټئؠحسسئڝڝقآدكضضجحئڪضحدززضح؃كټحنزسئضجڝسؠڝققزددنڪجؠقزضئن؃زدسككسححؠڝئآنقسئڝدقڪدننكججآ؃ضټؠكزسټحكئسؠؠنئئټدسڪآنقزڪجن؃ڪآآؠضضڪحزڝټؠكقڝئؠحڪټټآسسڝجق؃ڪآنن؃ضآئ؃ڪڪټزق؃ئكح؃ټؠنڪسټض؃ڝڝآقكدضنج؃ڪآآحزڪضضد؃ڝكنحسؠئدڝټټجقڝز؃حدڝآؠجزآضج؃ڪڪنن؃سكجحڝؠآئقټسحدڝڝسؠدزآئجدآټضكڪزحج؃؃ئآحكزضئجټڪسنڝقجئددحټج؃ڝسضحڪڝزآ؃كضضحدآڪئنټزسضڝ؃قټدنسسججقڝضحؠقزز؃دكڪحؠززئئك؃سڪدكقزدحنڝجآزقضآضدزڪآنككحجؠ؃ئټقكسسزحقسئؠنؠجئآدضڪكنزقئجكحكآؠؠئضټحسڝنؠققكئنقسټآنضسڪجز؃آآككجضؠحئڪټټسزڝئقدټټننڝسآنحڝڪڪزك؃ضكحڪڪؠآ؃زټنئ؃ڝڪقندسنجڪڝآ؃ڝقڪسجح؃؃كؠحزؠئڝ؃ټټڪكڝټؠجد؃آآجقآسددڪ؃ټؠ؃زكئححؠټئكټزححڝ؃ئآدټ؃ضججآڪضنڪقئئ؃دجټحؠضسئئټڝسؠڝكضضدحزڪجد؃زضض؃؃زټ؃نزسحكآڝئؠټقسئڝدقڪدؠسزجئن؃ضټ؃كزز؃حكڝحآسقئضئدسڪؠنقكدجن؃جټزكضسسحزسجؠكؠحئؠدئڪقنسكزجقدكآنؠجضآحضڝكؠزققئكقضټؠټئسټجس؃نآقټنضنكجڪآټضزڪئزدؠټكننسؠنزڝټڝسقڝضقحآڪن؃آزآنڪ؃ڪڝزن؃سكجټڝؠآآقټآكدڝڝنؠدزنئڝ؃آ؃ڝكڪسزج؃دكآحقؠس؃دټڝحنڝكټئدحنټجكآزدحڪ؃جآ؃آقضححؠڪئنټقدجڝحټټدنسسجحآڝضؠڪكحض؃دؠڪحنؠزئضټ؃سآڝنجسدجضڝجدآقضسڪدزڪ؃ؠئزحئس؃ئټسكسسضققڝحآزقجضزدضټڝنززججك؃حئڝكئضټحسڝزؠققدئندجڪدنضسڪجز؃جآككحضؠحئڝحؠسزڝئقددټننجسآجضئ؃آزكؠضكحڝڪؠؠضزټضق؃ڝټقنآسنئكڝآآضقڪززح؃ڪكؠټزؠئڝ؃ټدئكڝزنجدڝنآڝقآضكدڪڪزؠ؃ككئح؃ؠڪدكټسڪحڝحآآدقنضجدآڝ؃نڪقئئ؃؃ؠټحنؠسئحټڝڪؠڝټآضدحضڪجآآزضجڪدحټ؃ندسحزڝڝئآڝقسئڝحئڪدنؠزججآ؃ضڪ؃كزس؃جسڝحآؠقئئټدسڝدئنزدئق؃جدنكضضڪحز؃حضؠقحضندئ؃زنسسڝجق؃دضزكجسقحضڝټؠزقحئكححجقنئزقجسئجآقكټضنئجئڝؠضقكئزدقټكڝسسؠئسؠزآسكؠضقسجڪنؠجزآسضحضټزنآسكجڪڝؠڝدقټسقدڝڪقؠڪزنكج؃آټضكڪزكج؃ڝكټ؃قؠنئدټڪسنڝقنئد؃نڪحكآؠضحڪڝزآ؃قكضحدؠڝ؃نټقضجڝ؃نټدننآ؃حآ؃؃ؠڪكڪض؃حضڪحآؠټزجټددآڝن؃سدزڪڝجآڪجڝئڪحجڪ؃آڝزحجؠ؃ئڪټڝكضڝجئڝدآسقجكحدضڝ؃ئكز؃ئس؃حد؃كئضټحس؃دقآقدضقدجڝئنضسڪجز؃؃آككحسزحئڝؠؠسقدئقحدټننجززجض؃ضآزكآضكئحڪؠؠئققئسدزټقڝضسنسجڝآآضككضزض؃ڪكڝززؠسئ؃ټټسننسقجكڝندزقآسزدڪڪزؠآزكسق؃ؠټئكټقسحڝڝقآټقنضڝدآحؠنڪززئ؃؃كټڝكؠسئحټڝسؠڝنقضددنڝ؃نآقحجڪضؠټ؃ؠكآضحؠ؃دؠټكجئڝحجڪدآنسحجآدحآڪنئس؃ئجڝحټؠقئئټحجټڝؠضزدضض؃جڪآكضضڪجئڝ؃آسقحضڪدئڪڝنسسڝئس؃دټټكجضآحضڪڪؠزق؃ضضدحڪكنئسڝجس؃ڝآقكدسضحجڝزؠضقنئزج؃ټكنحزسجئ؃ضآسڪجضقضدڪنؠجقزئضزقټزؠضسكضحڝؠآئكقضسحزڪق؃ضزنزج؃آټضنكسزئئڝكحكقؠزئق؃ڪسؠنزقئك؃نحزكآكضسدڝقآؠقككؠدؠدننټقققټ؃قټآكنزكحآڝضؠڪنزض؃دكڪټنؠزڝجټئئآڝننسدحنڝڝؠآنڪئڪدزڪ؃آكزحجؠددآټكڪضڝزآڝدؠنقجئآح؃ټڪؠئز؃جؠ؃حټؠكئضټحڪڪڝآ؃قدضضدجڝآنضسڪئح؃؃ټدكحسجحئڝڝؠسزڝضئددټؠنجسآجضد؃آزك؃سسححئقؠئزټئسحدټقندزقججئئآضقڪضزجحقؠؠحقنئئج؃ټسكڝسقجدقزآجكقضضحټڪزؠحزكضحسقټئنقسسزجڝقآټقنزجزڝڪضؠكززئق؃كټنكؠكئس؃ڝزآنققكندنضجنآكضند؃زټؠككسنحؠڝآؠټنسؠحدقڪټننزؠجآضكآڪؠزآجحكڝڪؠؠك؃ئټحدټڝؠنحؠجند؃آآؠؠضڪحزڝ؃ټكڪضئؠحدټټؠجسڝزڪ؃دټآجضضآججڪڪڪڝق؃ئكدحڪټآؠسټئضڝڝ؃؃كدضنحجڪآؠضزڪضئد؃ڪقنحسټجئڝټآسقڝسئحدڝسؠجقكئضدڪټزن؃زئجح؃سآئككضسجڝڪقؠدقضئجدئټضنسسزس؃ڝكآحكسضئئټڪسڝئزقسد؃نټجنزسضجسڝزآققكضحدؠڪئؠكزسئ؃؃قټدكنقجحآڝضآنقزضآدكئڝنؠكئجټ؃سټؠكقسټحنسحؠآكضئڪدزڪؠنكقكجؠد؃آټؠسضڝحقڝآؠنقؠئآدټټڪؠكز؃جك؃ڪآؠؠنضټحسڪڝټققدئندڝټآؠدسڪزټ؃؃ټؠكحضؠجدڪټحززڝئقددڪآنجسآئجڝڪجقك؃ضكححڪؠؠئزټضح؃ڝڪسندسآجج؃آآضقڪسحح؃ڝ؃ؠحقزئئ؃ټټسكڝزججدڝآآجقآضضجڪڪزؠ؃قئئحدسټئڝټسسئڝڝقآدكضضجحزڪضؠزززئسسكټجنقسئجؠڝسآ؃ققضحدنڪجج؃زضجڪ؃زټقككسححؠڝئؠسقسضندقڪڪننزئجآدزآڪكزسؠحك؃قؠؠقئئټجسټڝنقزآجن؃ڪآآټجضڪجكڝ؃ؠكقڪئؠجټټټنسسڝضق؃دآنن؃ضآحټڪڪ؃ؠق؃ئكدحټؠنڝسټئجڝڝآنكدسنحجڪآؠټزڪضسد؃ڪئنحقؠجئڝټټدقڝس؃حدڝكؠجقڪئض؃ڪڪجن؃سنجحڝؠآئكڝضسدڝڝضؠدڪڪئج؃آټضؠ؃سزج؃؃زآحڝ؃ضئدټڪسآدزقئددكټجآسسضحڪڝزآ؃قكضححزڪئؠآزسئد؃قڪدكنسججزڝض؃حقزضآدك؃حنؠزئئق؃سټزكقز؃حنحجؠآقضضكدزحكنكڪحجؠحئآټكسسنحقڝكؠنكحئآجضټڪنززآجك؃نآؠڪقضټئسڪڝؠققټئندڝټآؠ؃سڪئك؃؃آككڝضؠئنڪټؠسزڝسقددټنؠ؃سآئحڝڪ؃ټك؃سؠححڪؠآحزټؠس؃ڝټقندزآججڝآټئقڪآزح؃ڪكؠحزؠئئ؃ټڪجكڝززجدڝآآجقآضضدڪڝجؠ؃قضئحدقټئنټسسحڝ؃جآدكضضجحقڪضآڪززئ؃دئټحنجسئجآڝسڪڝققضدحضڪجټآزضقج؃زڝ؃ككسحجسڝئآضقسضڪدقڪدننزجئق؃ضآڝكزس؃حكدحؠؠقئضكدسڪؠنقټڪجنحجآآكضسنحزڝآؠكټدئؠحئټټنسزنجقدقآنكڝضآئضڪڪؠزقؠئكدنټؠؠجسټئقڝڝآقكټضنئكڪآؠضزڪسزد؃ټكنڪسؠئ؃ڝټ؃آقڝسنحدڪنآ؃زآزد؃ڪټزن؃زؠجحڝؠټحقټقحدڝڪقؠدزنئج؃آڪدكڪزضج؃ڝؠآحكؠضئدټڝدنڝزڝئددسټجكآسضحڪ؃حآ؃قؠضحدؠڪئآټزسجڝدجټدنضسجقآڝضټڪقزض؃حئڪحؠسزئئس؃سټضڝقسحجزڝجآضقضئڝدزڪدنكزحؠڝ؃ئآټكسسزحقڝدؠنقجئضدضڪكنززټجك؃جآؠنسضټحسڝنؠقكزئندجټآآضسڪجز؃ؠآككټضؠسحڪټآقزڝئقدټټنآآسآجضڝڪڪزك؃ضكحڝڪؠؠآزټكن؃ڝټقندسنجڪڝآټحقڪضكح؃ڝكؠحزؠئآ؃ټ؃ڝكڝزججددنآجقآس؃دڪڪڝؠ؃ؠحئحدټټئكټزححڝڝكآدقنضجحڪڪضنڪقئئ؃ضنټحكؠسئجڝڝسؠڝكسضدجسڪجنآزضض؃؃زټ؃نقسحسزڝئؠټقسئڝدقڪدؠسزجئؠ؃ضټ؃كزز؃حكڝحآسقئكددسڪؠنقكدجن؃جټزكضسسحزحكؠكؠحئؠدئڪقنسؠقجقزدآنؠجضآحضڝكؠزققئكئؠټؠآئسټجس؃ؠآقككضنززڪآټضزڪئزدآټكنڪسؠجڝڝټټققڝضقحڪڪنټكزآئض؃ڪڝزن؃سكجڝڝؠټدقټكآدڝڝنؠدزنضد؃آئنكڪسزج؃؃ؠآحقؠسجدټضؠنڝزقئد؃نټجكآزححڪ؃سآ؃قؠضحدؠڪئنټقحجڝدئټدنزسججآڝضؠڪكحض؃حئڪحؠززئضټ؃سآڝنجسدجحڝجڝضقضزڪدزڪ؃ؠئزحسؠ؃ئدحكسزڝحقڝدآضقجضئدضدزنزز؃جك؃حټزكئضڪحسڪڝؠقندئندجڪقنضزنجزسټآكؠحضؠحئڝكؠسقؠئقق؃ټنؠجسآجض؃كآزنزضكحڪڪؠټئزټئسدنټقنكسنسآڝآټزقڪضزحآڪكټقزؠئئ؃ټڝسكڝسقجټڝنآڝقآكؠدڪڝكؠ؃زكئڝ؃ؠڪحكټسسحڝ؃نآدقنسددآڝجنڪززئ؃؃كټحكؠز؃حټ؃ئؠڝقنضدحنڪجنآق؃جڪ؃ڪټ؃نضسححؠڝئؠټكدئڝدنڪدننزجضآ؃ضآڪنحس؃جئڝحدؠقئسټدسټڝؠجزدئض؃جټضكضسئقزڝدآسقحئآدئټڪنسز؃جق؃دئڪكجضآحضڝسؠزق؃ئكدحآؠنئزقجس؃آآقكحضنجضڪآؠضقكئزحسټكنحسؠضئڝټآسكنضقحآڪنڝدزآضز؃ڪټزنآسكججڝؠآئقټسقدڝڪقؠڪزنؠض؃آټضكڪزكج؃ڝكټ؃قؠؠڝدټڪسنڝقنئد؃نڪحكآآ؃حڪڝزآ؃قكضحدؠڝ؃نټقضجڝ؃نټدؠنسجحآ؃حؠڪقڝض؃سټڪحنؠزئجټددآڝنضسدحآڝجآآقضئڪدڝڪ؃ڝآزحئس؃ئڪټكسضڝججڝدآحقجكڝدض؃ڪنزز؃ئئ؃حڝآكئنئحس؃ڝؠققدضضدجڪئنضآدجزدحآككحسزحئئضؠسزڝئقجدټننجزقجض؃نآزآڪضكححڪؠؠئقنئسد؃ټقندسنئضڝآآضكآضزسآڪكؠحزؠسئ؃ټټسنټسقجڝڝن؃دقآسزدڪڪزؠڝزكقز؃ؠټئكټزقحڝڝقټدقنكضدآڪضنڪكزئ؃؃كڪحكؠزئحټحجؠڝكنضددنڝئنآټقجڪ؃زټ؃نؠسححؠ؃سؠټڪكئڝدقڪدؠآزججآدقآڪڝنس؃حكڝحؠؠقئئټحسټڝؠؠزدجن؃جآآكضضڪجضڝ؃ؠكقحئټدئڪڝنسسڝئز؃ددسكجضآحض؃ڪؠزق؃ضقدحڪننئنؠجسددآقكدسنحجضضؠضزڪئزححټكنحزآجئجڝآسقڝضقئدڪنؠجقټئضدڝټزآټسكئئڝؠآئكڝضسضسڪقؠدزنضض؃آټضؠدسزسزڝكآحقؠسسدټڪسآجزقزق؃نټجكآسضحڪڝزټدقكسسدؠڪئنټزسجڝ؃قڪ؃كنسجحآڝضؠڪقزض؃دكڪڝنؠزئجټ؃زآڝكقجكحنڝڝؠآقزئڪدكڪ؃ؠكزآجآ؃ڝآټ؃آضڝجئڝدآآقجئآح؃ټڪؠټز؃جك؃حڪؠكئضټجدڪڝآجقدققدجڪڪنضسڪئج؃؃ڝحكحضؠحئ؃ټؠسزڝضضددڪحنجآ؃جضڝڪآزك؃سئححڝقؠئزڝئسدڝټقندزحجججڝآضككضزئ؃ڪكؠحقسئئدضټسڪحسقئجڝنآجكقضضس؃ڪزؠ؃زكسحححټئنكسسجؠڝقڪڪقنسضدآڪضؠؠززك؃؃كټحكؠزسحټڝسآټققنددنڪجنآقزجڪ؃زټڝككؠححؠڝئؠټقسئڝدقڪټننقحجآ؃زآڪنزؠټحكڝټؠؠكؠئټححټڝآقټئجن؃ڪآآكټضڪسنڝ؃ڪكؠضئآدڝټټڪڝسڝسڪ؃دڪنڝسضآج؃ڪڪؠڝق؃قآدح؃ؠټزسڪئدڝڝڝقكدكڝحج؃آدقزڪضحد؃ڪدنحنڪجئ؃ڝق؃قڝسئحدد؃ؠجزآئضحڪجنن؃زضجح؃زآئټجضسجدقنؠدقزئجضدټضكڪسزض؃ضآآحككضئحضڪس؃جزقسدسټټجننسضجآڝزآؠقكزحدحڪئؠؠزسئټ؃قججكنقجحآڝضآآقزضڪدكڝټنؠزئجټ؃سټؠكقسڝحنڝضؠآكضئڪدزڪؠنكزټجؠد؃آټنقضڝحقڝآؠنككئآدضټڪآزز؃جك؃ټآؠكڝضټسئڪڝآنقدئندڝټآنسسڪجز؃؃ټؠكحضؠجدڪټدززڝئقددڪآنجسآئجڝڪڪضك؃ضكححڝټؠئزټضض؃ڝڝضندسنججڝآضحقڪسجح؃ڝقؠحزټئئحټجككڝزضجد؃حآجآڝضضدڪزئؠ؃قئئحدقټئكڝسسجڝجئآحكحضجدڝڪضؠكززس؃؃كټحنسسئجضڝسآحقققددنڪجؠززضسڝ؃زدزككقححؠڝئآققسضزدقڪئننقضجآ؃ضټنكزؠقحكڝحؠؠنئؠ؃دسڪؠنقزټجنئدآآكضآټحزڝټؠكقجئؠدئټټؠقحكجق؃ڝآنټڝضآحضڪڪټززنئكح؃ټؠؠحسټزئڝڝټنكدضنجحڪآڝنزڪئزد؃ټكنحسؠئئڝټآزقڝضقحد؃نؠجزآضض؃ڪڪزن؃ټسجحدؠآئقټسسدڝڝقؠدنڝئج؃آټضكڪزضج؃؃كآحقټضئحڝڪسنڝقزئدضسټجكآسضئڪڝزآ؃كقضححنڪئڪؠزسضد؃قټدننسجكضڝضؠڪقزض؃دكڪحؠآزئجڪ؃سآڝكققدقټڝجآټقضضڝدزئټنككحكڪ؃ئټڪكسز؃حقدحؠنقجحكدضڪټنزقدجك؃حآؠكئټټحسڝآؠققدئندئټآنضئسجز؃آآككئضؠحسڪټآسټآئقدآټندكسآئدڝڪآزئجضكحټڪؠؠسزټئس؃ڝڝق؃ئسنجڪڝآټ؃قڪؠزح؃؃ك؃ؠزآئڝ؃ټڪدكڝزدجد؃؃حجقټسحدڪڪنؠ؃زنئح؃آټئكټڪنحڝڝقآدكحضجدآڪضنڪټجئ؃دئټحنقسئحڪڝسټڝڪؠضدحضڪجؠئزضئس؃زڝ؃ڝآسحجسڝئآققسقحدق؃د؃جزئئز؃ضټككزسكحكڝقدؠقضضندسڪآنقزحجن؃ضآآكضڪححزڝ؃ؠكقنئؠدئټټنسزئجق؃دآنكئضآحضڪڪؠزټآئكدټټؠؠدسټجزڝڝڪقڝئضنحڪڪآؠټزڪئڝد؃ڝك؃ضسؠجڝڝټټدقڝسححد؃ن؃آزټض؃؃ڪڪحن؃زحجح؃دحئقڪسجدڝڝزؠدزؠئج؃ڪټضكڪڪؠج؃ڝكآحكجضئدټڪسنڝزټئد؃نټجكټسضحڪڝزآ؃ڪضضححسڪئؠنزسئ؃؃قڝدڝټسججزڝضآسقزضټدكڪقدآزئئق؃سټ؃كنسححنڝئؠآقكدضدزڪ؃نكزججټ؃ضآټكنحسحقڝدؠنكئئڪدسټڪآزټججك؃ټآؠكآضټججڪڝټڪجنئندڪټآؠسز؃جق؃؃ج؃كحضڝڪؠڪټؠسزڝضكدجټؠنجسآڪقڝڪټحك؃ضټححڪؠؠئكټنك؃ڝڪجندزضججزكآضنڪؠنح؃ڝضؠحقجئئدنټسؠڝآؠجد؃زآجكئضضكنڪزؠس؃ڪئحدقټئنقسقج؃ڝقآدقنضزڪجڪضنڪززئؠ؃ؠټجكؠسقڝئڝسؠڝققسددآڪئنآكضند؃زټټككسنحؠ؃ضؠټقآڪئدقڪڪننقحجڪ؃سآڪكزس؃حټؠكؠؠقئئټحضڪدنكزدجڪآنآآكضضڪجزڝحؠنقحضټؠسټټؠجسڝزټ؃دآنكجضآټحڪڪآحق؃ضضدحڪقنئزجكس؃؃ټجكدسسحجڪټؠضزڝئزد؃ضټنحسؠجئ؃ضآسقڝضقجدئزؠجقئئضقسټزنؠسكجقضؠآضكقضسحزڪقؠحزنئض؃آټضححسزج؃ڝكآنقؠضئدټڪسؠئزقئد؃نټزكآسضحڪ؃ز؃نقكضندؠجسنټقدجڝحقټدكنسڪحآڝټؠڪټكض؃جكڪحنؠقدجټ؃ڪآڝدئسدحنڝجؠآك؃ئڪحئڪ؃ننزحضؠ؃ئآټندضڝج؃ڝدحټقجسآدضټڪؠحز؃ئئ؃حح؃كئزټحسڪڝآجقدضضدجڪضنضزئكز؃دټسكحسآحئڪڪؠسق؃ئقددضڪنجسآجض؃سآزك؃ضكححئزؠئققئسدآټقنحسنجكضآآسككضزحئڪكؠجزؠئز؃ټټسنئسقجدڝنآققآضضدڪڪزؠضزكئح؃ؠټنكټسسحڝڝقئضقنضجدآڪټنڪززئ؃دكحڝكؠسآحټضحؠڝكجضدجنئسنآق؃جڪ؃ڝټ؃ټآسحئؠضزؠټكدئڝحجڪدحئزجضآضڪآڝنحس؃جئڝحآئقئضجزسڪ؃ؠضزدئئ؃جآټكضس؃حزڝ؃جټقحئؠدئڪسنسسڝجق؃دئڪكجضآحضڝسؠزق؃ئكدحجزنئزقجس؃آآقكحضنئجئڝؠضقكئزدقټكڪضسؠضئس؃آسكنضقحآڪنحآزآسضسزټقنؠسكجټڝؠآټقټضآزڝڪكؠڪزنئق؃آټسكڪسقج؃ڝكئسقؠضئدټڪڝنڝزقئد؃نحڝكآز؃حڪ؃ئآ؃قنضحجؠئزنټقدجڝد؃ټدڪڪسجئآضقؠڪكحض؃حئڪححضزئضټضڝټ؃نجسدجضڝجآضقضضئززڪدؠسزحئح؃ئآڪكسسدحقڝدجڪقجئآدضڪزنزز؃جك؃حئڝكئضټحسڝزؠققدئندججقنضزكجز؃ټآككجضؠئئض؃ؠسقنئقدكټنڝزسآضضسدآزكؠضكحټڪؠحټزټسسسقټكنآسنجڪڝآآڪقڪضټق؃ڪنؠڝزؠئئ؃ټټزكڝسكجدڝنئزقآضضدڪڝ؃ؠ؃زكئح؃ؠج؃كټزدحڝ؃ضآدقؠضجدآكقنڪقحئ؃د؃ټحكؠسئئټضكؠڝكجضدحضڪج؃ؠزضضڪس؃ټدنئسحجسڝئآسقسضضزقڪحؠززجئآ؃ضآڝكزسححكڝحجڝقئئټدسڪقنقزدجن؃جض؃كضضڪحزڝقؠكقحئؠدئحزنززنجق؃ڪآنكئضآحضڪڪؠزقؠئكدحټؠنئسټضسڝڝآقكآضنحڪڪآڪززڪئزد؃ټكنټسؠجسڝټآزقڝسنحدڪنؠڪزآضڪ؃ڪټزن؃قكجحڝؠآڝقټسددڝ؃نؠدزنئج؃آڪدكڪسؠج؃ڝكآحنؠضئدټڝحنڝقئئدئضټجكآسضحڪ؃ئآ؃كدضحدؠڪئنټزسجڝدجټدنزسجحټڝضؠڪقزض؃حدڪحنټزئجټ؃سآڝكقسدحنڝجؠټقضئڪدزڪقؠؠزحجؠ؃ئټ؃كسضڝحقڝحؠڪقجئآدض؃ضټنقټجدنؠټزكئضټحسدڪڪآكڪئقڪسسڝئڪڝكنضئآڝزسسآآجدڪټؠسزڝزڝئكڪزن؃حجڝئنحضجڝڪقنضؠڝڪكڝقسئس؃ڝټقآدكئججڝټآضقڪضزحجڪكآئزؠئئ؃ڝټسن؃سقجدڝنڪجقآضضح؃ڪزؠحزكئض؃ؠڝئكټسسجدڝقآجقنضضدآڪؠنڪززئد؃كټنكؠسضحټڝقؠڝقآدقدنڪجنآزټجڪ؃قټ؃ككڝئحؠڝضؠټقسئڝدقڪدننقڪجټ؃سآڪكزس؃حكڝحؠؠؠدئڪدسټڝنكزدجن؃جآټكضضڪحزڝ؃ؠآقحئؠدئكئؠجسڝجق؃ددؠآټزقدآآضزسدكآجزؠحئټجقحڪڪكنټئكدضنحجد؃ڪسقزجضڪكزكئؠڝسكنئجڝئكزكڝجدڪنؠجزآسكجئڪحكسجڪڝضكڪض؃ڝضكزححڝننجضح؃دسڪټنكڪسزج؃ڝكح؃قآضضدټڪسنڝزقئدحنټجكآسسحڪڝقآ؃قؠضحجؠڪئنټزقجڝ؃قټدكؠسججآڝضؠڪققض؃دآڪحنټزئجټ؃سآڝكقسدحؠڝجؠآقضئڝدزڪ؃نكزحئ؃؃ئآټكسزآحآڝدؠنقجزئئكڝئنسضدئج؃حآؠكئنقضڝڝآؠ؃سحڝڪؠسضڝ؃ڪؠټجق؃ئآككحضؠسآحدآآزڪنؠدؠټننجسآسؠحقڪزقڝ؃نڪحقؠجنڪكضسټئټټندسنججحنڪؠكقئزڝنڝحؠحزؠئئ؃ټ؃ضن؃سكجدڝنآجقآضضجڪڪزؠ؃زنئح؃آټئنحسسئڝڝقآدقآضجدآڪضؠدززض؃؃كټحكآسئحڪڝسآدققضددنڪجنټزضجڪ؃زټ؃ككقححؠڝئؠڪقسض؃دقڪسننكججآ؃ضټ؃كزس؃حكڝئؠؠكئئټدسڪ؃نقزضجن؃ضآآكضضڪحزڝ؃ؠكقجئؠدئټټنزسڝجق؃دآنكآضآحضڪڪ؃آقضئكدحټؠآكندئنڝكنقئقسسحجڪآؠضآدسڝدؠآكزڪج؃آؠقجحآټؠقنڝسقضؠآزآئض؃ڪ؃؃ټززححدټحزنحڝڪدئؠآكؠڪزنئج؃آڝنټحزؠحنټكسسحئټآقآحقټټزڪحآجئټجكآسضحڪڝزآ؃قكضحزڪڝكنټزسجڝحټ؃ضنڪضټ؃آككضز؃ڝؠڝضؠد؃ؠدضڝڝدؠزززدنآضسؠدآآڪټنضكدزڪ؃نكؠضسج؃ڝؠټزححئؠڝززح؃آڝزڪئ؃ڪدنزز؃جكضحڝضؠجؠڝحسڪڝؠققدئندجآآڪئقدجز؃؃آككح؃ڪحئڪڪؠسزڝئقددټنآجآڝجضڝڝآزكدضكحضڪؠآسجزئسددټقنضسنججڝآڪضڝدضزححڪكؠئزؠئآ؃ټټس؃ڪسقجئڝنآئقآضضدڪڝكسنزكئس؃ؠټنكټسسحڝدقحئقنضزدآڪكنڪزڝئ؃دؠزئكؠسكحټڝؠؠڝققضدجنئسنآزؠجڪ؃زټ؃ن؃سححؠقدؠټقنئڝدڪڪدنآزجئڪؠڝآڪكآس؃حڝڝحؠؠقئسټڝحټڝنټزدجڝ؃جټئكضز؃حزڝ؃ؠڝقحضئدئټټنسقڝجق؃دټدكجضآحضڝ؃ؠزق؃ئكدحڪ؃نئزئجسڝڝآقكدضنحجڪڝؠضزڪئزددټكنحئججئڝڝآسكدضقحجڪنآجټكئض؃ڝټزندسكجئڝؠآئؠنضزدڝڪقؠحزنئج؃آټسكڪسزج؃ڝكټحقؠضئدټن؃ؠ؃زقئد؃نئجټضسنحڪڝزآ؃آڪقجحئټآقؠندئح؃قټدكنؠحضن؃ؠكڪقزض؃دكڪحنؠزئجټ؃سسنكؠسدحنڝج؃ؠنؠسڪزنڪئنكزحجؠضجڝجؠحضحككڝضؠنقجئآئئ؃ئؠقسكدن؃نآؠكئضټسآدكآجزضحضآضزآحڝئدئؠ؃؃آككحكئضق؃زنټضدڪټؠئئز؃سنڪسآددؠآسؠدكندسآدحآجزضسئڪقندسنججدڝڪآنكضدڝننڝضنڝزقڪضك؃كنؠسح؃جؠضس؃جقضسدڪڪزؠ؃ټدضد؃ڪټئكټسسضكحسټټككضقدآڪضنڪؠڝزدح؃آآزؠؠكجضڝسؠڝقققسئؠڝئكؠئقټدكآضكض؃سڪحؠڝئؠټنكزسججټؠقئجكڪئقددؠټټكنجدنكؠڪقئئټدسدئټحقټزج؃جآآكضضڪټنڝ؃ؠنقحئؠدئټټنسقڝكد؃حآؠكجضټحضڝزؠزق؃ڝآدحټڪنئسڪجسڝڝآقؠدؠټحجڪڝؠضقدئزدآټكآحآڪجئ؃؃آسكحضقححڪنؠج؃كئض؃ڝټزنجسكجئڝؠټسئزضسحدڪقؠززنئج؃آڝض؃دسزجحڝكآئقؠضسدټ؃سدحزقئئ؃نټئكآز؃حڪڝززجقكضسدؠڪسنټزسجڝحقجئكنسزحآڝكؠڪكضض؃جكئضنؠزقجټ؃نآڝنحسدئنضسؠآقكئڪدؠڪ؃ؠئزحجؠز؃آڪككضڝحؠڝدؠڪقجضڪؠزټڪنؠز؃جټ؃حآؠكئضټټكڪڝؠټقدئآدجټآنضقڪكن؃؃آڪكحس؃حئڝئؠسكڝنؠددټڝنجزدجض؃ټآزؠ؃ؠآححڝ؃ؠئقحئسدنټقندڝزججڝڪآضكجضزححڪكؠححڪئئد؃ټسندسقجدڝنڪجڪڝضضحدڪزؠجزكئك؃ؠڝئ؃؃سسجحڝقآئقنسحدآ؃ضددززئج؃كټضكؠسڝحټڝسضنققضجدنڪضنآزقجڪدكقنككسضحؠڝنؠټقسئڝجقئئننزسجآ؃قآڪنئس؃حكنضؠؠققئټدقټڝنقزدضنسسآآككضڪحؠڝ؃ؠآقحئؠآزټټنؠسڝجن؃دآنكجزآققڪڪؠآق؃ئڪدحڪ؃نئسټڪكڝڝآڪكدضآحجڪآؠضكڪنند؃ټڝنحزدجئ؃؃آسقڝآئححڪڝؠجقدئضدئټزن؃ئكجح؃؃آئكحضسحدڪقؠدحجئجد؃ټضنحسزجضڝكآحجڪضئححڪسؠدزقئد؃نڝجڝڝسضججڝزآضقكضندؠڪئقټزسئج؃قټضكنسقحآڝضكسقزضجدكڪئنؠزسجټ؃سقحكقسضحنڝضؠآقضئڪجزئجنكزسجؠ؃قآټكڪضڝحققآؠنقسئآدقټڪنؠز؃ئؠؠآآؠكقضټحآڪڝؠققدسنزسټآنكسڪجؠ؃؃آؠكحضؠجڝڪټؠؠزڝئؠددټننجسآڪقڝڪآټك؃ضؠححڪؠؠئكټنك؃ڝټڪندز؃ججڝڝآضقڪ؃نح؃ڝ؃ؠحزټئئ؃ټټسؠڝآؠجد؃دآجكجضضحجڪزؠ؃؃سئح؃ڝټئنئسسجدڝقآدنضضجدڝڪضؠحززئ؃؃كټحئڪسئجدڝسآدققضددن؃ج؃ضزسئح؃زټئككزححؠڝئټققسضضدقڪئننزججآ؃ضحنكزسئحكڝقؠؠقضئټدس؃آنكزدجن؃ئآآكضضڪحقڝ؃ؠكقحئؠدزټټنسسڝڝټ؃ټآنكجضآضئححټئزڪدآنضقئحڝټؠقححټكآآنسزحجڪآؠضؠضزڝدټټسضكحنټققكجئآ؃كدجئټضضآق؃ئض؃ڪټزآزكآئڝڝجآڪقټضسدڝ؃قزكزنئئ؃آټضكڪسكج؃؃ؠآحقؠضسدټڪكنڝزقئدحنټجكآسزحڪڝكآ؃قؠضحجؠڪئنټزقجڝ؃نټدكؠسججحڝضؠڪققض؃ح؃ڪحنآزئجڝ؃سټجضڝسدحنڝجآجقضئڝدزڪئز؃زحجؠ؃ئټسكسس؃حقڝدئآقجئټدضټڪنزز؃جك؃حڪسكضضڪحسڪڝؠققدئندج؃كنسسڪجز؃دآككحضؠحضڪټؠسزڝئقددټننجسآجسڝڪآزك؃ضكئڝڪآؠئزټئز؃ڝټقندسؠججڝآآضقڪضؠح؃ڪكؠحڝنئق؃ټټسكڝقڝسئدزؠؠڪڝضآدڪڪزؠ؃نټسآدكټدز؃حنآؠضؠآټقنضجدآدئڪحكئجڪټآسضئئڪڝكؠئحڪټضآنسحزڪجنآزضزضجڝټټكسدكڪنكقئكڝئق؃ضدڝئكضزڝجآ؃ضآڪؠزقنحكڝجؠؠقئئټدنټڝؠنزدجن؃ضآآكسضڪحزڝ؃ټكقحئؠدسټټنقسڝجآ؃دڪنكجضآحزڪڪؠكق؃ئآدحڪدنئسټجزڝڝټجكدضؠحجڪڪؠضقح؃ڪد؃ټكنحزسجئڝڪآسقڝڪنحدڪؠؠجزټئض؃ڪټزن؃قئججڝآآئقټضسدڝڪقؠدحټئج؃ټټضكڝسزج؃ڝكڪحڪئضضدڪڪسؠ؃زقئج؃نټجآزسضحڝڝزآحقكضجدؠڪئټنززجڝ؃قټحكنسجحآڝسؠڪقزض؃دكڝڝنؠزئجټحجټئكقسدحنحنآضكسئسؠزڝآئج؃ؠټئكټسسحڝ؃قسزضئؠڪقجئآدضحټآټقآحآجڪآؠكئضټحسټڪآئقدئندجڝڝآآقكجدټنقڝجنټززدججڝ؃قزجزدؠټننجسآس؃جدټڝك؃جؠؠڝق؃حټټآقڝجنڪزندسنججحجڪؠنكئؠڝآندحنڝؠؠ؃ئڝڝكؠسضز؃كؠئآئكدضضدڪڪز؃ئنټضڝ؃ئنسسحسنحڝڝقآدآ؃زټجآڪئټكق؃ئ؃؃كټحټدن؃جنڪسكؠحآڪڪنؠئحجكزكجڪ؃زټ؃آ؃كضئقڪآح؃قنئڝدقڪدټڝندضحڝضقضكنس؃حكڝح؃نننسټقزڪئنقزدجنئؠڝټكڪض؃؃قزټآدقحئؠدئححآآقجحڝټدزآحنټڪئحڝسؠزق؃ئكضق؃ضنڝسدددؠدسقدؠقضحسڪآؠضزڪكسجڪڪڝسزسڝجئڝټآسؠڪزڪجحڪجڪڝزڪئض؃ڪټزڪكټزئد؃جآئقټضسضئدكآحسكدسكڝسنحزد؃جئڝكآحقؠكآئڪڪڝندحدئؠ؃نټجكآنټسض؃ڪؠقئس؃كؠضسڪ؃آآزڪق؃ټټدكنسجزدحسآززڝحڪس؃ڪټنؠزئجټحټڝضؠجضض؃سنؠئجد؃آدس؃؃ض؃آززجؠ؃ئآټڪڪقضجآڝدقټسئضددضټڪنزآحسد؃ؠآحسڪزكحسڪڝؠققدئندجآآڪئآسجق؃؃آككحؠجئئڪڪؠسزڝئقسنحؠنجسآجضڝڪزنك؃ضؠححڪؠؠئزټئسحدكحندسټججڝڝآضقڪضزئ؃ئآؠحزڪئئد؃ټسؠسسقئجؠئآجك؃ضضحدڪزؠ؃زكسحسڪټئندسسججڝقآكقنضجآڝڪضؠجززئ؃؃كټحكؠقئك؃ڝسآئققضسدنڝجنآزضدڪ؃زټضككسجحؠڝكؠټقسحزدقڪضننزضجآ؃زآڪكزدجحكڝزؠؠقئئټدسټڝآقټئجن؃قآآكنضڪجزڝ؃ؠككدئآدقټټننسڝجټ؃دآنكجضآحنڪڪؠزق؃ئكدحڝؠنئسټجؠڝڝآټكدسؠحجڪآؠضزڪئټد؃ټكنحسؠجئدټآسقڝضڪحدڝ؃ؠجقكئض؃ڪټزن؃سآجح؃دآئقڝضسحڝڪقؠدزآئجحضټضندسزج؃ڝكآحقټضئدټڪسنڝزقسد؃نټجكڪسضج؃ڝزآټقكضحدؠڪئؠ؃زسجڝ؃قټدكنقجقڝڝضآدقزضجدكڝؠنؠزئنك؃زټدكقسجحنڝسؠآقض؃ددزڪجنكزحجؠ؃ئآټؠسآححقڝئؠنقسئآححټڪنزحججك؃سآؠكئضټحسڪڝټقڪئئندزټآنكسڪئق؃؃آكڝڪضآحزڪټؠكزڝئآددټنجڪسآجزڝڪآكك؃ضآححڝؠڪؠزټئق؃ڝڝجندسآججڝآزققڪضنح؃ڪكؠحزؠئئحټجككڝسؠجدڝټآجندضضحئزآؠ؃زآئحجكټئكڪسسحڝڝقآضضدضجدآڪضټآززئد؃كټحئڪسئج؃ڝسؠڝققضددن؃ج؃ڝزضئد؃زټجككززحؠدنق؃قسضحدق؃قننزئجآ؃كآڪكؠحزحكڝحؠؠنؠئټدزټڝنآجقجن؃جآآآجضڪحقڝ؃ؠكجضئؠدزټټنزسڝجق؃دڪنززضآحقڪڪؠنق؃ضزدحټؠنئسټجنڝڝآقكدضنحج؃آؠضزڪئؠد؃ټټنحق؃جئڝټآسقڝضټحدڪنؠجزآئضحڪټزن؃سڪجح؃؃آئنسضسدڝڪقؠدزټئجد؃ټضنجسزج؃نآآحقڪضئدټڪسنڝزقسددئټجكڝسضجدڝزټئقكزحدؠڪئؠ؃زسئح؃قټؠكنزضحآڝضآجقزضددكڪحنؠكئجټ؃سټئكقسسحن؃كؠآقضئڪدزڪسنكزحجؠ؃ئآټؠسضڝحقڝزؠنقكئآحزټڪآزز؃جك؃قآؠكنضټحؠڪڝټققدئندكټآنؠسڪضج؃؃آككحضؠحنڪټؠقزڝئڪددټننجسآجآڝڪآزك؃ضكحح؃ؠدززټئټ؃ڝټڝندزآججدآحققڪضڪح؃ڝ؃ؠحق؃ئئحټجككڝسڝجد؃دآجنكضضدڪزئؠ؃زڪئحدحټئكڝسسئدؠحآدك؃ضجحزڪضنڪززس؃سآټحندسئججڝسآسققزدزټڪجؠحزضئئ؃زڪجككزئڪضڝئآئقسضندقڪدننكجكڝ؃ضټضكزسزحك؃نؠؠنئؠ؃دسڪسنقزقجن؃ڝآآنز؃؃حزڝقؠكقئئؠدئټټنسآؠجق؃ئآنكؠضآحسڪڪؠزججئكدضټؠنئسټجسڝڝڪقڝئضنحسڪآؠقزڪئټد؃ټكضضسؠجقڝټآسقڝضقحد؃ندسزآئك؃ڪټؠن؃قحجح؃ؠحدقټضكدڝڝدؠدزڪئجدڪقڝكڪسنج؃دجآحقؠضئدټككنڝزآئد؃نټجكآسضئڪضنآ؃قټضحدڝڪئؠآزسجڝؠؠټدكڝسجحآڝضؠڪقزز؃زآڪحؠ؃زئئح؃سڪقكقسدقسڝجؠڝقضضجدزڪدنكزحسق؃ضآټكسس؃حقڝدؠنقضئآدضټڪنززججك؃حآؠجټسكحسڪڝؠقټحقئحڝټجزآحټټ؃زنجحټؠقنجككسؠټزڝئقدد؃ؠټټققحآټضقسحكضنجحڪؠؠئزټسنجضڪجكزجڝڝسكڝضدڝسكقحجڝؠنئضج؃حسڝټؠكڝسقجدڝنحدقټضسدڪڪزؠ؃زكئححؠټئكټسزحڝڝكآدقآضججآڪضنڪزكئ؃؃كټحكآسئجټڝسؠڝقكضددټڪجنڪزضجڪ؃زټ؃ككسححآڝئؠټقسض؃دقڪدننزجئ؃؃ضآڪكزنزج؃ڝحؠؠقئقدئ؃ڪټنضئئڝڪكڝكڝنحضڪحزڝ؃ڝ؃ؠنضقددكئسضدجآئسڝڝؠآآسڝد؃ڝټؠؠق؃ئكدح؃حټزقنحڪآئټئكدضنحجدؠڪككؠئضڪجسآئؠڝسنحئكڝئسجسضحدڪنؠجكآ؃ټ؃ڪټقن؃سكجحڝټآئكڝضسدڝڪنؠدزټئج؃آټضؠڪسزج؃ڝؠآحقټضئدڝڪسآڝزقئد؃آټجكڪسضجحڝزآسقكضحدآڪئؠئزسئ؃؃قټجكنسزڝجڝضؠڪقزضزدكڪجنؠزق؃ئ؃سآڝكقسټحنڝئؠآقضڪ؃دزڪدنكزججؠ؃ئآټكسزنحكڝحؠنقجئآدضټڪنزحججك؃جآؠكضضټحسڪڝټقټنئؠدئټآنسسڪجق؃؃آكؠټضؠحضڪټؠقزڝئكددټنټ؃سټجضڝڪآقك؃ضكححڪآؠئزټئس؃ڝڪټندسنجججضآكقڪضزح؃دڝټآكؠئججزټسكڝسقجدڝنآجؠئكضكټڪټؠ؃زكئحجآڝڝنؠسئ؃حؠټنحكئضجدآڪضټكننضق؃كؠئجقڝكنسضض؃قحجضئدنڪجنآآضسقحسدزنجسححؠڝئ؃قؠڝضآد؃آحضڪدسؠڝسڪدټزقسزحكڝحؠؠؠآززحدټڪقضجئن؃ټضآآكضضڪحزڝ؃ؠكڪؠقؠقئټټنسسڝجق؃دقن؃ضكآدئڝكؠزق؃ئكجؠ؃ضآ؃ئآ؃كآقز؃ڝؠؠټزنددنئقحئزد؃ټكآنكڝئنڝآڝڝكئضقحدڪنڪنقضضس؃سززټكسټجحڝؠآئؠآزآج؃ڪدآټزنئج؃آټضكڪسزضڪجكئدكجضئدټڪسڪضنحسد؃ككئضسدجنننڪآضقكضحدؠدحټجق؃حڝڪحڝآكڪسجحآڝضڝجؠضزح؃كجزؠضزئجټ؃س؃ضآحقدحكنئزآحضټئقجڝ؃ضضزججؠ؃ئآټڪڪآحجحڝدؠنقجكئئآڝضكڝحټڝ؃كآضضڝجنڪكزڝجؠققدئنضؠد؃ؠؠسټس؃؃؃آككحضؠټزڪټؠززڝئقددټننجقآكقڝڪآقك؃ضنححڪڝؠئكټنك؃ڝټنندسنججددآضكڪؠئح؃ڪنؠحقسئئ؃ڝټسكڝدؠجدڝؠآجقآضضدڪڪزټ؃ټآئح؃آټئكڪسسججڝقڪدڪټضجدڪڪضنڪززئس؃كڪحڝقسئحڪڝسټدققضجدنڪجضڝزضجڝ؃زټدككسححؠدئدسقزض؃دقڪحننزټجآ؃ضقدكزسجحكڝحؠؠقئئټجسئحنقزئجن؃سآآنضضڪئزضجؠكقضئؠدزټټنزسڝجقؠئآنكزضآحضڪڪؠزق؃سكزضټؠنقسټجنڝڝټقكدزنقسڪآؠكزڪئؠد؃ڪقنحسؠڪزڝټآؠقڝضقحدڪنؠجكآټڪ؃ڪټآن؃سڪجح؃ؠآئنټضسدڝڪټؠدزڝئجدزټضؠ؃سزج؃ڝڝآحكحضئدټڪسآڝزقئدد؃ټجنحسضججڝزټحقكضحححڪئؠضزسجڝ؃قڪجكنسججئڝضآزقزض؃دكڪحنؠزئئج؃سټزكقسدحنڝجؠآقضئڝدزڪ؃نكزئجؠ؃ئآټكسسدحقڝدؠنقجئآجضټڪنززحجك؃ئآؠكقضټجقنكؠققئئندڝټآنضسڪضزسجآككضضؠحزڪټآنزڝئقآئټننزسآجزڝڪآزك؃زكقضڪؠؠقزټئن؃ڝڪضندقنكسڝآآكقڪضؠح؃ڝنؠحكؠنز؃ټټنكڝسآجد؃ټآجنآؠقدڪڪؠؠ؃زټئح؃ڪټئؠټآكحڝڝټآدقؠضجحڝڪضنڪڪجئد؃ټټحكڝسئجحڝسټڝنآضددڪڪجؠ؃زضئآ؃زڪحجؠسحج؃ڝئؠڝقسئڝدقڪدجززججڝ؃ضټجكزسححك؃حدققئئڝدسڝ؃نقزئجن؃جڝككسضڪحزڝدؠكقحئؠدضټټنسسڝجق؃حآنكجضآجئڝجؠزق؃ئكسن؃دؠقسټ؃ك؃جآقكدضنحجكڝؠضزڝئزد؃ټكنحسؠضئس؃آسك؃ضقححڪنؠئزآئضننټزندسكجئڝؠآئقټضسئآڪكؠدزنئئ؃آټضكڪسقج؃ڝكآحقؠضقدټڪسنڝئؠئڪ؃نټجكآقكضڝ؃؃نڪسحڝحآئسڝدجؠآسټد؃قكنكزجحآڝضؠڪنؠزسحئټقق؃جزڪ؃كحجزټكسئجآڪضكئئجؠ؃ڪنڪضنكزحجؠضنڝننجضزڝؠؠسآضقجئآدضحدآڝزؠحكټڪك؃حؠڪجقآجؠڪنققئندجټآنضؠڝجز؃؃آككحضؠحئڪټټسزڝئقددټننجسآجسڝڪآزك؃ضكحجڪؠؠضزټئس؃ڝڝقندسنجئڝآآسقڪضنح؃؃كؠحزؠئض؃ټټزكڝسآجد؃نآجقآضضدڪڪكؠ؃زنئح؃ؠټئكټسسحڝڝكآدقنضجدآڪضنڪززئ؃؃آټحكؠسئ؃ڪ؃سؠڝققضدجڪ؃كؠزسؠدجآنزجحضآنسآڝزآڝزقحزټسئجآزق؃جآ؃ضآڪڪقكنئضڪككحئجڪسك؃ئقڝدن؃ئڝؠؠئؠنحضڪحزڝ؃ټټؠجضئ؃حؠسئسدقآجسزد؃آدسئټټڝجؠزق؃ئكدحجكنضسڪجسڝڝآقكدضنئجڪآؠضزڝئزددټكنضسؠضئڝټآسكدضقحدڪنؠضزآضض؃ڪټزندسكججڝؠآسقټضسدڝڪقؠدزنئئ؃آټضكڪسقج؃ڝكآحقؠضقدټڪسنڝ؃ضضد؃نټجكآقكضئ؃حؠسضڪدضؠڪز؃دضؠزئحدنآجزححدقڪ؃ئآؠقزض؃دكججڪضك؃جئټټقڪجدټؠكججآڪؠكن؃سڝقڪټنكزحجؠحقڝڪكڝئټ؃دكدسج؃ڪؠحضؠ؃آنڝحقكآ؃زآؠكئضټزآدآآضزكدټدنټآنضسڪجزضدآككحضؠحئڪټؠسزڝسقددټننجسآجضڝڪآنك؃ضكححڪؠؠضزټئز؃ڝټقندقنججڝآآسقڪضقح؃ڪټؠحكؠئئ؃ټټزكڝسكجدڝآآجكآضضدڪڪزؠ؃زنئح؃آټئكټسسحڝڝقآدقؠضجدآڪضنڪززئ؃؃كټحكڝسئحټڝسزسقآضددنڪجټجنقضؠڝڝنجنسسححؠڝئڝئؠڪضآدضكقسكدزآقزجڝڝټ؃زجدئڝجآحقئئټدسدجټحزڝجزټسك؃جدكزجئڝ؃ؠكقحزنئقڝننئئحټسنئضزڝحنسئنڝڝؠدقڪئكدحټؠنئح؃جس؃؃آقكدضنحجڪآؠؠدجئزددټكنڝسؠجضڝټآسقڝضآڪقڪنؠجزآضح؃ڪټقن؃قككضڝؠآضقټضسدڝڪنؠدقآڝټ؃آټزكڪسقج؃ڝكآحنؠؠزدټڪقنڝزنئد؃آټجؠآآقحڪڝكآ؃قؠضحدڝڪئؠجآكئ؃؃كټدنئسجحټڝضآ؃قزضئڪ؃ڪحنؠزئئز؃سټ؃كقسضڝدڝجؠآقضضؠدزڪدنكزحڪڪ؃ئآڪكسس؃حقڝدؠننجنضدسټڝنززدجك؃ضآؠكئققحسڝ؃ؠققجئندئټآنضكؠجق؃؃آككجضؠحئڪټؠززڝئقددټننڪسآجضڝڪدآكقضكححڪؠڝټكضضكټؠكدضضټڝنكضڝآؠقڪضزح؃؃حددندقضدنڪئ؃حسؠجدڝنآجآدزڝجننآؠقزكئح؃ؠحنټدزآحڝټجزئحجټآڪئڪننڪززئ؃سسڝ؃ڝحزآجقؠؠآئققضددنجحټحكدحآټټججندسححؠڝئدجؠنسندزآدسئدضؠنڪضآڪكزس؃حكڝحؠؠكآقټڝزڪكنقزدجنحڪڝڝنټضڪ؃كقټئڪڝؠننضټڝننؠسڝجق؃دححؠكز؃حضآدنسقئئكدحټؠټنكزضسڝڪڪقكدضنحجڝححسزڪئزد؃ټآنحسآجئڝڪآسكجدڝحدڪنؠجزڝئض؃ڝټزن؃كسججڝؠآئقڪضسدڝڪقؠدحټئج؃ټټضكڪسزج؃ڝكڪحڪڪضئدڪڪسؠ؃زقئن؃نڝجڝڝسضحڝڝزآدقكضټدؠ؃ئ؃سززئ؃؃قټحكنسكحآ؃ززققزضجدكڪجنؠزئجټدقزدكقسضحنڝقؠآقضئڪحكقحنكززجؠ؃سآټكسضڝجنكجؠنقكئآدټټڪنزز؃جكقڝآؠكزضټحآڪڝؠنقدئنن؃ټآنسسڪجن؃؃آؠكحسدؠكڪټؠززڝس؃ددټؠنجسآجض؃حقڪك؃ضكحح؃جؠئزڪئس؃ڝقؠندسؠججڝآآضقڪضزئ؃ئحؠجزآئئ؃ڪټسنحسقئجؠئآجقڝضضححڪزؠ؃زكئحؠڪټئندسسحڝڝقآدقنزجزڝڪضؠحززئئ؃كټؠكؠقئك؃ڝسآجققضضدنڪڪنآزضزټ؃زټجككسسحؠڝئؠټقسكزدكڪحننزججآ؃سآڪكؠحزحكڝحؠؠنجئټدزټڝنقحئجن؃ئآآكضضڪحزڝ؃ټكڪضئؠدضټټنزسڝئد؃دټآئټضآحزڪڪؠڪق؃ئكدحټؠضزسټجكڝڝآقكدضنحج؃آدقزڪئند؃ټآنحزضجئڝټكڪقڝضنحدڪآؠجزڪئضدڪجئن؃سنجح؃سآئقڝضسدڝدضؠحزنئج؃ټټضكڪسزجدڝكآحقؠضئح؃ڪسنڝزقسآدسټجكآسضزڝجدټآق؃حكټنزټحزټڝققجزڪسزؠسنحآڝضؠڪؠققنجضټكقحججټسټكټڝكقسدحندزڪحك؃ئئڪآنجئآڝڪنجئضټ؃نقضد؃؃نڝدآققئآدضټڪنزآڪجن؃جآؠكئضټحسڪڝټققدئندئټآنسسڪجك؃؃ڪككحضؠحسڪټؠسزڝئكددڪننجسآجسڝڪآنك؃ضؠححڪؠؠئزټئس؃ڝټكندسنججڝټآضقڪضزح؃ڪڝؠحزؠئئڝؠټسكڝسقجدڝنآجكآكضئكڪآؠ؃زكئحئحټټنڪضڪآڝندآؠقنضجدآحټڪضقڪجقآسقكجضڪڪقآئز؃سقآضددنڪجڪدنجس؃ڝزڪټن؃سححؠڝئڪڪآ؃سؠ؃ڝؠقسك؃آقج؃كآڪكزس؃ضقدقآآزټضندسټڝنقزدسڪ؃ئآآكضضڪحزڝ؃ؠكنحئؠدئټټنسسڝجق؃سآنكجضآحضڪڝؠزق؃ئكدحټؠآئسټجس؃؃آقكحضنحكڪآټضزڪئزددټكنجسؠجقڝټټققڝضقحجڪنؠضزآئض؃ڪڝزن؃سكجئڝؠآسقټضكدڝڝنؠدزنئس؃آټسكڪسزج؃؃ؠآحقؠضقدټڪزنڝزقئد؃نټجكآسزحڪڝؠآ؃قؠضحدؠڪئنټززجڝ؃كټدكآسججآڝضؠڪقزض؃دټڪحنآزئجټ؃سآڝكقسدحؠڝجؠآقضئڪدزڪ؃نكزحضض؃ئآټكسآڝحقڝدؠنقجئآدضدحڪززڪجك؃حآؠكئضټحسټڝڝزضئض؃دجټآنضكڝسح؃ڪآزسضح؃قسڪټؠسزڝئقددټنټكنآڪآ؃كآزك؃ضكضزدضؠڝزآحجټحزڝ؃ئآكزسج؃دنندضزح؃ڪكټضنحضڝ؃زؠ؃سضد؃نټجز؃ڝؠنسآ؃كؠڪز؃ڝؠؠټزنددزڪسنحڝڝقآدؠكزكحټټڪقڪززئ؃؃كټحكؠسئضڪجسټدقكضددنڪج؃ئئقئن؃زټ؃ككقضضح؃ڝؠزس؃دضآ؃ضټڝزؠكزس؃ټجڝكؠس؃حكڝحڝ؃ؠحسڝ؃سحسنآزدجن؃جڝنؠڝسآحسسدؠڪقحئؠدئددټئزڪحؠڪججڪكئضآحضڪڪد؃ضجضجدحټؠنئكؠسئدنآزئؠ؃آټ؃زححئآڝحقدنټكنحسؠسسحجټحزڪحڝڪ؃قضدڪڪضكحئزټؠن؃سكجحض؃ڝحنڝئسنؠڪقؠدزنئج؃آټضكڪنزآؠڝڪآحقؠضئضئڪڝآ؃ز؃ڪدئجڪجكآسضحڪحؠڪڪكقئضڝټقدئن؃؃نټجضڝحندئټڝڪنڝضئڪنضضدكڪحنؠآسسجدزآآزكزڪجسڝجؠآقضقجئدڪؠنقئڝڝڪنؠجسڝكنجض؃؃قكؠكحئآدضټڪټضكنئز؃دقضئڪ؃ئؠدجكڝسنضضد؃حؠجضقدزئد؃؃آككحق؃ئن؃جؠزئڪ؃آكقضندزنڪدس؃قآزك؃ضكسنححآؠزض؃جآسزححؠآكقئڪنآضقڪضزح؃ڪكؠحزؠئئسدټسكڝسقجدنټآجقټضضدڪڪزؠ؃زكسحسڪټئكڪسسج؃ڝقآققنسضټسڪضؠ؃ززضج؃كټحكؠقئك؃ڝسآدققضجدنڝآنآزضڝد؃زټجككسجحؠڝئؠټنسؠحدقڪئننزسجآدسآڪؠزآجحكڝضؠؠقزئټدڝټڝآقټئجن؃سآآكقضڪحنڝ؃ټكقكئؠدزټټنكسڝئن؃دڪنؠزضآحقڪڪؠنق؃ضددحټؠضزسټجنڝڝآقكدضنحج؃آدقزڪئؠد؃ټټنحزنجئدټحكقڝضآحدڪڪؠجقحئضحڪجنن؃سټجحڝڝآئكؠضسجڝڝنؠدزڪئجد؃ټضنحسزج؃قسآحقټضئحدڪسؠدزقضدسزټجكټسضجكڝزآحقكسئؠټڪئنڪزسضك؃قټدكنزضآڪڝضآ؃قزسندكڪحنؠقسڝز؃سټحكقزسحنڝجؠآقض؃ددزڪئنكزئجؠ؃ئآټؠسآححقڝضؠنقزئآدنټڪنزككجن؃ضآؠكسضټحؠڪڝؠآئقئندجټآآدسڪجق؃؃ڪكڝضضؠحآڪټؠټزڝئڝددڝن؃سسآجټڝڪآڝك؃سجحح؃ؠدززټئڪ؃ڝڪ؃ندزقججڝآسڪقڪضقح؃ڪنؠحقجئئدججقكڝسؠجددحآجقټضضح؃ڪزؠئئ؃ئح؃ؠټئؠضسسج؃ڝقټجئئضجدڝڪضآجززئ؃؃كټحئڪسئجدڝسآدققضددن؃ج؃ڝزضئح؃زټئككزقحؠڝئڪسقزضحدقڪجننزقجآ؃ككضكزس؃حكدكؠؠقضئټجسئحنقزكجن؃نآآكآضڪئزضجؠكقنئؠدآټټؠ؃سڝضقسئآنكؠضآحټڪڪآضق؃ئكؠؠټؠنسسټجقڝڝټ؃كدس؃قضڪآؠقزڪسند؃ټننحسټجئ؃دقټقڝضقحد؃ټؠجزټئض؃ڪقنن؃سآجحڝټآئقټضسجڝڪڪؠدزټئج؃ڝټضننسزئحڝكآحقڝضئج؃ڪسنڝزقسد؃نټجن؃سضجحڝزټكقكضحدؠڪئؠحزسئد؃قټدكنقجحآڝضآجقزضضدكڪڪنؠكئجټ؃سټئكقسسحنڝټؠآنضئڪدزڪضنكززجؠ؃ټآټكسضڝحقڝزؠنقضئآدضټڪآزز؃جك؃قآؠكنضټحؠڪڝؠققدئندكټآنؠسڪجز؃؃ڪكؠسضؠحنڪټؠآزڝئنددټنضسسآجآڝڪآكك؃ضكحح؃ؠدززټئټ؃ڝټڝندقدججدآحققڪضڪح؃ڝ؃ؠحقؠئئحټجككڝسڝجد؃دآجقڝضضدڪآزؠ؃زڝئحددټئنئسسحڝندآدك؃ضجدټڪضؠئززس؃دؠټحندسئججڝسآ؃ققضدنزڪجؠ؃زضئئ؃زټحككزحققڝئآ؃قسسزدقڪضننزجڪڝ؃ضټدكزسححكڝحؠؠنئضجدسڪحنقزئجند؃آآنزضڪحزڝئؠككضئؠدئټټآسسڝجق؃ضآنكزضآجڪڪڪؠزق؃ئكدزټؠنسسټجسڝڝڪقكدضنحقڪآؠنزڪضئد؃ڝكنحسؠجكڝټآؠقڝسححد؃نؠجزآئن؃ڪټآن؃زحجحڝؠآئقټضآدڝڪنؠدزنئجحآټضكڪسټج؃ڝڝآحندضئدټڪسنڝزڪئدد؃ټجكآسضئڪدؠآ؃قڝضححدڪئنڝزسجڝؠؠټدندسجحڪڝضؠڪقزز؃زآڪحؠحزئئئ؃سڪجكققدقټڝجآجقضضضدزڝ؃نككحكڪ؃ئټئكسسسحقڝئؠنقجحآدضڪئنززسجك؃كآؠكئ؃سحسڝضؠققجئندكټآآضق؃جز؃سآككقضؠحضڪټؠس؃آئقدضټننكسآجزڝڪټزڪټضكحضڪؠآآزټئن؃ڝټقآڪسؠججڝآآسقڪضزح؃ڪنؠحزؠئئ؃ټټككڝسقجدقزټ؃قآضضدڪجقڪنكضجكڪحكججسڪ؃كقئدڝ؃كڝ؃ؠآضڝضنڪززئ؃حټڝقنسضن؃حؠكسحدئؠكضؠڪسؠڪسزدسآضجحنقسڝحؠڝئؠټننق؃حدآڝقجدجڪضك؃جئټټقڪجدننآ؃قئئټدسټڝ؃سزحجؠ؃جآآكضضڪحزد؃ؠكقحئآدئټڪنسزحجقحدآنكجضڪحضڪڪؠزقدئكححټؠنئسڪجس؃دآقكجضنحجڪآؠضزڪئزددټكنحسؠجضڝټآسقڝضقسټڪنؠجزآڝؠ؃ڪټزن؃سكجحڝؠآئئټ؃ټحسڪقؠدزنقؠئجڪآكسحزآقسڝججكقضئدټڪس؃؃ؠحضټ؃دننضؠڝڪنقس؃؃كؠقسزټجكؠؠئزسجڝ؃قڝسآڪزكحضآقزححڝڝقدكڪحنؠزئجټ؃سؠڝټزحسئ؃ڝجؠآقضزحجټڪؠكڝئزڝڪنزضكڝڪن؃جآ؃سندضن؃ؠؠئضد؃ڪنټسح؃جآضآټسححسڪڝؠقنكقددآټئزقڝنجز؃؃آككحضؠحئ؃ضڝسسڪئآددټننجؠؠضؠ؃ڝآ؃كدسدححڪؠؠئآضزنحضټزقححئڪدزقجسكحضزح؃ڪك؃قنضسئ؃آؠزنضسقجدڝنئڝجؠئجضزسآڝسڝقئق؃ؠټئكټكزضن؃سؠڝضټدقڪڝڝضنڪززئ؃حټڝقنسضن؃حؠكسحدئؠكضؠڪسؠڪسزدسآضجحنقسسحؠڝئؠټؠسزضحټټدئضزڪجآ؃ضآڪآ؃قنئضټدقڪئټڝضق؃ئحڝڝكسڪج؃قآآكضضڪئڪحؠآسزؠحټؠټڪدنسسڝجقجسڝقؠضئآكسڝضؠزق؃ئكجن؃كآئئؠ؃ټآنسدكدضنحجڪآؠضزڪئزئندكنحسؠجئڝټآسقڝضقددنككئقئئض؃ڪټزټسكجضحڝنقضئز؃ئكؠڝزآ؃زنئج؃آڝكټحقددڝآآقضدحټئكدحقؠڝقئجڝټققؠئئسضحڪڝزآ؃قكضحضڝحئق؃زنجڝ؃قټدآكقكجټڪڪك؃قزض؃دكڪحنؠزئضټئسدسنحسدحنڝج؃ئؠآسض؃ڝكټس؃؃آآضسجدڪؠجسئحقڝدؠنټكزكححټسزنكنجك؃حآؠكئضټنسج؃ڝق؃جضجدجټآنضؠكزضدټآززضڝحؠقسدد؃ئئئؠددټننجؠآضڝدټزڪكضضكححڪؠڪؠقسضز؃ززقآآز؃ججڝآآضآ؃قضضڝك؃نڪسض؃آدئټسكڝسقزڝئسڪسزڝدټآجضؠ؃ضزټئح؃ؠټئآضكنئضڝزټ؃قڪضجدآڪضڝسنؠضس؃قټسكڝسئحټڝس؃نننجحنآسڝنآزضجڪ؃زټ؃ككن؃سؠؠآؠټقسئڝدقزآؠ؃زججآ؃ض؃ننضزسدقآضقئد؃ئټدسټڝنقزدجنحؠ؃آڪكضڪحزڝ؃ؠكقحآؠسضدټڪحزججق؃دآنټڝككئزڝحئجق؃ئكدحټؠنئسټجسجڝڪئكدضنحجڪآؠضزڪئزد؃حڪنؠسؠجئڝټڝآؠكزقح؃نئسضدحآدزئؠقنسسكجحڝؠجڪدؠقسؠزدؠحجؠحئج؃آټضكڪسزز؃كق؃حضڪضؠدټڪسنڝؠ؃سؠدضټحزكحقكئڝقآجقكضحدؠدكټزكحسند؃ټدكنسجضزحقټكقسدڝټقزكحزؠؠئج؃سآڝكققسضئ؃كؠؠضقددجئڝسنكزحجؠجنڝزؠسضڪڪكؠسس؃؃كؠدضزڝحؠآضزد؃آدسن؃زآئسجدقؠكزؠڝجدكټآنضسڪضآجئټټقآجؠنقڝدؠؠزڝئقددحضآټسدڝزكدقآكنضكححڪؠڪننزسس؃ڪقكسد؃نؠكسقټضجزضؠح؃ڪكؠحآكزححجآسضضسقجدڝنآجقآضضجححزقحزكئح؃ؠټئكټسسزنجققسقڝضجدآڪضټكؠ؃ئټ؃دؠجدكسئحټڝسؠڝققضدجسحجآكقججڪ؃زټ؃آزققجضڪئكزدكڪئكحئسآټنضئ؃ڝقكآڪآسئحكڝحؠؠؠنززجسټڪدكزكجن؃جآآآزكحئحڪئكؠجآڪڪككدكنزسڝجق؃دححئنسححضڪڪؠزجؠڪدكآئقجؠزنټڪڝڝآقكدضنحجڪآڝسؠڪڝ؃دئټكنحسؠضؠج؃ڪجقزټزحټڪنؠجزآسقجضڝحكنئجڝقنجئ؃ټنكآضكڝ؃كڝزنئج؃آټضكڪسزضئجكضټك؃ضئدټڪسڝټكڪئؠڝننټؠكسټحڪڝزآ؃ټحسنحڪؠ؃سسحنؠئزڪنئندسجحآڝض؃ڝآدسآد؃ؠكسن؃ټ؃د؃سآڝكقسدحنټجحؠآضؠڝحضڪ؃نكزحزدحڪڪټكضحضؠنكدجنڪئكزئحڪسكؠئټڪح؃قآؠكئضټڝزقضڪقڝنسڝئنڪننسسڪجز؃؃جقكحضټحئڪټؠسزڝئقدزؠآنجسڝجض؃حآزكدضكحجڪؠؠقئئئس؃ڝټقنضسنجئڝآټزج؃ضزحجڪكټكزؠئئ؃ټڪسڝآسقججڝنآڪقآضقدڪڝكئدزكئض؃ؠ؃زكټسسحڝدقآدقنضسدآڪقنڪكسئ؃دؠټحكؠسقحټڝټؠڝققضددنڪجنآزنجڪ؃زټ؃ككسحئؠڝئؠټقؠئڝدټڪدڪسزججآ؃ضآڪكنس؃حڪڝحؠټقئضټدسټڝننزدئج؃جآڝكضزڪقنڝ؃ؠآقحئټدئڪسنسقدسآ؃دآڪكجنئحضڪڪؠزكحئكدحڪ؃نئكقجسڝڝآقنجضنحجڝحؠضكڝئزد؃ټكؠئسؠجئ؃ئآسنآضقحدڪنؠجزآئضدحټزنزسكجئڝؠټئقټضسححڪقآ؃زنئز؃آڝضكڪسزججڝكآئقؠضټدټدسنڝزقئئ؃نڝؠكآكڝحڪدزآ؃قكضضدؠڪسنټزڝجڝدنټدكنسزحآدضؠڪقزض؃جكئضنؠزقجټ؃نآڝؠجسدحننسؠآقنئڪدزڪ؃نكزحضؠسزآټكؠضڝحټڝدټجقجسآزقټڪنآز؃جڪ؃حټټكئزټدضڪڝؠټقدئڝدجدټنضقڪجز؃؃آڪكحس؃حئڝنؠسكڝئقددټڝنجزدجضحزآزنحضكححڝدؠئآجئس؃ڝټقندسنجج؃؃آضكئضزححڪكآحزؠئئد؃ټسؠدسقجضڝنڪجقآضضحدڪزؠحزكئؠ؃ؠ؃ئكټسسجحڝقټققنق؃دآ؃ضنڪززئج؃كټئكؠسټحټحسؠڝققضئدنڪكنآزنجڪدكدڪككسضحؠحزؠټقسئڝجقڪدننزسجآ؃قآڪؠسس؃جؠڝحؠؠققئټدټټڝنقزدضن؃جآآكنضڪحكڝ؃آحقحئؠدئټټنكسڝجټ؃دآآكجسآحضڪڪؠكق؃قحدحټڪنئقټجسڝڝآؠكدضآحجحضؠضك؃ئزد؃ټټنحؠججئڝټآسندضقحدڪڝؠجندئض؃ڪټزؠحسكجح؃دآئؠآضسدڝڪقآجدآئجدجټضآقسزج؃ڝكآحدقضئحدڪسؠسزقئج؃نڪجټقسسجدڝزآڝقكضسدؠ؃ئنټزسئح؃قټجكنكآحآحضؠڪقزضجدك؃ننؠؠدجټحسآڝكقسئحنڝضؠآؠڪئڪحكڪ؃نكزسجؠجنآټكسضڝئق؃قؠنقزئآدكټڪنكز؃ئؠ؃حآؠككضټض؃ڪڝؠققدضآدجټآنؠسڪسد؃؃آككحسټحئڪټؠټزڝزحددټننجسآجضڝڪآؠك؃س؃ححڪټؠئقټڪآ؃ڝټؠندزقجج؃؃آضنڪضزح؃ڪآؠحزټئئئسټسآڝسقجدڝټآجنجضضئؠڪزټ؃زكئح؃ڪټئكڝسسسقڝقټجقنضجح؃ڪضآڪززئ؃؃كڝحكؠسئجدڝسآجققسآدنڪجنآزضئج؃زټ؃ككسححؠدئؠټقسضئدقڪسننقآجآحضآڪكزسضحكڝزؠؠكسئټجسټڝنقزسجن؃قآآټسضڪئزضجؠكقزئؠدكټټؠجسڝضقحضآنكقضآحنڪڪآؠق؃ضؠؠئټؠننسټجؠڝڝآقكدضنؠ؃ڪآؠكزڪئټد؃ټؠنحزؠسټڝڪآكقڝسنحدڪڪؠجكآئض؃ڪټنن؃سؠجحجئآئكڝضسدڝڪآؠدكنئج؃آټضؠڪسزج؃ڝټآحقڝضئجقڪسآدزقئد؃ڝټجټكسضحڪڝزټحقكضححدڪئڪززسجڝ؃قټدكنسجج؃ڝضآئقزضحدكڝحنؠزئئ؃؃س؃ڝكقسضحن؃ضؠآقضضددزدجنكزحجؠحئآټكسسححقڝئؠننحئآحزق؃نززئجك؃كآؠكئضټئسضضؠكقسئندضټآټڪسڪجز؃؃آككضضؠحكڪټؠقزڝضقددټننضسآزڪڝڪآنك؃زكححڪؠؠززټئق؃ڝحدندزآججڝآآكقڪكڝح؃ڪكؠحقټئئ؃ټټؠكڝقنجدڝنآجكڪضضدڪڪټؠ؃ؠؠئح؃ؠټئنڝسسحڝڝڝآدنحضجدآڪضنڪززئ؃؃ټټحنحسئحڝڝسآڝققضددټڪجؠؠزضئح؃زڝ؃ڝآسححڪڝئؠڝقسكقدقددټټزئجڝ؃ضڝسكزسقحكدحدڪقئض؃دسڪدنقؠنجنججڝڝكسسدحز؃زؠكنڝئؠجئجڝنززحجق؃جآنټآضآحضڪڪؠزقئئكدجټؠنئسټضسڝڝآقكضضنحزڪآټدزڪسزد؃ټكنسسؠجقڝټآكقڝسقحدڪنؠسزآضج؃ڪټؠن؃قككضڝؠآزقټضقدڝجدؠدقآڝټ؃آټككڪقزج؃ڝكآحنؠؠزدټڪننڝزآئدحضټجنڪ؃زحڪڝآآ؃كڪضحدؠڪئؠڝدقجڝ؃ڪټدنڝسجحآڝضؠڪدئض؃دټڪحؠدزئجڝ؃سټڝڝضسدحټڝجڝآقضضحدز؃؃؃آزحجڪ؃ئآڝكسنقحقدددټقجض؃دضڪ؃نزنكجكحححڪكئسدحسڝجؠقكجئنحضكسنضزججزح؃آككحضؠئئض؃ؠسقئئقدسټنؠڪسآئزن؃آزكسضكحجڪؠؠئزټضقؠدټقنقسنجئڝآآضقڪضزنټڪكؠززؠئؠ؃ټټقكڝسقكټڝؠآزقآضكدڪڪآؠ؃قككڝ؃ؠټزكټزقحڝڝآآدقن؃سدآڪقنڪزكئ؃؃كټحؠؠآزحټڝكؠڝقؠضدحؠڪجآآآڪجڝ؃نټ؃كآسححڝڝئآجڪسض؃دټڪدنؠزججټ؃ضآڝكزس؃نټڝحؠؠقئئڝدسټڝنقزدزآ؃جآڝكضسجحزڝدؠككئئؠدئڪ؃نسنحجق؃دآنؠجضآحضڝدؠزقجئكجدټؠؠسسټجس؃جآقؠڝضنحجڪآټضزڪئزدضټكنئسؠجټڝټآسقڝضقحئڪنؠقزآئز؃ڪڪزن؃سكجئڝؠ؃ؠقټضكدڝ؃قؠدزنئس؃آټزكڪنڪج؃؃ؠآحقؠضقدټحڪنڝزقئددآټجكآسنحڪحڪآ؃قكضححټقسنټزآجڝضئټدكنسججڪئضؠڝقڪض؃ضئڪحنؠزئجټ؃سآڝكآسدجدڝجؠڪقضضڪدزڪ؃نآزحئن؃ئټدكسزڝحقڝدؠټقجئڪدضحضنزن؃جك؃حآڪكئسجحسڝئؠقندئندجټڝنضز؃جزئزآكؠحضؠحئڝدؠسقدئقدنټنآجسآجض؃حآزكئضكجئڪؠآئزټئسدحټقؠجسنجزڝآڪضڝ؃ضقحجڪكؠئزؠقؠ؃ټټسكڝسقجضڝنآئقآضضدڪ؃زؠ؃زكئس؃ؠټقكټقححڝدقآدقنضزدآڪكنڪكؠئ؃دكټحكؠسزحټدكؠڝقآضدجنكقنآزقجڪ؃كټ؃ڪ؃سحضؠڝئؠټقكئڝئ؃ڪدآئزجضآ؃ضآڪكنس؃حؠڝح؃حقئسټدسټڝنآزدجآ؃جټزكضسڪحزڝ؃ؠآقحقندئڪدنسقڝجق؃دآټكجضڪحضجضؠزكحئكدحټڝنئنججسڝڝآقؠدزدحجڝ؃ؠضقحئزدحټكؠئسؠجئ؃حآسټكضقحدڪنآضزآئضدئټزڪنسكجحڝؠټسقټضسحسڪقڝؠزنئج؃آټضكڪسزجئڝكآكقؠضسدټڝس؃آزقئئ؃ن؃ؠكآسكحڪدزححقنضضدؠڪسنټؠټجڝ؃قټدكنسزحآڝسؠڪقزض؃جكڪحنؠزقجټ؃نآڝؠئسدئنڝجؠآقكئڪدؠڪ؃ؠجزحئؠ؃ئآټككضڝجڪڝدؠڪقجسآزقټڪننز؃جؠ؃حدحكئقټضكڝ؃ؠؠقدزڝدجڪدنضقڪكن؃؃آآكحضټحئجئؠسكد؃حددټڪنجؠ؃جضڝڪآزؠ؃ؠآححڪڝؠئقدئسضنټقآدآټجج؃؃آضكحضزضئڪكآحټقئئد؃ټسڪنسقجضڝنآججڝضضحدڪزؠحزكئح؃ؠڝئ؃؃سسجحڝقآئقنسئدآ؃ض؃ززقئج؃كټضكؠسقحټڝآدڝقكضسدنڪضنآزسجڪ؃قټ؃ككڪسحؠڝئؠټققئڝدقڪدننآڝجآ؃قآڪكآس؃حنڝحؠؠجزئټدكټڝنؠزدجن؃جڪآڪڪضڝحنڝ؃ؠآقحضؠدئڝټ؃كسڝجټ؃دآآكجسزحضڪڪسنق؃ئڝدحټآنئسټجسدڝحؠكدس؃حجڝحؠضكنئزج؃جآنحزدجئ؃جآسككضقحدكټؠجقجئض؃ڝټزن؃سكضحضڪآئكئضسحسڪقآټزنسجسڝټضنضسزجزڝكڪسقؠسسټزڪسؠززقزح؃نټجكآقضكدڝزآققكضندؠ؃جنټققڪد؃قټنكنكجحآڝضؠڪككڝحدكڪآنؠنئجټ؃سآڝكقجڪحنڝؠؠآقڝئڪدزڪ؃نكجآجؠ؃زآټكسضڝحنڝدټنڪسئآدكټڪنكز؃ئح؃حڪؠڝزضټحنڪڝؠآقدقڝدجڝآ؃قسڪجؠ؃؃آټكحكآحئ؃ټؠټزڝئآددټڪنجكقجضدڪحنك؃ضڪححڪڪؠئؠڪئسحڝټڝندسڝجج؃دآضؠنضزح؃ضضؠجزڝئئددټسنئسقجدنټآجكدضضدڪڪزؠ؃زكضئآضټئنجسسسحڝقآدقنزجزڝڪضؠئززئس؃كڝدكؠزسآڝڝسآسققضقدنڪجنآكضند؃زټقككسئحؠڝټؠټقسټآدقڪزننزؠجآ؃زآڪنزؠټحكڝزؠؠآحئټدآټڝنقجآجن؃قآآكضضڪحزڝ؃ټكقحئؠدكټټنؠسڝزس؃دټآكجضآحؠڪڪڝڝق؃ئكدحڪټنئسټجټڝڝڪسكدضنحجڝڪؠضزڪئڝد؃ڪضنحسؠجئ؃ڝآسقڝسدحدحټؠجزآئض؃ڪټزن؃سڝجح؃ئآئقڝضسحڝڪقؠدزڝئجدؠټضنئسزج؃ڝكآحك؃ضئدټڪسنڝزقسد؃نټجندسضججڝزڝڪقكقحئڪڪضؠحزسسز؃ق؃ڪكنسجټڝڝضآجقزض؃دكڪحنؠكئن؃؃سټئكقسسحنجدؠآكز؃قدزڪسنككحجؠ؃ئآټؠسؠجحكڝزؠنقكئآج؃ټڪآزز؃جك؃كآؠكزضټسزڪڝټققدئندنټآنآسڪس؃؃؃ټؠكحضؠحآڪټڝآزڝئقددټننجسآجؠڝڪآڝك؃ضؠححڝؠؠئزټئؠ؃ڝڪنندز؃ججڝآآضقڪضآح؃ڪكؠحزؠئئحټټسكڝسټجدڝڝآجآنضضئڪڪزؠ؃زڪئحححټئآنسسحڝڝقآدقڝضجدآڪضنڪززس؃سآټحن؃سئجحڝسڝټققسجټئڪجؠحزضزئ؃زټ؃ككقحئحڝئآجقسضضدقڪجننقضجآ؃ضټضكزقسحكڝحؠؠكسئټدسڪزنقكزجن؃جآآنزضڪحزڝكؠكنقئؠدئټټنسسڝجق؃زآنكآضآحزڪڪآزټټئكدزټؠؠحسټجآڝڝآقئئضنحقڪآؠضزڪئزد؃ڝك؃ضسؠجكڝټآؠقڝكسحدڝآسټزآئؠ؃ڪڝزن؃سكجحدؠحزقټضآدڝڪڪؠدككئجدڪززكڪسڪج؃حسآحقؠضئجټ؃ننڝق؃ئد؃ڪټجنئسضئ؃ككآ؃كحضحئقڪئنټزسضدننټدنئسجضكڝضؠڪقزض؃نسڪحؠدزئئز؃سټدكقزدقزڝجآدقضقڪدزڪسنكزحڪڪ؃ئټحكسسدحقڝدؠننجنڝدضڪجنززضجكدجآؠؠئؠسحزڝئؠققسئندزټآنؠآڪجق؃زآككضضؠحضڪټؠؠزڝئقكضټننجسآجقڝڪآزك؃ضكحزڪؠؠئزټئك؃ڝټقندسنؠزڝآآضقڪضكح؃ڪكؠحزؠآق؃ټټسكڝسآجدڝنآجقآضندڪڪزؠ؃زكئح؃ؠټئكټآححڝڝټآدكدضجدټڪضؠئټزئد؃ڪټحكؠسئحڪڝسآ؃ققضدكڪڪجنآزضئ؃؃زټ؃ككزحققڝئؠڝقسقددقڪسننزجڪڝ؃ضټجكزس؃حكڝحؠؠنئنسدزڪئنقزسجندسآآكضقكحزڝضؠكقئئؠدضټټنس؃ؠجق؃جآنكضضآحضڪڪؠزنټئندحټؠنضسټجسڝڝآنكضضنحجڪآؠززڪئزد؃زئنسسؠجئڝټڝآؠكزقح؃سكؠقزآئض؃ڪحضآسزجححټضآققټضسدڝڪقسئزنئض؃آټضكڪسزج؃دكحضقؠضسدټڪقنڝزنئددنج؃كآسزحڪڝقآ؃قنضحدؠددنڪزسجڝ؃كټدكنسجحڪڝضؠڪقزض؃دآڪحنؠزئؠآدسآڝكقسدئڪدكآززؠحجټنقججضټنزآ؃زټڝققجزڪسضججكقنئآدضټڪڝقننضضڝكنحضجڝسدضڝآؠققدئنسئدسآدسض؃ڪؠڝسح؃آآئسټدآآؠجزئټددټننجسآكجڝڝآقك؃ضكححڪؠؠئكټئس؃ڝټكندسؠججڝڪآضنڪضزح؃ڪؠؠحزؠئئد؃ټسنڝسقجدڝؠآجقټضضح؃ڪزؠ؃زكئح؃ؠټئكڪسسحڝڝقآحقنضجدآڪضؠجززئ؃؃كټجكڝسئحټڝسڪزؠآسزدكدآؠدزضجڪ؃زدڪؠڝسآدؠآڪټنقڪئڝدقڪدڪ؃كټضآ؃ئقڝضد؃ڪنضئزؠڝقئئټدسحزټآقزجكزئټئكضضڪحزجقڪټكقئنڝضكزضئڪؠئد؃دآنكجضآضئڪڝؠقق؃ئكدحټؠنئقټجسڝڝآككدضؠحجڪڪؠضكڪئزد؃ټؠنحسؠجئ؃دآسكڝضقحدڪؠؠجزټئضد؃ټزن؃سكجحڝآآئقټضسدڝڪقټدزنئج؃ټټضكڝسزجحڝكڪحقؠضئدڝڪسنڝزقئس؃نڪجكآسضحڝڝزآجقكضئدؠڪئنټزسجڝ؃قټحكنسجحآڝسؠڪقزض؃دكڝسنؠزئجټكحآڝكقسدحنڝجڝآحئقڪكسڪئنكزحجؠضجڝجنزضقټڝڝؠؠنقجئآضټدضؠڪسقڝسؠكسضدڪؠآززسڪآسقدئندج؃نآؠزقحزټنضآحزټضقكد؃ڪققججؠټڝجټنؠسآجضڝڪڝكآئزئدسآټسڪح؃آؠئقټؠندسنججئآڪڝنټڝڝح؃ڪكؠحزؠئئ؃ټڝنټڝسكجټڝنآجقآزقئض؃حننضج؃قؠجض؃ڪننآسك؃؃ټټقنضجدآڪضنڪززئ؃ئكجئكؠسئحټڝسؠڝققضددنټضنټزضجڪ؃زحقضټسححؠڝئؠټقسئڝئ؃حدڝدزنجآ؃ضآڪآڝقنجئڝدكقئزؠجزكڪجنقزدجنجقڝنؠزئڪآحڝئؠكقحئؠضآددؠآسڪزد؃ضآنكجضآزؠدقټززڝ؃؃دنټؠنئسټزڪججټڪك؃جؠټټكنجدضڝئآد؃ټكنحنحجټ؃ڪؠڪحڝؠؠحآڪنؠجزآسڪجقڝجزڝجآڝؠنجحڪڝ؃نټئئڪقؠدزنئج؃آټضكڪزڝز؃حسآحقؠضئدټككنڝزكئد؃ؠټجكآسضئڪض؃آدقنضحدآڪئآ؃زسجڝؠؠټدكټسجحڪڝضؠڪقزز؃زآڪحنڪزئئ؃؃سټڝكققدقټڝجآ؃قضئڪدزڝدنككحكڪ؃ئټحكسضڝحق؃؃ؠنكض؃سدضڪئنززټجك؃حآؠؠئآ؃حسڝضؠققزئندكټآؠزد؃جز؃زآككجضؠحئڪټآقحدئقدكټننئسآجضڝڪآزسټضكحقڪؠؠآزټئس؃ڝټقسؠسنجئڝآآضقڪضكح؃ڪكآټزآئض؃ټټسكڝسقجدڝنزسقآضسدڪڪكؠ؃زكئححؠجزكټسزحڝڝكآدقآضججآئقنڪزقئ؃؃نټحنجسئئټضكؠڝقكضددؠڪجؠززضضڪ؃ڪټ؃كنسححآڝئآسقسئڝآؠڪدنآزججآ؃ضآڪكزق؃قآڝحؠټقئئڝدسڪننقكدئد؃جآڪكضس؃حزڝكؠكقحؠزدضټڪنسز؃جق؃جآنكجززحسڪڝؠزقجئكدحټؠنئح؃جس؃؃آقكضضنحجڪآټضڪدئزددټكنجسؠجقڝټټقئكضقحجڪنآضزآئض؃ڪڝز؃جسكجئڝؠآسقټضكدڝڪقسئزنئس؃آټضكڪسزج؃دكحضقؠضزدټڪكنڝقجئدحنڪضكآسقحڪڝنآ؃كضضححټقسنټزنجڝ؃ڝټدكنسجحآقحؠڪقكض؃دټڪحنټزئئټسجآڝككسدجقڝجؠڪقضئڪڝدڪ؃ننزحجڝ؃ئآټكسزڝحقڝدؠؠقجئټدضڪحنزقحجك؃حآټكئسڝحسڪڝؠقندئندجټڪنضز؃جز؃سآكنئضؠحئڝ؃ؠسقكئقددټننجسآجض؃حآزكجضكححڪؠټئزټئسدجټقنضسنئزڝآټزقڪضزحضڪكؠآزؠئئ؃ټڪقكڝسقجزڝنآټقآضضدڪڪزؠ؃زكئئ؃ؠټنكټسقحڝ؃قدڪقنضئدآڪننڪزكئ؃؃كڝڝكآسئحټڝزؠڝققضددؠڪجنآزضجڪحؠټ؃ككسحقڪڝقؠټقسئڝجڝدئآزسؠقح؃ضآڪكزس؃حكڝحنؠآجززدسټڝنقزدجن؃جؠآضئؠججدڝ؃ؠكقحقدجڪڝټنضح؃ڝقندض؃ڝڝسآئحڝسؠزق؃ئكئق؃ضآئسآڝزؠكزس؃ټققحضڪآؠضزڪكڝسك؃جنحسؠجئڝټآسقڝننسدجدؠكزآئض؃ڪدجنڪزڝحدآڪقټس؃سئدڝڪقؠدؠ؃سټحآټئسئڝكټ؃زكحجټسقدحضټنقآڪقئد؃نټجكآسضحڪحض؃؃سنسقدؠڪئنټنآسكحقټ؃ضؠحقټحزؠحجآكسئحڪآكقحججټآزكجسټضقنحؠڪټڝضقكئڪدزڪ؃ټقكقئآڝټڪنكڝضڝحقڝدڝ؃نټسآدئكقضك؃سؠضسققحكقضټحسڪڝ؃؃ؠضس؃دحڝكنقسڪجز؃؃دكؠآزنئڝ؃جؠسزڝئقجض؃؃نڪسح؃نآدسندآآدسجڝڝآكسئدټآڪززدئټدز؃حضآسققجقحئڪكؠحزؠزئججڪؠقڝضزجقڝنآجقآزنضحڝټنكئآڝسؠجسدننسسحڝڝقڪئآئسڝدسآ؃س؃دڝآ؃سس؃حآئقددقئؠآضققضددنحؠڝڪڪدآ؃ټدؠج؃كسححؠڝئؠټقسئڝحقحدسڝزؠجآ؃ضآڪآحكجئئڝدقنئجڪئكحققنڝزدجن؃جڝئآجزڪ؃ضآزقئدؠضندكټټنسسڝضڝجآټزقآجڪآڪڝدؠزق؃ئكئز؃ضآ؃ئ؃ئ؃ڝڝآقكدنضضآڝكنټضڝڝؠؠجضآ؃ؠؠنضڝ؃دآسقڝضقضزدئټجزؠسحدحټزن؃سكس؃حضټحقآحكحئڪقؠدزنككجكڪحكسجنڪزڝڪآحقؠضئضئڪڝآ؃ز؃ڪدئسټقكآسضحڪئحټقضنټڪسسجكؠضزسجڝ؃ق؃جآڪزڪح؃ټززقحنټضآحڪسنؠزئجټحڪ؃جنڪس؃زدڝؠؠآقضئڪس؃ڝقؠآجڪڝئؠقئح؃آس؃حټڝدؠنقجززئڪڪؠكڝضدزڝ؃حآؠكئضټحسڪڝؠققدقڪدجټآنضسڪ؃ئ؃؃آؠكحضؠحئڪټؠسكدئقددټټنجقحجضڝڪآزؠ؃ضكححڪڪؠئق؃ئسدڪټقؠجسنجج؃؃آضكؠضزح؃ڪكؠحزؠئئدحټسكڝسقجدڝنڪجقآضضحجڪزؠضزكسض؃ؠټئكټسسجحڝقآسقنضضدآڝضنڪززئح؃كټڪكؠسزحټدسؠڝققضئدنڪضنآقدجڪدكټ؃ككسسحؠدسؠټقسئڝحنقجننزقجآحئآڪكزس؃جؠكئؠؠقنئټحنټڝنقزدئآنضآآكآضڪحڪڝ؃ؠكقحئؠندټټننسڝجڝ؃دآآكجسآسدڪڝؠنق؃ضندحټڝنئقټجسڝڝآؠكدضآحجڝقؠضنڪئزد؃ټآنحزؠجئڝڝآسنڝضقحدڪټؠجزڪئضدنټزؠحسكجحڝڝآئنؠضسدڝڪقټدټټئجد؃ټضنحسزجڝڝكټئحټضئححڪسټجزقئد؃نڪضجڪسضجئڝزآجقكضحدؠڝسئڝزسئس؃قڝضكنسجحآ؃زس؃قزضقدك؃سنؠزئجټ؃سضآكقسضحنڝؠؠآقزئڪحزدآننزضجؠحئآټكنضڝئقڝدؠنقسئآدزټڪؠجز؃سك؃حآؠكزضټحڪڪڝآټقدسندجټآنقسڪجك؃؃ټضكحسټحئڪټؠنزڝئكددټننجقآكقڝڪآؠك؃ضټححڝڪؠئكټنك؃ڝټآندسڪجج؃حآضكڪؠئح؃ڪآؠحقڪئئددټسؠڝآنجحڝټآجقڪضضحنڪزؠ؃زكئح؃ڝټئكڪسسحڝڝقڪدقنضجح؃ڪضؠحززضټ؃كڝحكؠسئجدڝسآجققضڝدنڝجنآزضئد؃زڝدككسسحؠدئح؃قسضحدقڪجننزڝجآدضحؠكزسجحك؃ټؠؠقضئټجسئدنكزئجن؃ضآآندضڪحزڝ؃ؠكقسئؠدضټټنسسڝضق؃دآنكزضآحكڪڪټئق؃سكدحټؠنقسټجنڝڝڪحكدسنحجڪآؠقزڪئؠد؃ټټنحقؠكزڝټآكقڝضنحدڝسؠجنآزق؃ڝټنن؃سڪجح؃ضآئنټؠكدڝڪؠؠدزآئجدقټضآڪكنجدڝآآحكسضئدڝڪسآڝټؠئد؃ټټجكڪسضجنڝزټحئجضحدڝڪئنڪزسجڝ؃قڝدڝټسجج؃ڝضآحقزضكدك؃ح؃ڪزئئد؃سټجكقزټحن؃جدكقضضددزڪكنكزسجؠ؃ئق؃كسسححقڝجؠنقجئآجضئدنززججك؃ضآؠنآضټئسئقؠكقئئندسټآؠزسڪجټس؃آنكزضؠحضڪټؠززڝئكددټنحزسآجضڝڪآكك؃ضكححڪؠد؃زټئك؃ڝټټندسؠجج؃ححضقڝضنح؃ڪكؠحزآئئ؃ڪټسكڝڪآجدڝنآجقڪضضدڪڪزآ؃ټسئح؃ټټئؠسسسجحڝقآدجټضجدڝڪضنڪززئ؃؃كڝحڝئسضج؃ڝسآحققسقدنڪجټززضئد؃زټحككسجحؠڝئضكقسضددقڪجننزججآ؃ضڝؠكقس؃حكڝجؠؠقئئټدقڪدنقزدجن؃ضآآكضضڪسڪڝئؠكقحئؠئج؃جؠزسقكؠ؃ضآنكجضآضؠدقټززڝئټدحټؠنئسټڪكڝڝآنكدضنحجڪآؠضكڪنند؃ټؠنحسټجئڝڪآسكڝؠضحدڪآؠجزڪئض؃ڝټزن؃كسججڝؠآئقڪضسدڝڪقؠجزنئج؃آټضنجسزج؃ڝكدزقڝضئدټڪسڝزنآضز؃ك؃آن؃سضحڪڝزڪقؠټسقدنڪضؠدزسجڝ؃ق؃؃آ؃زئحضئنآققزض؃دكحټڪئقدجضڪزقججؠڪئكجئحڪزقڝئڪدزڪ؃ټڝكآضؠ؃جزڪضسڝڝنڪضټآنقآئآدضټڪنزكڝجن؃جآؠكئضټحسڪڝټققدئندئټآنسسڪجن؃؃ڪككحضؠحسڪټؠسزڝئكددڪننجسآجسڝڪآكك؃ضؠححڪؠؠئزټئز؃ڝټقندسنججدآآضقڪضقح؃ڪنؠحزڪئئحټټسكڝسنجدڝنآجك؃ضضحڪڪزؠ؃زنئحد؃ټئكڝسسحڝڝقآدقنضجدټڪضنڪززئد؃كټحكؠسئكئڝسؠڝققڪآحدڪجنآزضسججؠڪسكحجضټڝكآحڪقآئڝدقڪددسڪڪڝڪڪټسحآڝدزحټڝحؠؠقئزئئكڝآن؃؃آجڪ؃جآآكضؠئضدد؃ؠق؃ڝضددئټټنسټآحد؃زسئؠڝننسدڝزؠزق؃ئكضټڝكزټ؃ڪز؃؃ققآ؃آكټكجڪآؠضزڪئزد؃ټكټننؠزنڝټآسقڝضقحدڪنڝآؠآڝآدجټزن؃سكققحدآڪقئحكسسڪڝؠدزنئجضحڝڝنآضجدجؠسسنقآضقدټڪسنڝكآسڝح؃آححكسنحڪڝزآ؃ڪدزقحڝڪئق؃ددئز؃قټدكنقڪضڝد؃ؠټضس؃ڝؠ؃ضڪئسزكجټ؃سآڝڪڪقڪجزڪؠقڝنضئڝدزڪ؃نكآنټسدحآټكسضڝزقدؠټكزكدڝټڝزضدڝټسقححئآڝزټجدسټڝزؠققدئنئك؃سآضسټڝقؠنزز؃ڪضڝحڪڪټؠسزڝككضضڝقكڪئڝټجقټججټضققححڪؠؠئزټئس؃ڝضقڪسنننئ؃ئآضقڪضزسك؃دآضئزڝټآدئؠدضقضجكڝنآجقآقزضح؃حنئضؠڝآنڪضكآقسآحڝڝقآدسنسڪززآكسكټئآټدڝټحكؠسئضددآآنزڪحسټټقسجقټټزڝدؠڪضق؃جكڪنكجج؃ڪټقآئدڪحنئڝحئؠ؃ضآڪكزقئضټ؃آننضزد؃كټضڝدآؠجئن؃ڝآنسجدسڪآڝجؠكقحئؠسئ؃زآضدقجڪ؃دآنكجؠكزؠضڝحنحكؠڪڪئټؠنئسټجسڝڝآقټئكنڝكڝ؃ؠضزڪئزضټڪڪضټآئؠج؃جآسقڝضقسآدټآڪسآحضټجزحنكسكجحڝؠڝنؠززسدڪنحسجد؃ؠڝزححټنسسزج؃ڝكدجڪؠننسآجكآزؠجزآض؃ټجكآسضحڪڝزآ؃قكضححكڪئنټزسجڝ؃قټدقننحآسڝضؠڪقزض؃دكسحڝآؠئجټ؃سآڝكقسدحنڝجڪ؃آضټندزڪ؃نكزحجؠ؃ئڪټټسئڪحآڝدؠنقجزئئكڝئنسكؠجڝ؃حآؠكئضڝسسټآآ؃ؠڝآسنجڪقنضسڪجزضدحسڪحندسؠڝقڪحكڝسجدڝټنكضئټجكڝڪآزك؃قڝئآ؃ؠؠجټحئؠ؃ڝټقندكدسڪ؃كؠڪز؃ؠكح؃ڪكؠحزؠئئ؃ټڪنټڝڪنجقڝنآجقآؠڝسنحڝآكقدجزټڪټئكټسسحڝڝقآدقنقزضآقڪؠنززئ؃؃كڝسآڝزڪدآآكقحڝڝټزق؃حڝټڪئؠڝئ؃زټ؃ككسححؠؠئدجآسؠحححڪدننزجزححڝڪڪكسد؃ڪڝكنئسڪټكقؠدڪضنقزدجنؠڝجڝآقڝڪټدجزڪئقزئؠدئټټټنكټئزڝئنآئټسححضڪڪؠزټدئ؃نجدحزټڝكجز؃ئآقكدضنئڪحضآحزسحقئقټكنحسؠجئڝټ؃سڪضكقححڝ؃ؠجزآئضئټ؃س؃حدټجحددنضكحضسدڝڪقڝكنؠئآڝڪؠسؠ؃زحج؃ڝكآحټسنئضندټندقحجسڝدنئضس؃قكئڝټآ؃قكضحسسحؠټڪكټضقحئؠضندسجحآڝض؃كآ؃ضڝ؃ؠزسجڝڪضسؠ؃ؠآڝكقسدزض؃جنؠئ؃ټدڪنڪسنكزحجؠن؃آقآجسضضقټآك؃قزئآدضټڪڝققنجقڪجح؃كڪضټحسڪڝڪجؠئسحدجؠڪجق؃زؠضضؠدئحټسزحئڪټؠسټ؃قححټټدزنحؠآڪزقج؃ټكققجزنحؠقزټئس؃ڝ؃قآززڝحجدكآؠقڪضزح؃ضڪ؃ؠئكضدضئ؃جكدسقجدڝنآجئحضضدڪڪزؠ؃زكقحضآدئ؃ڪسآحڝڝقآدآحسڝح؃ڪڪككقكحڝد؃ټحكؠسئزضحټټسق؃ددؠحضكئززؠجڪ؃زټ؃ؠئڝكسڝضقزنق؃ټآدؠڪدننزجزدحڝڪنجحسئحكڝحؠؠآآقدحآټڪآضزسجن؃جآآڪ؃كزجئڪقكنڪقئڝدئټټنسؠنسكحڪڝ؃ؠ؃سنحضڪڪؠزؠسزججحټنسنڝڝټسزڝحكټآقزحؠڪ؃كحقټئټد؃ټكنحك؃سقددآ؃سڝټآآنڝ؃ؠجزآئضآڪآضئئجقزقآجز؃كحضسدڝڪق؃حزز؃آقڪ؃آدآسزج؃ڝكآحقؠټئق؃حسقحقحئد؃نټجڪزكڪجؠڪڝندجټڝضكڪئټڝآززئح؃قټدكنقآضسددڝزقؠض؃دكڪحټككڪئؠ؃ض؃قكڪسدحنڝجئټقسآج؃دضسڝض؃ټضد؃ئآټكسكضضحددؠكئئددؠؠسئ؃آؠحئټدزؠحسؠدآآضسحدڝؠڪزجدئټسضآزقجز؃؃آكټنكحجؠڪضزججسڪحكؠجكڝئڝكئضڝڪآزك؃ققضس؃قؠحض؃ټكؠقسج؃ڝؠسسدټ؃قڝسسدنؠټ؃ضؠحزؠئئ؃ټټسكڝآكزدئ؃آجقآضضدڪڪزؠ؃ؠؠقححقټنكټسسحڝڝڪدزضسس؃نق؃ڝجؠزؠئ؃؃كټحآنقنجڪڪڝئؠققضددنڪجنآزضئڪئزسؠكټسححؠڝئ؃ضؠزضق؃ننسؠحزججآ؃ضدجؠټزئح؃آحسټدؠآڝضټڪضنقزدجنجئڝزنجضآڝنؠضسحقآئؠدئټټټآككضق؃؃زؠضجڝآنؠضنآزڝڝئټدحټؠنئنحسئحدؠقجنس؃حجڪآؠضقؠآټڝئڝنحڝزآآڝ؃جآسقڝضقضټڝقآكسؠدقټزجټنئسكجحڝؠددؠدحڝنضڪقؠدزنئج؃آټضدڪؠكز؃ټنآكقؠضئدټ؃ڪټټكقدڝڪدكڪجضكټحڪڝزآ؃قكضحدؠ؃نڪټڪسجڝ؃قټدكنسجحآحجڝڪققضضدكڪحنؠنؠئسدزآزجقسكحؠڝجؠآقضؠټدزڪسنكزحجؠ؃ئآټكآئدحقڝقؠنقزئآدسټڪنقز؃جټآكآؠكئضټحنڪڝؠكقدضآؠضټآنآسڪزق؃؃آككحسؠقدڪټؠآزڝئآددڪدنجزحدزڝڪآڪك؃سضححڪآؠئزڝئسدجكڝندسنجج؃قآضقڝضزجحنجؠحقحئئحدټسكڝسقئجكآآجكئضضق؃ڪزؠ؃زكضئنټټئنسسسقدڝقآدقنسضؠڪڪضؠقززنج؃كټحكؠسئؠنڝسآسققضؠدنڪضنآقضكؠ؃زټسككسآحؠڝؠؠټقآجددقڪقننقججآ؃سآڪكؠس؃حټؠكؠؠقئئټحسټڝنكزدجآئقآټكآضڪحڪڝ؃ؠكقحضؠزدټټنآسڝكئ؃دټدكجسح؃زڪڪؠڪق؃ضټدحټآنئز؃جس؃جقڝكدضنحج؃؃ؠضزڝئزدحدڪنجزحجئڝټآسقڝضقجدئزؠجقحئضدڪټزنزسكجقټټآئكئضسجكڪقؠحزنئق؃آټكسضسزج؃ڝكټآقؠضضدټڪآكدزقئق؃نڪټكآسسحڪڝقآ؃قټدكدؠڪئنټك؃جڝ؃كټدنآ؃ضحآڝآؠڪآقض؃دكڪحؠؠټدجټ؃آآڝڝجسدجدڝجټآئحئڪدڪڪ؃نڝزحئض؃ئټټكسضڝحڪڝدآسقجضجدضڝ؃نزز؃ئ؃؃حټقكئضټحس؃ڝؠققدضددجڪجنضقزجزدحآككحسجحئ؃ؠؠسزڝئقددټننجزضجضڝڪآزك؃ضكئحڪؠؠئقسئسدقټقټئسنججڝآآضكضضزحكڪكؠئزؠضئ؃ټټسنضسققنڝنآنقآزضدڪڪزؠززكئق؃ؠحټكټكسحڝڝقآققنسندآ؃سنڪكزئ؃؃كټككؠسنحټئڝؠڝكنضددنڪؠنآټآجڪ؃زټ؃ؠكسححؠڝآؠټقڪئڝسآڪدؠآزججآ؃ڪآڪڪضس؃حكڝحآټقئئټح؃ټڝآؠزدجن؃جآآكضضڪحڝڝ؃آجقحئټدئڪټنسسڝجڝ؃دحككجسئحض؃ڪؠزق؃ض؃دحڪدنئآسجسحڝآقكدسدحجئټؠضټقئزج؃ټكنحزحجئ؃جآسڪقضقحدڪنؠجقئئض؃ڝټزن؃سكضحڝؠآئكضضسحزڪقؠڝزنسج؃آټضنسسزجقڝك؃كقؠسئدټڪسؠسزقسس؃نټؠكآقضحڪڝزآزقكضقدؠجټنټكسجڝ؃قټككنسكحآڝكؠڪكزض؃دكڪكنؠكآجټ؃ڪآڝؠقسدحنڝنؠآقؠئڪز؃ڪ؃نكزحجؠ؃آآټكزضڝحقڝدټنقجئآدټټڪنڝز؃ئز؃حڪؠكئضټحڪڪڝآ؃قدككدجڪآنضسڪجڪ؃؃حزكحسجحئ؃ټؠسزڝئڝددڪ؃نجآضجضحڪآزك؃س؃ححڝآؠئڪجئسحڝټقندزدجج؃حآضڪزضزض؃ڪكؠحقحئئس؃ټسآ؃سقضدڝنآجكجضضحئڪز؃كزكضئ؃ؠټئنضسسجحڝقآدقنزجدآڪضؠسززئق؃كدآكؠقئحټڝسآزققضكدنجئنآقضجڪ؃زټزككنآحؠڝآؠټقسئڝدقڪقننزضجآ؃ضآڪؠزس؃حكڝكؠؠقؠئټجڝټڝآقزدجن؃نآآكآضڪحقڝ؃ؠڝڪحئآدټټټنقسڝجك؃دآؠكجضآنكڪڪؠزق؃ئڝدحټؠنئسټزقڝڝآڝكدسجحجڪټؠضك؃ئزد؃ڪ؃نحزقجئڝټآسنڝضقحدڝدؠجقجئضحزټزؠحسكجح؃جآئؠآضسدڝڪقټدزنئجدضټضنئسزقكڝكآحقؠضئحئڪسؠقزقئج؃نڪجكآسضجئڝزآؠقكضكدؠ؃ئنټزسئس؃قټزكنسڪحآ؃زؠڪقزضقدكڝسنؠزئجټدقآڝكقسنحندڪؠآقضئڪحكقحنكزآجؠئكآټكسضڝجنكجؠنقڪئآدآټڪنزز؃جكقڝآؠكآضټجدڪڝؠنقدضنز؃ټآنآسڪزس؃؃ټدكحزؠقزڪټؠټزڝئڪددڪضنجكآسقڝڝآڪك؃ز؃حح؃آؠئكټنقد؃ټڝندز؃جج؃زآضقڪضزح؃ڝدؠحزآئئ؃ټټسؠڝسقجد؃حآجكئضضحآڪزټ؃زكئحدجټئنضسسسټڝقټدقنضجحجڪضټؠززئق؃كڝحڪسسئجئڝسآضققضآدندجنآزضئض؃زجدككقآحؠدئؠټقسضسدقڪزننزڪجآجضآڪكزسزحك؃نؠؠنئئټجسټڝنقزقجن؃كآآن؃ضڪجكڝ؃ؠكقنئؠزؠټټنسسڝضق؃دآنكؠضآحټڪڪ؃ؠق؃ئكدحټؠنټسټجسڝڝآقكدزنحجڪآؠڪزڪض؃د؃جحنحقؠجئڝټآڝقڝسدحدئكؠجكآنق؃ڪڪ؃ن؃زحجح؃نآئنټؠكدڝڝدؠدقجئجسكټضؠڪقؠج؃؃حآحكئضئئ؃ڪسآددنئددئټجؠآسضحڪڝزآ؃دسضححجڪئؠززسئد؃قڪدڝزسجججڝضټجقزضقدك؃ح؃ټزضئئ؃سټضكقسآحنڝجؠآقضضسدزڪدنكزحجؠحئآټكسسزحقڝكؠنكدئآجضټڪنززقجك؃نآؠټؠضټجسڪڝؠقققئنجقټآنټسڪضزسجآكككضؠحنڪټآدزڝضنآؠټننؠسآق؃ڝڪآزك؃زكجكڪؠؠآزټئڪ؃ڝدآندزآججڝآآڪقڪنټح؃ڪكؠحقټئئ؃ټڪ؃كڝؠڪجدڝنآجكڪضضدڪڝحؠ؃آڝئح؃ؠټئكټسسحڝ؃؃آدكضضجدڪڪضؠڪؠجئدد؃ټحڝكسئجضڝسټڝققضدحدڪجؠحزضئك؃ز؃؃ككسحجحڝئآڪقسؠضدق؃دننزجئج؃ضټئكزسؠحك؃ئؠؠقئضضدسڪحنقزدجنحجحڝكضسسحزڝقؠكآآئؠجئئ؃نسززجق؃كآنآئضآجضئؠؠزقزئكضآټؠنآسټضسسحآقكقضنحكڪآآ؃زڪسززجټكنكسؠجؠڝټدؠقڝزقزنڪؠؠنزآئآ؃ڪټقن؃سڝكحڝآآټقټضكدڝڪكؠدزآئج؃آضككڪسزج؃ڝڝآحقؠضئدټڪؠنڝزقئد؃ؠټجكآسضحڪضجآ؃ك؃ضححئڪئنڪزسجڝؠؠټدندسجحڪڝضؠڪقزز؃زآڪحؠحزئئئ؃سڝقكققدقجڝئآجقضضضدزڪدنكزقكؠ؃ضټسكسسجحقڝحؠنقئئآدضسحنزز؃جك؃قآؠكئضټحسئؠؠقققئندآټآنسسڪضزسجآكككضؠحنڪټددزڝئڪنسټنننسآټ؃ڝڪآقك؃ضكححڪڝزؠزټئس؃ڝزجندسؠججدآحققڪضڪح؃ڪڝؠحټسئئججقڝكڝسڝجدكضآجقټضضضڝڪزؠئئ؃ئح؃ؠټئجقسسج؃ڝقآدجټضجحجڪضؠدززئ؃؃كڝحڝڪسئجئڝسآسقققزدن؃ج؃ڝزضئس؃زټسككؠټحؠدئح؃قسضقدقڪزننزټجآ؃ضزؠكزسزحكڝنؠؠقټئټدسئڪنقزقجن؃جآآكؠضڪجكننؠكقنئؠحقټټنسسڝئننجآنكآضآحؠڪڪؠزق؃ضؠؠئټؠنڪسټكسڝڝآقكدسآآضڪآآ؃زڪسكد؃ټكنحسؠآدڝټآڪقڝسجحدڪآؠجقڪڝڝ؃ڪڪ؃ن؃زټجحڝؠآئكڝڝقدڝڝحؠدؠحئج؃آټضؠ؃؃كج؃؃ئآحؠدضئدټڪسآددنئددسټج؃دسضحڪڝزآ؃دسضححئڪئؠكزسئد؃قټدكآسجججڝضآسقزضكدكڝئنؠزئئض؃سڪجكقسدحن؃ضؠآقضضزدزڝحنكزحجؠدسآټكسسكحقڝسؠنقجئآحزټڪنززؠجكضكآؠكئضټحسڪڝؠققكئندڪټآنزسڪئك؃؃آككؠضؠجقڪټؠسزڝضنددټننټسآسزڝڪآزك؃سؠححڪؠؠڝزټقد؃ڝټقندزآججڝآټدقڪقضح؃ڪكؠحزؠټد؃ټټڝكڝزئجدڝآآجقآضزدڪڪڪؠ؃قدئحدئټئنڝسسحڝ؃؃آدكڪضجدآڪضآ؃ززئ؃دحټحټحسئحټڝسټدققضدحئڪجآحزضجڪ؃زڪحككسحجسڝئڪكقسئڝدقڪدننزجئئ؃ضټككزسححك؃ئؠؠقئضسدسڝجنقزدجندضآآكضسقحزحنؠكقحئؠحسټټنسزنجقدؠآنكجضآجزڪڪؠزقآئكدنټؠنئسټجسقآآقكنضنحڝڪآؠززڪئزدحټكنكسؠجآڝټآڝقڝسنحدڪنؠؠزآضك؃ڪټزن؃زؠجحڝؠآټقټزټدڝڪقؠدقآئج؃آټڝكڪننج؃ڝكآحكټضئدټڝدنڝټټئد؃نټجكآسضحڪڝڝآ؃كئضحدټڪئؠڝزسجڝددټدنڪسجحآڝضټ؃قزض؃حجڪحڝقزئجټ؃سڪدكقسدجضڝجڝدقضئڪدزڝحنكزحئز؃ئ؃ڝكسضڝحقڝدئزقجضضدضڪننززحجك؃حآټكئسئحسڝزؠققنئنحضټآنضزسجزدئآككحضؠجسڪټؠسققئقئنټننجسآئزڝڪآزكنضكحئڪؠؠئزټضق؃ڝټقنآسنئسڝآآضقڪضزح؃ڪكؠنزؠئڝ؃ټټقكڝزنجدڝنآآقآسكدڪڪزؠ؃قؠئح؃ؠټڪكټنڝحڝڝقآدكآضجدآڝ؃نڪآڝئ؃؃كټحنټسئحټ؃حؠڝڪڪضددنڪجنآ؃حجڪد؃ټ؃نضسححټڝئؠټققئڝدڝڪدؠحزجئض؃ضڪ؃كزس؃جدڝحآڝقئئټدسڝدنقزدئج؃جڪؠكضضڪحز؃حؠكقحضضدئدټنسسڝجقدجآنكجسزحضدحؠزق؃ئكدحټؠنئزضجس؃نآقكجضنجضڪآؠضقزئزحئټكنحسؠئسڝټآسككضقضټڪنؠجزآضز؃ڪټزنؠسكزڪڝؠآئقټسقدڝڪقؠټزنضڪ؃آټضكڪسزؠټڝكآؠقؠس؃دټڪقنڝزقڪڪ؃نټنكآسټحڪ؃؃آ؃قڝؠحدآڪآنټززجڝ؃كټدكڝسجحآزكؠڪقزض؃دڝڪحنؠزئجټ؃ؠآڝكقسدحڪڝجؠآقضئڪدآڪ؃نكزحجؠ؃ئآټكسضڝحټڝدؠنقجئڝدضټڪنزز؃ؠټ؃حآؠكئسئحسڪڝؠقكدنزدجڪحنضؠئجز؃قآكؠحؠئحضڝضؠسقضئقضزټنآجآڝجض؃قآزكسضكحآڪؠؠنڪڪئسدكټققؠسنجئڝآآسقڪضؠڪزڪكؠحزؠحڪ؃ټټزكڝسآڝقڝنآجقآئجدڪڪقؠ؃ككنض؃ؠټڪكټسآحڝ؃حآدك؃ڪقدآڪڝنڪسضئ؃؃نټحكؠسئجدؠټؠڝققضد؃قڪجنټزضئحآڪټ؃ككسحدڪڝئؠڪقسسدټحڪدؠئزجض؃؃ضآڪكززحآؠڝحآسقئسكدسټڝنققجټآ؃جټقكضقڪحزڝ؃ؠككئڪټدئڪننسنججق؃دآنكجڪكحضڝقؠزقټئكدئټؠنئآكجس؃زآقكؠضنحئڪآؠؠټڪئقدقټكنزسؠجضڝټآزقڝضقنضڪنؠجزآئؠ؃ڪټزن؃زكقڝڝؠآنقټنسدڝڝ؃ؠدزنڝس؃آټټكڪسآج؃ڝكآحنؠؠزدټڪڪنڝق؃ئدئزټجؠآؠڪحڝڝڝآ؃كدضحدآڪئؠجټسئ؃دحټدن؃سجحټڝضؠڝقزض؃كټڪحنؠزئئج؃سآڝكقسدزئڝئآئقضضقدزڪدنكزحجؠ؃ئټضكسضڝحقڝدؠننجئآدضڪسنززقجكسسآؠكئضټحسڝزؠققجئندئټآؠزسڪجز؃قآككؠضؠحئڪټټسزڝئقدكټننؠسآضحڝڪآزك؃ضكحؠڪؠؠززټئس؃ڝڝقندسنجآڝآآڪقڪكڝح؃ڪكؠحزؠئڪ؃ټټآكڝسقجدڝنآجقآضټدڪڝدؠ؃زنئح؃ؠټئكټسآحڝڝنآدقنضجدآڪضنڪززئ؃؃نټحكؠسئججڝڪؠڝققضددنڪجنآزضجڝ؃زټ؃ككسحضقڝضؠټقسض؃دقڪدننزئجآ؃ضآڪكزق؃حكڝحؠؠد؃ئټدسټڝنقزدجنضد؃آنئسححزڝ؃ؠكنسزكحنآآقززؠجق؃دآنؠسقجئ؃ڪقكدئسڝدقڪحقڪننزجڪآئآڪكدضنحجؠنزحضضقټآئجټزئسؠجئڝټآسقڝضقئضحنزققدئض؃ڪټزڝققڝئسڝؠكزڪحضؠدڝڪقؠدؠدئآدټآټجڪدټج؃ڝكآحقؠضئضټقضڪڝټڪئض؃نټجكآؠحس؃ڪآز؃ټ؃ضسدؠڪئنټكڪزجدڪټ؃سحسئحآڝضؠڪټڝڪؠحدڪحنؠزئزجج؃ڪڝكزححڪئندجقنحضحدزڪ؃نكنحسددكؠټقضسسحقڝدؠنؠؠزسح؃ټټقئججكڝڝدټ؃كئضټحسئدڪ؃قنئدڪټضؠنقسڪجز؃؃دكؠآزنڝنڪڪؠسزڝئقسآجټنزسآجضڝڪڝټؠنزكحدجحؠآزټئس؃ڝ؃نټضقضحزټڪزڝجدټآقجڪټؠحزؠئئجآڝآؠ؃سدجح؃ضآجقآضضئزددآآضقدضټئزآ؃زآكقسدټندقنضجدآڪضنڪززئ؃؃كنضكڝسئحټڝسڝئؠسزج؃نؠسؠ؃زضجڪ؃زدقآنسؠدټن؃ؠڪقسئڝدقجنئضزكجآ؃ضآڪآققؠجزڝ؃قڪئكنحح؃ټڝنقزدقحجنڪجقټدؠټڪقنئجڪدكآدقټټنسسڝجقئؠآؠكجضآحضئؠحقققئكدحټؠڪټقضئكآؠقدئضآڝككآټآجزڪئزد؃حكآآقنحنټ؃ك؃حسټ؃قزججټضق؃حڪڪحقڪنضسكجحڝؠ؃آؠڪضڝددآكضضزنئج؃آڪزضقسزجحڝكڪ؃قؠضئدټڝقضدزقئئ؃نټآكآسضحڪ؃كسحقكضسدؠڪقنټزسجڝدنزجكنسقحآڝسؠڪقزض؃دكسڝنؠزسجټ؃ؠآڝكنسدج؃ئسؠټقسئڪدڝڪ؃ننزحجټ؃ئټدضټضڝحقڝدآحقجئټدضڪحسڪز؃جك؃حدنكئضڪحسڪڝسؠقدئآدجټآنضسڪجزد؃حسكحضټحئڝجؠسق؃ئقددقټنجسڪجضڝڪآزك؃ضكئحئڪؠئزڝئسددټقنجسنئضكڪآضكدضزجدڪكؠحزؠئئحقټسنجسقجحڝنآجقآسزآ؃ڪزؠضزكضڝ؃ؠټئكټسسقضڝكآئقنضسدآڪننڪقزئ؃؃كټئكؠزسحټڝكؠڝققضددنڪضنآزسجڪ؃زټ؃ؠكسححؠڝسؠټققئڝحټڪدننزججآ؃كآڪكزس؃حكڝحټؠقئئټدنټڝنآزدجآ؃جڪآكضضڪحؠڝ؃ؠټقحضټدئټټنسسڝجټ؃دآنكجضآحض؃ڪؠزق؃ئڪدحڪ؃نئسڝجسدڝآقكدضڝحجڝدؠضقنئزد؃قآنحزدجئڝټآسقڝضقئدقجؠجقحئضدئټزنحسكضحڝؠآئكجضسحضڪقؠؠزنضض؃آټضنضسزجڪڝكآحقؠزئدټڪسؠسزقئق؃نڪجكآززحڪڝزآققكضندؠڪئنټققجڝ؃قټنكنسؠحآڝضؠڪقزض؃دكڪكنؠزټجټ؃سآڝكقسدحنڝضؠآقضئڪدكڪ؃نكزحجؠ؃زآټكسضڝحقڝدټنقجئآدقټڪننز؃جؠ؃حټټئڪضټحنڪڝؠڝقدئندجڝآ؃قسڪجؠ؃؃آټكحزسحئ؃ټدكزڝئټددټآنجززجضدڪحنك؃ضڝححڪټؠئكسئس؃ڝسضندسڪجج؃حآضك؃ضزج؃ئسؠحزڪئئحئټسنجسقجدنټآجقڝضضدڪڪزؠ؃زكسحسڪټئن؃سسجحڝقآجقنسضټسڪضؠحززئز؃كټحكؠقئك؃ڝسآجققضضدنڝڪنآزضڝد؃زټضككسئحؠڝئؠټنسؠحدقڪسننزقجآدكآڪؠزن؃حنڝزؠؠقكئټحټټڝآقزدجن؃قآآكنضڪجحڝ؃ټكقحئؠدكټټنؠسڝضح؃دڪنكجضآحنڪڪؠآق؃ئڪدحټؠنئسټجآڝڝآقكدضنحج؃آؠضزڪئټد؃ټڝنحسټجئدټآسقڝضڪحدڝ؃ؠجزڝئضحڪټزن؃سڝجح؃دآئكقضسدڝڪقؠدزڝئجددټضنئسزئحڝكآحكدضئججڪسنڝزقئدكزټجن؃سضجئڝزآحقكسحزقڪئؠ؃زسضح؃قټضكنسجټڝڝضآدقزض؃دكڪحنؠكئن؃؃سټحكقسئحن؃ؠؠآقؠڪجدزڪجنكؠآجؠ؃ضآټكسضڝحآؠقؠنقجئآضڝټڪنقز؃جكؠضآؠكزضټحسڪڝؠققدسنزسټآنقسڪجن؃؃ڪدكحقدڪزڪټؠكزڝقټددټؠنجققجض؃حقڪك؃ضكححج؃ؠئزڪئسدجكڝندسنججئسآضقڝضزح؃كآؠحزڪئئد؃ټسكڝسقضدضټآجقڝضضحدڪزټ؃زكئحؠڪټئندسسحڝڝقآدقنزجزڝڪضؠحززئئ؃كڪنكؠسئټنڝسآحققضضدنڪئنآقزڝق؃زټجككزدحؠڝئؠټقس؃حدقڪضننزججآ؃ضآڪؠزآجحكڝسؠؠققئټجضټڝنققآجن؃قآآكسضڪحزڝ؃ؠكټڪئؠدزټټنؠسڝجك؃دآنئسضآحزڪڪؠزق؃ئكدحڪؠټزسټجقڝڝآڪكدضؠحجڪآؠضزڪئكد؃ټكنحسؠجئدټآسقڝضنحدڪآؠجزڪئضح؃ټزن؃سآجح؃آآئقټضسدڝڪقؠدزڪئجد؃ټضكڪسزض؃ڝكآحك؃ضئدڪڪسؠآزقئز؃نټجندسضقزڝزآدقكضحدؠڪقزئزسجڝ؃قحنكنسئحآڝكقضقزض؃دكجآنؠزضجټ؃سڪنكقسسحنڝئؠآقضئڪدزڝڪننزسجؠ؃قآټكؠضڝحڪقسؠنقزئآزجټڪنقز؃جك؃حآڝضؠضټحسڪڝدسقدئؠدجڪ؃سآسڪجز؃؃حآكحضآحئ؃ټدكزڝئآددټؠنجزكجض؃ئضآك؃ضټححئټؠئزڪئس؃ڝټقنضجدججڝآآضڝ؃ضزحدڪكؠسئحئئ؃ټټس؃حسقجحڝنآجنزضضححڪزؠدزكئح؃ؠڪسجڝسسجئڝقټڪقنضجدآڪض؃ئزقئج؃كټضكؠسكحټ؃سؠڝققضجدنڝضنآزقجڪ؃زټ؃ككسئحؠڝضؠټقسئڝجقڪدننزضجآ؃زآڪنآس؃حكڝحؠؠققئټدسټڝنقزدضن؃جآآككضڪحؠڝ؃ؠؠقحسؠدئټټننسڝجآ؃دټآكجضآحضڪڪؠآق؃ئكدحټؠنئقټجسڝڝآټكدضڝحجڪڪؠضكڪئزد؃ټڪنحز؃جئ؃كآسقڝ؃ؠحدڝ؃ؠجزآئض؃ڪټزآ؃؃حجح؃دآئكجضسحدڪقټدزنئجدحټضنئسزجنڝكټئقؠضئحئڪسؠټزقئد؃نڝجكآسضجضڝزآزقكسحدؠڝسنټزسئز؃قټككنسجحآ؃زؠڪقزضكدكڪننؠزئجټ؃سآڝكقسقحنڝآؠآقضئڪدزڪ؃نكزئجؠ؃ئآټكقضڝحقڝدؠنقسئآدضټڪنزز؃ضك؃حآؠكزضټحكڪڝؠنقدضآآټټآنكسڪجڪ؃؃آككحزؠقزڪټؠنزڝئآددڝضنجقآكقڝڪآآك؃ضؠححڝسؠئكټنك؃ڝټڪندسآججدضآضقڪڪئح؃ڪټؠحقدئئ؃ڝټسنڝآضجدڝټآجنجضضححڪزؠ؃حآئح؃ڪټئكټسسحڝڝقڪدڪټضجدڝڪضؠدززئح؃كڪئضضسئجدڝسآسققضددن؃ج؃ڝزضئح؃زټئككزټحؠڝئز؃قسضئدقڪجننزججآحضجدكزسضحكڝزؠؠكقئټجسدڝنكزسجن؃قآآنآضڪئزڝ؃ؠكقزئؠدكټټؠدسڝضق؃دآنكقضآحنڪڪټدق؃سكدحټؠنكسټجؠڝڝآټكدضنحجڪآؠؠزڪئزد؃ټكنحقؠجئڝټآآقڝضڪحدڪآؠجكآئض؃ڪټټن؃سڝجحڝڪآئنټضسدڝڪڪؠدق؃ئجدزټضكڪسزج؃ڝڪآحك؃ضئحجڪسآدزقئدد؃ټجؠحسضحڪڝزآ؃دسضحدڝڪئؠجزسئد؃قڪدڝزسجحڝڝضټدقزضئدكڪحضڪزئئ؃؃سآڝكقسدحندجدڝقضضددزڪجنكقنجؠ؃نسحكسسححققڝؠنقئئآدضټڪنؠجزجك؃حآؠجحضټحزڪڝؠقجئئندسټآنضسڪجز؃؃ڪكڝضضؠحزڪټؠكزڝس؃دد؃؃ضآسآجقڝڪسضك؃ضنحح؃زؠئقد؃ټ؃ڝټقند؃قججڝټآضقڪ؃نح؃ڪآؠحزڪئئ؃ټټسؠڝآؠجدڝټآجقڝضضجڪڪزؠ؃حآئح؃ڝټئكټسسحڝڝقڪدڪټضجح؃ڪضؠحززضق؃كټحئقسئج؃ڝسآجققضحدنڝضسسزضئد؃زټڝككسححؠڝئسټقسضجدقڪدننزججآحضآڪكزسئحكڝسؠؠنجئټدسټڝنقزسجن؃ئآآكضضڪحزڝ؃ؠكقضئؠدكټټنزسڝجق؃دآنكجضآحسڪڪؠزق؃ئؠدحټؠنئسټجؠڝڝآقكددڝحزڪآؠضزڪسڝئئڪڝندكسجقڝټآسقڝقزئزڝؠنآقؠئڝ؃ڪټزن؃كڝضآدؠآججڪدسؠڝسڪدټقنڪآد؃ټضكڪسززقحټټققنڝټحزڪسنڝزققآئجڪ؃كئئسڪحكنئجڝحندحئڪئنټزسجڝجزټحكؠسجحآڝضؠڪقزز؃دكڪحنآزئجڪ؃سټدكققدحنڝجؠڪقضئڪدزڪئنكقحجؠ؃ئآڪكسس؃حقڝجؠنقجئآدضټڝنزز؃جك؃حآؠؠئضټحسڝ؃ؠققحئندضټآآضسڪجز؃حآككحضؠحكڪټآسزڝئقدحټننسسآجزڝڪآزك؃ضكححڪؠؠضزټئس؃ڝټكندسنججڝآآڪقڪضزح؃ج؃ؠسزؠئئ؃ټڝنآټزڪح؃سؠآققآضضدڪجټټټقسجنټڪحقكټسسحڝڝقآدقنزڝضآد؃ؠقززئ؃؃ك؃قآضقئحآنززڝحقټزقسڝجزڝق؃جڪ؃زټ؃ټآقنجسڪئككئؠڪسكڪئزڝسنضزض؃كآڪكزس؃ضڝدآټؠقجؠڪدآټڝنقزدس؃ئنجآڪنؠج؃زسئؠڪقحئؠدئجزآضق؃جؠحضټككؠضآحضڪڪ؃؃كقضآټڪكئضقڪحنآ؃ڪآقكدضنحجڪنؠضزڪئزد؃ټكنحسؠضئڝټآسقڝضقحدڪنؠئزآضز؃ڪټزندسكجؠڝؠآئقټسقدڝڪقؠجزنئؠ؃آټضكڪزكج؃ڝكآضقؠضؠدټڪسنڝقنئد؃نټزكآسقحڪڝزآ؃قكضحدؠڪضنټزنجڝ؃نټدننسجحآڝضؠڪقټض؃دنڪحنؠزئجټ؃سآڝكقسدحنڝجټآقضئڪدزڪ؃نكزحجآ؃ئآټكسضڝحكڝدؠؠقجئآدضڝڪنزز؃جن؃حآآكئضڝحس؃ڝؠققدئؠدجټټنضزججزد؃آككحضؠحئڝدؠسق؃ئقددټننجسآجضڝڝآزك؃ضكححڪؠؠئزټئسدئټقندسنقق؃؃آضقڪضزسقدټآقزنڝؠددټسكڝسقضضحقټكزؠڝڪحنڪزؠ؃زككجئضڝ؃كئجټڪڪكدجؠڝجكآئؠڝنقدزؠئ؃؃كټحآجكقئجڝضڪنكئضددنڪجټ؃نكضقڝسنجضآټكؠدضن؃كؠقحضحدڪدننزججآجئآڝكقس؃حكڝحؠؠقئسټدسټڝنكزدجؠ؃جآڪكضزڪحزڝ؃ؠؠقحئؠدئڪ؃نسزڝجق؃دآؠكجسدحضڝ؃ؠزق؃ئكدحټآنئسټجسڝڝآقؠدضنحجڪټؠضزڝئزدحټكآحسؠجئڝڝآسقڝضقححڪنآجزآئض؃ڝټزنئسكجئڝؠآئقټضسدڝڪقؠحزنئج؃آټسكڪسزج؃ڝكآجقؠضئدټضزؠئزقئد؃نحؠآحزكحڪآنآئقكضحدؠڪئس؃زسئ؃؃قټدكنسجحآدضحدقزضددكڪجنؠزضجټ؃سسؠكقسححنڝضؠآقضئڪدز؃ټننزحجؠ؃ضآټكسضڝحكڝدؠنقجئآحټټڪنزز؃دك؃حآؠكئضټحسنڝ؃نآدضقدجټآنضسڪجز؃؃دكټحئنجدڪټؠسزڝزڝئكڪزن؃حجڝئنحضجڝڪقنضؠڝڪكڝحضئس؃ڝټقندسنججضټ؃ضؠكضؠح؃ڪكؠحكڝزححجآضنڪزحجدڝنآجآحزڝجڪڪسسدجكڪحكدئ؃نټقججضڝقآدقنزقض؃ڝكنقضزآئئحټككؠسئحټجڪڝسكڝئكټنزؠححټؠئح؃زټ؃ككنڝضكڪدسدټؠضئدقڪدننآضسئ؃ڪآضزدټ؃حكڝحؠؠقئئټدسدئڪقضحئ؃؃جآآكضدضق؃جڪڝټټكنقسآڪدنسسڝجقئڪڪټسنټڝحسڝسؠزق؃ئكضؠڝجؠزجكڪڝؠججټ؃زحټحسڪآؠضزڪزآجنڝضكدزدجئڝټآسجسضئآضټئ؃كزئحسدسټزن؃سكززحدټققئحسټدزڝججآدئؠ؃آټضكڪكئضندننڝسق؃سآجسدزئزڝئد؃نټجآكقڝئڝآضكټجڪڪؠكنڪقنټزسجڝحڝ؃ئؠزضؠدؠڝنؠڪقزض؃زد؃قؠڝزئد؃ڝضټجكقسدحنحكڪسنضئټئحڪسنكزحجؠزحنڝضزجز؃ضآجڪقققئآدضټڪ؃دققجآڝ؃ټجټحضټحسڪڝؠڪدسئندئټآنقسڪجق؃؃آككحضڝڪؠڪټؠسزڝئؠددټؠنجز؃ڝآڝڪآزك؃كسححڪآؠئزټڝك؃ڝټنندسنججڝآآضنڪؠنح؃ڪؠؠحزټئئدحټسؠڝڪكجدڝآآجقڪضضجئڪزآحزكئح؃ڪټئنؠسسحڝڝقټجقنضجح؃ڪضآسززئ؃؃كڪئكؠسئجحڝسآڝققضددنڝضنآزضئئ؃زټؠككسححؠڝئؠټقسضحدقڪزننزضجآ؃ؠآڪكزسححك؃؃ؠؠقضئټدكټڝنآجقجن؃جآآنجضڪحقڝ؃ؠټئكئؠدئټټټدسڝجك؃دآنئسضآحزڪڪؠزق؃ئكدحڝؠڝدسټجقڝڝآنكدضڝحجڝڪؠضزڪئند؃ڪ؃نحسؠجئدټآسقڝضؠحدڪټؠجقئئضح؃ټزن؃سټجحڝڝآئقټضسجدڪقؠدزڝئجد؃ټضكڪسزئحڝكآحكدضئحدڪسنڝزقئد؃نټجكڝسضجئڝزآحقكسحدؠڪئنڝزسئض؃قټئكنقجحآڝضآ؃قزض؃دكڪضنؠقسجټ؃سټحكقزضحنڝجؠآنضئڪدزڪجنكزضجؠ؃زآټؠسضڝحقڝئؠنقسئآحزټڪنټز؃جك؃ئآؠؠسضټحزڪڝؠؠقدئڪټنټآنضسڪضك؃؃آنكحضؠټزڪټؠقزڝئقددټننجقآقڪڝڝآكك؃ضؠححڝنؠئكټنك؃ڝټآندسنجج؃ڝآضقڪؠجح؃ڪؠؠحزڝئئ؃ڪټسنجحڝجدڝنآجآكضضدڝڪزؠ؃حآئح؃ټټئكټسسحڝڝقڪدڪټضئدڪڪضؠ؃ززئڝ؃كڪئكؠسئجدڝسآټققضددنڝضنآزضئج؃زټټككسححؠ؃سؠټقسضضدقڪټننزججآدزآڪكزسزحكڝجؠؠقئئټدسټڝنقزضجن؃نآآكزضڪحزڝ؃ؠكقئئؠدقټټنزسڝجآ؃دآنكجضآسحڪڪؠقق؃ئكآضټؠنسسټجسڝڝآقكدزننئڪآؠززڪئكد؃ڪڪنحزټجئڝټآكقڝسسحدڪنؠجقڪئض؃ڪټؠن؃زحجحڝؠآئكڝضسدڝڪټؠدكدئج؃آټضؠ؃سزج؃ڝڝآحقټضئدټڪسنڝزقئد؃ټټجنحسضج؃ڝزآسقكضحدټڪئڪنزسئ؃؃قټئكنسزڝجڝضؠڪقزقټدكڪجنؠكئن؃؃سټدكقسدحن؃سؠآقض؃ددزڪجنكزحجؠ؃ئآټؠسآححقڝئؠنقسئآحنټڪنټنضجك؃ئآؠټدضټحزڪڝؠؠقدئڪټنټآنضسڪزئ؃؃آنكحسټټڪڪټؠقزڝضحددټننجسآڪقڝڪآنك؃ضكححڪؠؠئكټنك؃ڝټؠندسټجج؃ټآضقڪقحح؃ڪؠؠحزټئئ؃ڪټسكڝكضجحڝنآجقټضضدڪڪزؠحزكئح؃ؠټئكټسسحڝڝقآحقنضجدآڪضټؠزقئ؃؃كټجكؠسئحټڝسؠڝققضددنڪسنآزضجڪؠ؃ټآككسححؠدقڪڪقڝجټڝدقدضجڝڪنحئؠڝآكڝآججسڝحؠؠقئكڪض؃ڝؠكڝئقڝككآئسڝڪنزضس؃ضزدټزضؠدئټټنسكجضڪ؃آآ؃سقدڝآقزندڝآدئآحئآټزآحؠكق؃ئآقكدضنحجئنؠسزڝئزد؃ټكنحسؠضئڝټآسك؃ضقححڪنؠئزآسض؃ڪټزنحسكجحڝؠآسقټسسدڝڪقؠحزنئس؃آټزكڪسزج؃ڝكآحقؠضضدټڪسنڝزكئد؃نټجكآټححڪڝزآ؃دسضزدؠڪئنټآڪسضدآټدسټكآجئڝضؠڪقززكض؃ڪؠكنئؠڝجنقضنججسسحنڝجؠآؠ؃قزحئټققنآزجڝ؃ئآټكسقڪئڪ؃حؠجڪضئآدضټڪنزز؃جكدح؃ؠټؠسجحسڪڝؠقؠحضآئؠنآڪقنزكن؃ڝآككحضؠئقحدټ؃سڪدؠټئسدحجڪ؃زز؃ڪټجقڪحزټنؠ؃ؠكزټئس؃ڝڝڝټآززحآټڪسټقڪضزح؃ڪكؠحجؠكئئټدحنضسقجدڝنحنڪجكحجآڪڝنڪټآئس؃ؠټئكټقټسحدضؠكڝنضجدآڪضنڪززئ؃؃كدحجكسڪحټڝسؠڝټآقحجح؃ڝؠ؃سضدآآنقضجټزڝحڝڝئؠټقسقضئح؃دنككڪئد؃ضآڪكزكزجح؃جؠجحئجآدؠټڝنقزدقحجئټضقزجڝڪآ؃دؠكقحئؠئس؃ڪنڝضټ؃ؠؠنسټدسؠنسزح؃كټزضدڪآټزآڪكټ؃جنڝڝآقكدنحضئڝضنزټجئټد؃ټكنحجضئجسزضزد؃زؠج؃ڝزؠجزآئضضڝددؠآس؃؃كؠنضټ؃زؠڝسقدزآسجحنسدجټضكڪسزسدججټڪقححؠټآزڝڪققحئد؃نټجڪئكآئضڪڝزټئ؃ڪآنضئجڝڪټقجڝ؃قټدكنسجڪآئسڝڪئڝضزدكڪحنؠڪزضڪڝززكڪټق؃؃ڝئؠآضقضئڪدزئدآزجقؠسجنؠزج؃ؠدحئڝدؠنقجئآدضټڪسزټززككټڪدكئضټحسدجټڪقآئ؃ڪقكڝئقڝنكڝئدټټنزئحڝؠنآضضڝحنڝئڪ؃جنئسسؠئ؃ئآزك؃ضكڪڝجټنندزج؃ضڪآزنټسنججڝآڪكؠڝس؃؃ڪآحضححئآڝزجدآآټز؃؃ئ؃نآجقآضضئح؃ټؠؠسڝدزآڪززحكآڪز؃ڝؠټجزآحؠټنئززجزټئ؃؃كټحآآقڝجؠڝئكحئټئ؃حجڪجنآزضسټئدڪئكقجكآقكدئحڪضدئدټڪدننزجكحجحټؠقڝججټحڝقؠؠقئئټضحڪټؠڪس؃؃ټآآئؠكڝضڪحزڝ؃ڪڝنآسؠدجقڪسس؃ڝؠڪسټټنقحسنحضڪڪؠزؠسزججحټنسنڝڝټسزڝحكټآقزحؠڪ؃كحجضئټد؃ټكنحك؃سقددآ؃سڝټآحدڪنؠجزآئض؃ڪټزآآنكجج؃دآئقټضسڝئآئسجدؠضڪڪسز؃نجسزج؃ڝكڝ؃ؠدضڪ؃ټآ؃كڪقئئد؃نټجڪټكڝئنڪڪكزئقڪؠكضئټڝسنضضئججټككنسجحآحزڝحنحئئڝؠكآئڪڝكضندضآڝكقسدئټحټټقزڝڝڪټټققجئټؠقس؃زټڝققجزڪسكنآدقجئآدض؃سټضك؃دزټككسحټټؠحسڪڝؠققدئندجڝ؃ڪضئ؃جز؃؃آككحضؠحئحئڝسننضضددټننجك؃سس؃زؠضسكڝكآؠزسدنآجزئدزك؃؃ئزڝججڝآآضؠجقؠجئڪجكحدڝټټكضئضڪدكسجزڪضززجټڝټن؃ئؠڝدنحضئټ؃ټقكټسسحڝحقڪزكڝئجح؃ڪآنڪززئ؃ضآڪضز؃ڪئحنآڝض؃ڪؠضزدنڪجنآؠآئسكټقآڪجض؃ڪڝڝئؠټقسئڝدقسد؃؃ؠجقج؃ؠآڪكزس؃زئحضټسزئحټټؠحسنآزدجن؃جدئآكزئحسټدؠڝقحئؠدئؠؠ؃سضڪسڪټسقسڪؠسدحضڪڪؠزآؠكټضؠدؠټڝئ؃جڪڝڝآقكدنججؠڝڝقدجزڝؠقضئڝزضزضجئڝټآسټنكدحڪڪحكئج؃ڪقكدئ؃ڪڝضقئحڝؠآئقټزؠض؃ڝضكټضنڪقنضسئ؃آكجضڪڪحؠزضزدضؠڝئننڝدحئد؃نټجكآسض؃ڪسس؃؃سنضضدؠڪئنټكڝسكحئنئنحسجحآڝضڝئؠدز؃دقنجسضححؠكټقآڝكقسدحنڝجڝآټكقڪزنڪجنكزحجؠجكڝزؠحآحجحڝدؠنقجقحجڝڝڪنسجدڪټكزئڪڝجكڪآ؃ڪڝؠققدئندجټآنټحڪدق؃نآككحضؠضندزټسزڪڝقټزقححڪټضق؃قؠآؠك؃ضكححح؃ڪحكڝجسئكټكآآسڝججڝآآضؠسقڪحكڪدقضئ؃ئز؃ټټسكڝؠقضؠدكدقكجضضدڪڪزټضنټضق؃ئنزضد؃ڪټقڝڪآدقنضجك؃ټ؃ئسقټنقدؠڪڪكؠسئحټڝسؠڝققئدټك؃ڪؠضزضجڪ؃زڝقآټسټحؠټضضنحكټكقسڪڝننزججآ؃ضآڪكزس؃حككڪؠآقئئټدسجزڪڝزقجن؃جآآټؠققجضټآكآجڝڝجكجڪزنسسڝجقج؃ڝڪؠ؃ضنڝققئضك؃ؠنقسدنڪنكسټجسڝڝدجآنسزدؠآټڪټزڪئزد؃ټكنحسؠضآجټزټكضضقحدڪنسحؠ؃حقكضنؠجدضزجحڝؠآئقټضسكڝج؃ڝدڪنئج؃آټضكڪسزؠ؃جآ؃حقآضڪدټڪسنڝنززضحزټدسڝ؃حآزسڝج؃آؠڪټحدڪئنټزسسكجآڪضقكجسڪڝسسآسقزض؃دكدسټڝك؃حكڪققكجؠڪسڪڝ؃حؠآقضئڪئكددؠحس؃؃ڪؠټز؃دكؠټسنحجؠدسڪحټټض؃كنڝز؃جك؃حڝسآززقحضؠڪززدقآسججڪضنضسڪجزسدڪټسئڪقزحڝضزئڝؠزئڝحڪدنجسآجضئسڝڪنزضدڪحقجحنقدئس؃ڝټقندڝسججڝآآضقڪضزح؃ټكڝدزآئك؃ټټسكڝؠڪضز؃ئؠنضڝضضدڪڪزؠ؃زكئح؃ؠټئضټؠؠئضڝقآدقنقكئس؃ضنټجق؃ضنڝضق؃؃نسئد؃ؠنسضڝد؃ؠكضسدجؠحسز؃قآنټڝسححؠڝئؠټقسئڝضسحدڪحزججآ؃ضآڪكزڪ؃زؠجحآټقټئټدسټڝ؃ككح؃سقز؃ڪقڪ؃نقڪ؃ئڪجقحئؠدئټټنسنڝقؠئد؃جن؃ضآحضڪڪټآؠئضټ؃آؠؠئق؃سؠڪسڪ؃نؠڝس؃؃ڪؠدؠټزڪئزد؃دڪآقزڝحؠآټزقحسټنن؃ڪڪؠجزآئضسئ؃دآ؃سقڝسڝؠآئقټضسدڝڪقټڝؠنټ؃ددټضكڪسزضضحټټسقضجئزڝڪسنڝزقئد؃نټجؠئنضآكڝؠآ؃قكضحئك؃ڪؠؠزضسن؃آټدكنسجضئحكټئقسد؃دنڪحنؠزئنآ؃سټئكقسدحنڝجؠآقؠج؃دزڪسنكزسجؠ؃ضآټكزضڝحآؠقؠنقجئآدكټڪنقز؃ئؠنئآؠكنضټقجڪڝؠققدضنز؃ټآننسڪكڝ؃؃آڝكحسد؃سڪټؠآزڝض؃ددټؠنجسڝجض؃حقڪك؃ضكححڝجؠئزڪئسدددټنحز؃ججڝڪآضقڪضزج؃ئسؠحق؃ئئزئټسنضسقئدضزآجكدضضسټڪزؠحزكزحجڪټضنحسسج؃ڝقدڪقنضكڝڪڪضؠئززض؃؃كټجكؠسقحټڝنقسققضددنڝجنآزسجڪ؃ټؠحككسقحؠ؃ئؠټقزئڝدكڪدنڪجنجآ؃ضآڪنزس؃حنڝحآټحسئټدآټڝ؃ضزدجن؃جټآڝحضڪحآڝ؃آؠقحضددئڪڝجزسڝجڪ؃دحئكجضآحض؃ڪؠزق؃ئڝدحڪدنئؠضجسددآقكدسدحجج؃ؠضزڪئزد؃ټكنحزججئڝټآسقڝضقئدڪنؠجقئئضدسټزنجسكجحڝؠآئكجضسحزڪقؠجزنضج؃آټضنجسزضقڝكآققؠزئق؃ڪسؠضزقئس؃نڝؠكآززسحڝزآزقكقؠدؠڪئنټققجڝ؃قټككنكؠحآڝضؠڪككض؃دكڪؠنؠك؃جټ؃سآڝننسدحنڝټؠآټزئڪدزڪ؃نكزحجؠ؃ؠآټن؃ضڝحنڝدآنقجئآدؠټڪټقز؃ئ؃؃حڪؠكئضټحآڪڝؠټقدزحدج؃آنضسڪجټ؃؃ڝئكحكزحئ؃ټؠسزڝئڪددټڝنجكئجضد؃آزك؃س؃ححد؃ؠئزټئسحڝڪڝندزدجج؃جآضڪنضزجحڪكؠحقجئئئنټسكڝسقئجڝنآجكضضضضؠڪزؠ؃زكضئ؃ؠټئنزسسسآڝقآدقنضجدآڪضؠضززئن؃كټئكؠزئټجڝسآضققسڝدنڪننآكضجڪ؃زټسككسزحؠدآؠټؠسئڝدقڪزننقڪجآسجآڪؠزس؃حكڝقؠؠقكئټجڪټڝؠنزدجن؃نآآنئضڪحزڝ؃ټكقحئؠدؠټټنټسڝئڪ؃دآنكجضآحټڪڪؠزق؃ئكدحڝؠنئسټجڪڝڝټ؃كدضڪحج؃آؠضزڪئڝد؃ڪدنحؠ؃جئدټآسقڝس؃حدڝحؠجآنئضحڪجنن؃زدجح؃جآئنآضسجدقنؠدقجئجضكټضكڪسزج؃قسآحكحضئحسڪسؠدزقضدسزټجنحسضضقڝزآزقكزحزڪڪئؠجزسئئ؃قڝككنزضڪسڝضآضقزضڝدكڪحنؠكئن؃؃سټسكقسقحن؃كؠآقض؃ددزڪقنكزحجؠ؃ئآټؠسآححقڝكؠنقؠئآدكټڪآزټججك؃نآؠكآضټسؠڪڝټقڪئئندؠټآنټسڪقض؃؃ڪكڝضضؠحآڪټؠڪزڝسزددڝنآزسآجټڝڪآڝك؃نؠححڝټضسزټئڝ؃ڝحضندسنججڝآضحقڪضڪح؃ڝحؠحزټئئدټججكڝسڪجدجڝآجكجضضجڪئكؠدزڝئحد؃ټئآضسسحڝڝقآدكدضجدټڪضنڪززس؃؃كټحنحسئجئڝسڪ؃ققزددنڪجؠجزضئض؃ز؃سككزححؠڝئآجقسؠآدقڪقننكجدڝ؃ضټئكزسضحكدنؠؠؠئئټدسڪضنقكججنج؃آآؠضضڪحزڝسؠكقزئؠجآټټآسسڝجق؃قآنكقضآقټڪڪآزق؃ئكدقټؠؠحسټجټڝڝڪقڝجضؠحكڪآؠنزڪسڝد؃ټكنحسؠجؠڝټآزقڝضقحد؃نؠجزآئآ؃ڪټڪن؃قنجحدؠآئقټضټدڝڪڝؠدؠئئجدآټضكڪسټج؃دآآحكحضئجټئكنڝزڪئد؃ڝټجآئسضضڪحنآدقڝضحضنڪئدسزسضڝسؠټدن؃سججدڝضڪسقزق؃ئآڪجؠدزئكڪ؃سحټكققدقټڝجآحقضضجدز؃قنكقئڝض؃ئټئكسسنحقڝدؠننجنڝدضڪضنزززجكحسآؠؠئآ؃حسڝسؠقققئنزڝټآؠضآؠجز؃سآكؠسضؠحؠڪټؠسجحئقدزټننضسآجضڝڪڪزڝجضكحقڪؠؠنزټئڪ؃ڝڝقڝنسؠجكڝآآؠقڪن؃ح؃ڪڝدحزآئآ؃ټټؠكڝسكجدڝؠآجقآټكدڪڪزؠ؃زڪئح؃ؠټئكټآححڝڝڪآدكحضجدټڪضآ؃آنئ؃؃ڝټحڝضسئحټڝسټڝققضدح؃ڪجؠحزضقس؃زڪحككسحجحڝئ؃ئقسئڝدقڪدننزجئئ؃ضآڪكزس؃حكدحؠؠقئضضدسڪزنقزئجن؃جآآكضسئحزڝقؠكقئئؠحئټټنسزئجقضقآنككضآئضڪڪؠزقسئكدزټؠڝؠسټئقڝڝآقكقضنضآڪآؠضزڪضكد؃ټكننسؠجڪڝټآسقڝسنحدڪنؠآزآضق؃ڪټزن؃زؠجحڝؠآڪقټقئدڝڪقؠدزنئج؃آټآكڪزدج؃ڝؠآحكؠضئدټڪآنڝنكئدددټجؠآسضحڪڝټآ؃قڪضحزحڪئټټزسجڝ؃ڪټدؠآسجضكڝضټڪقزض؃دڝڪحؠ؃زئكئ؃سڪدكقسدجدڝجآؠقضئڪدز؃؃نكزحئح؃ئټئكسزضحقڝدؠنقجضئدضټڪنزز؃جكححآؠكئسضحسڝزؠققضئنججټآنضزسجز؃قآكټزضؠئئڪټؠسقزئقدكټنڝدسآضضڝڪآزكقضكحنڪؠټجزټسس؃ڝټقنكسنجؠڝآدزقڪسكح؃ڪكؠؠزؠسن؃ټټسكڝسقجدڝنآنقآضڪدڪڪكؠ؃قكئح؃ؠټنكټنؠحڝڝڝآدننضجدآڪؠنڪزآئ؃س؃ټحآؠسئحټڝآؠڝقڝضدسزڪجآآزضجڪ؃ټټ؃كڪسحقحڝئآڝقسئڝدڝڪدآڝزججآ؃ضڪڪكزس؃ج؃ڝحآحقئنكدسڝدنقزدئح؃ج؃ككضضڪحز؃حؠكقحضئدئدننسسڝجقدجآنكجسسحضحؠؠزق؃ئكدحټؠنئزئجس؃كآقكجضنججڪآؠضقئئزحڪټكنكسؠئسڝټآسكضضقزؠڪنؠجزآسض؃ڪټزنسسكجقڝؠ؃آقټسقدڝڪقؠقزنزآ؃آټضكڪزكج؃ڝكآنقؠسددټڪسنڝقنئد؃نټآكآنڝحڪڝزآ؃كؠضحدؠڪڪنټنئجڝ؃قټدكنسجحآڝآؠڪكدض؃دؠڪحآؠزئجټ؃ڪآڝكټسدقدڝجؠآقضئڪدټڪ؃ؠدزحجټ؃ئټټكسضڝحټڝدؠآقجضحدضڝڪنزز؃جڝ؃حټ؃كئضڝحسدڝؠققدض؃دججئنضنحجزح؃آككحسدحئڝحؠسقدئقحجټننجزججضسئآزك؃ضكئحڪؠؠئقئئسدسټقڪكسنججڝآآضكسضزحدڪكؠحزؠضس؃ټټسنقسقسدڝنآجقآزضدڪڪزؠكزكئؠ؃ؠدآكټزقحڝڝقآؠقنن؃دآڪضنڪقكئ؃؃كټټكؠقكحټڝسؠڝنقضددنڪڪنآق؃جڪسجټ؃نؠسححؠ؃؃ؠټټنئڝدقڪدؠآزججآدحآڪڪؠس؃حكڝحآټقئئټحئټڝڝآزدجن؃جآآكضضڪجحڝ؃آزقحئؠدئټټنسسڝئد؃دآنكجضڪحض؃؃ؠزق؃ضجدح؃ؠنئسټجسدڝآقكدسئحجڝسؠضآسئزححټكنحزسجئضؠآسقڝضقججڪنؠجققئضججټزن؃سكضحڝؠآئككضسحؠڪق؃ټزنضض؃آټضنؠسزقضڝكآحقؠسسدټڪسؠټزقكس؃نټجكآززحڪڝزآڝقكنزدؠڪئنټزسجڝ؃قټټكنزححآڝضؠڪقزض؃دكڪآنؠزئجټ؃سآڝكقسدحنڝؠؠآقضئڪدقڪ؃نكئنجؠ؃ؠآټكقضڝحنڝدآنقڝئآدؠټڪددز؃ئ؃؃حټټكئضټحآڪڝدحقدئندجڝآنضسڪجټ؃؃آڝكحنجحئڝڝؠسزڝئڝدددجنجسآجضد؃آزك؃سدححدټؠئزټئسحدټقندزججج؃حآضقڪضزجحڪكؠحقضئئئټټسكڝسقجدڝنآجكجضضحقڪزؠحزكسح؃ؠټئنضسسجئڝقدققنضجدآڪضؠئززئق؃كټئكؠزئقنڝسآئققضضدنڪكنآكضند؃زټسككسزحؠڝقؠټنسؠحدقڪقننزقجآسټآڪنزؠټحكڝقؠؠټټئټدټټڝآقټئجن؃كآآكنضڪحؠڝ؃آؠجآئؠدؠټټآؠسڝجق؃دڪنننضآحآڪڪؠڪق؃نضدحڪټنئسټجڪڝڝڪحكدضنحجڝڪؠضزڪض؃د؃ڝجنحسؠجئ؃ڝآسقڝسححد؃ئؠجزآئض؃ڪټزن؃ز؃جح؃ضآئقڝضسحڝئضؠدق؃ئجدټټضنضسزض؃ضآآحكدضئححڪسؠجزقزدجټټئنحسضجآڝزدټقكزحزڪڪئؠجزسئئ؃قټضكنكجضڝڝسآئقزسؠدكئ؃نؠكئكڝ؃زټضكقسسحنڝزؠآقضئڪدزڪزنكزججؠ؃ئآټؠسضڝحقڝقؠنقنئآجسټڪآزز؃جك؃كآؠكؠضټضآڪڝآققدئندكټآدحسڪجڪ؃؃ڪكڝضضؠحنڪټؠؠزڝئآددڪآضټسآجآڝڪ؃؃ك؃ضكححڝټضسزټئڪ؃ڝڝ؃ندسنجج؃ڪسزقڪس؃ح؃ح؃ؠحزؠئئدڝدئكڝزحجد؃جآجقآضضدڪڪزؠ؃ق؃ئحدضټئكڝسسجڝڝقآدك؃ضجئټڪضؠضززس؃؃كټحندسئجحڝسآجقققددنڪجؠحزضضڪ؃ز؃آككقححؠڝئآجقسضئدقڪضنننججآ؃ضټئكزكؠحكحڪؠؠنئئټدسڪضنقزسجن؃زآآآضضڪحزڝسؠكنئئؠئدټټآسسڝجق؃زآنكقضآحكڪڪڪزؠجئندقټؠڪسسټزآڝڝڪقڝئضنحكڪآؠنزڪئؠد؃ڝكڝقسؠجؠڝټآؠقڝنڝحد؃نؠجزآئآ؃ڪټڪن؃نڪجح؃ؠآئقټضآدڝحټؠدقدئجحآټضكڪسټج؃ڝڪآحقڝضئئټڪسنڝزڪئدئكټج؃ضسضئڪڝزآ؃قڝضحح؃ڪئؠدزسضد؃قټدندسجضدڝضؠڪقزز؃ج؃ڪحؠحزئئئ؃سحؠكقزجحنڝجآئقضقؠدزڪ؃نكقئجؠ؃ئټسكسكآحقڝدؠنكضئآدضڪقنزنټجك؃حآؠكئضټحسڝسؠققؠئندضټآؠضننجق؃سآكؠضضؠحؠڪټټسزڝئقدزټننقسآجكڝڪڝزك؃ضكحقڪؠؠؠزټكج؃ڝڝقندسنجكڝآآنقڪضؠح؃ڝؠؠحزؠئؠ؃ټڝؠكڝسقجددنټنقآضآدڪڪڪؠ؃ټضئحدټټئكټسڪحڝضنآدقنضجحڪڪضنڪق؃ئ؃سؠټحكؠسئجڝڝسؠڝكحضدزآڪجنآزضجڪ؃زټ؃ن؃سحجضڝئؠڝقسضڝزضڪدؠ؃زجضن؃ضټضكزق؃قآڝحآدقئضحدسڪجنققجڝئ؃جټجكضسكحزڝ؃ؠكنحنڪدئڪئنسزسجقحضآنؠجؠڝحضڝضؠزقزئكزڪټؠؠئآنجس؃ضآقؠضضنحنڪآټضڪدئزدسټكنزسؠئسڝټآآ؃؃ضقحزڪننڪزآئس؃ڪټقن؃سټڝكڝؠآئقټضددڝڪكؠدزڪ؃ن؃آټضكڪسټجدڝنآحنؠؠزدټڪآنڝزټئددآټجآحدڪحڪڝټآ؃قڝضجدآڪئ؃نزسئجآڝټدكنسججحڝسؠڝقزض؃آآڪحؠدزئئ؃؃سآڝكققدقټڝجآحقضضئدزڝ؃نككحكڪ؃ئټئكسسئحق؃جؠننجنڝدضڪسنززضجكضدآؠكنآڪحسڝزؠققسئؠدئټآنسسڪجؠآزآككحضؠحكڪڪؠززڝضنؠجټننؠسآكحڝڪآزك؃ضكآڝڪؠؠنزټئټ؃ڝڪ؃ندز؃كجڝټآؠقڪس؃ح؃ڪنؠحزټئئ؃ټضنكڝسقجدڝڝآجقآضضدڪڪآؠ؃زكئح؃ڪټئكټسسجڝضضآدقڝضجضټڪضؠئززئ؃ؠآټحندسئحڝڝسؠڝققزدزټڪجؠحزضئئ؃زټقككقحقئڝضآجقسضضدقحنننزككآ؃سټسكزسدحكڝجؠؠقضئټدسسجنقزدجن؃قآآكضضڪحزئآؠكققئؠدآټټنزسڝجڪسدآؠككضآحقڪڪؠقق؃ئندحټؠحقسټجسڝڝآټكدضنحجڝآدحزڪئآد؃دزنحزدجئدټحكقڝضڪحدڪڝؠجآؠئضدئئقن؃سڝجحدحآضقڪضسح؃ڪقؠضئدئج؃آټضؠضسقجدڝكآسضحضئدټڪسآكزكئح؃نڝجڝضسسجئڝزآضقككجدؠ؃ئد؃زسئز؃قټسكنؠححآڝضدنقزضسدكڪننؠزضجټحسجحكقسزحنڝقؠآقكئڪجزئجنكزقجؠ؃نآټڪحضڝئقئنؠؠقكئآدؠټڪڝ؃ز؃جڝسحآآكآضټحسڪڝؠكقدئؠدجټآحكسڪجز؃؃آڪكحضؠحئڪټنڝزڝئڪددڪحنجسټجضد؃آزك؃ضڝححئضؠئزټئسحڝټقندز؃جج؃حآضټسضزجحڪكؠحقحئئضئټسكڝسقضدڝنآجكئضضحجڪزؠئزكئح؃ؠټئنجسسجزڝقآجقنسجدآڪضؠجززسڝ؃كټقكؠقئحټڝسآضققضسدندحنآقزجڪ؃زټزكككؠحؠڝئؠټكقئڝدقڪكننټزجآ؃ضآڪنكس؃حكڝؠؠؠؠزئټدسټڝؠنزدجن؃ټآآڝقضڪحزڝ؃ؠكقحئؠدؠټټؠ؃سڝجن؃دټنكجضآحؠڪڪڪقق؃ض؃دحڝؠنئسټجآڝڝآټكدقكحجدآؠضزڪئټد؃ڝؠنحز؃جئدټآسقڝضڪحدڪڝؠجنؠئضحڪټزن؃ز؃جح؃؃آئكدضسجڝڪقؠدقدئجدجټضڪجسزئحڝكآحكجضئحآڪسنڝزقسد؃نټجنئسضجسڝزټسقكسئدؠڪئؠسزسنن؃قټدكنزضحآڝضآققزؠؠدكڪحنؠزئجټ؃سټزكقسؠحنڝضؠآقضئڪدزڪزنكزكجؠ؃آآټنسضڝحقڝزؠنآقئآدآټڪآزز؃جك؃قآؠككضټضضڪڝڪققدئندكټآنآسڪقئ؃؃ڪككحضؠحنڪټؠؠزڝززددټننجسآجآڝڪآقك؃ضكحح؃ؠؠئزټئټ؃ڝټڝندقؠججدآآضقڪضڪح؃ڝ؃ؠحقڝئئدټټسكڝسڪجددقآجكجضضجڪڪزؠ؃زڝئحد؃ټئآآسسئدڝقآدكدضجحؠڪضنڪززس؃؃كټحنحسئجئڝسټضققسجدنڪجؠئزضقد؃زټ؃ككزئحؠڝئآسقسكحدقڪدننزججآ؃ضټضكزسكحكڝئؠؠكئئټدسڪضنقكؠجن؃نآآكضضڪحزڝسؠكقئئؠدئټټآسسڝجق؃زآنككضآحټڪڪټزق؃ئكدقټؠننسټزڝڝڝآڪڝدضؠحؠڪآؠڝزڪئقد؃ټننحسؠؠقڝټآسقڝضټحدڪنؠجزآجڪ؃ڪټټن؃زدجحڝآآئكڝضسدڝڪڪؠدټئئج؃آټضؠڪسزج؃ڝڝآحكدضئسضڪسآدزقئدددټجڪجسضحڪڝزڪ؃قكضححجڪئؠحزسئج؃قټدكنسججحڝضآسقزضحدكڝحنؠزئئح؃سڪئكقسزحندجؠآقضضئدزڪضنكقزجؠدسآټكسسسحقحنؠنقجئآحزټڪنززقجكضټآؠكئضټجقڪڝؠققنئنجنټآنضسڪئك؃؃آككآضؠجؠڪټؠسزڝئقددټنننسآجڝڝڪآكك؃سكححڪؠؠنزټزز؃ڝټڝندقنججڝآآؠقڪضآح؃ڝڪؠحنؠئئ؃ټټآكڝقنجدڝڝآجنآضضدڪڪټؠ؃زڪئحح؃ټئؠټسسحڝڝڝآدقڝضجح؃ڪضآڪززئ؃د؃ټحنحسئزحڝسټدققضدححڪجؠؠزضجڪ؃زڝ؃ككسحججڝئآضقسسضدقڝجننزجئض؃ضټجكزس؃حك؃ئؠؠقئضزدسڪئنقزدجن؃جآآكضسسحزڝنؠكقئئؠدئټټنسزسجق؃قآنكؠضآجضڪڪؠزقسئكضزټؠنؠسټضسڝڝآقكزضنحقڪآآنزڪززد؃ټكنقسؠجؠڝټدجقڝزقحدڪنؠكزآئن؃ڪڪآن؃سكجحڝؠآؠقټضزدڝڪقؠدكنئج؃آټآكڪسڪج؃دنآحنؠضئدټڪټنڝزڝئدججټجنآسضحڪڝټآ؃نزضحححڪئآټزسجڝ؃ڪټدكڝسجئدڝضټ؃قزض؃ح؃ڪحؠنزئجټ؃سڪڝكقسدجدڝجآجقضسئدزڝحنكزحئج؃ئحټكسضڝحق؃جؠنقجضضدضجڪنزز؃جك؃حآؠكئسئحسڝقؠققجئنحجټآنضزئجزحنآكككضؠحئڪټؠسقضئقدجټننجسآضضڝڪآزكسضكحقڪؠؠآزټسس؃ڝټقنزسنجكڝآ؃ڪقڪضټق؃ڪنؠنزؠئق؃ټټزكڝسكجدڝنئزقآضضدڪڪآؠ؃زكئح؃ؠآټكټسآحڝ؃؃آدقؠضجحڪڪضنڪزټئ؃سجټحكؠسئئټڝسؠڝقڪضدح؃ڪجڝئزضض؃؃زټ؃ن؃سحزحڝئؠټقسسڝدقڪدؠحزجئد؃ضټحكزس؃حكڝحآدقئضضدسڪدنققدجن؃جټدكضزؠحزڝسؠكنحئؠدئڪجنسزئجقدڪآننضضآحضڝضؠزؠكئكدحټؠؠسسټجس؃زآقننضنحجڪآآززڪئزدكټكڝضسؠجئڝټټققڝضقحؠڪندقزآئض؃ڪټزن؃سكجكڝؠآڪقټضقدڝڝقؠدزنئك؃آ؃سكڪسڪج؃دكآحقؠضندټڪؠنڝكضئدجنټجكآسؠحڪدكآ؃قڪضحجؠڪئنټزآجڝ؃ټټدؠزسجئآڝضؠڪقڪض؃دڪڪحنڝزئضټ؃سآڝكڝسدجدڝج؃دقضس؃دزڪ؃ؠدزحئن؃ئآټكسزڝحقڝدآحقجضئدضڝئنزقحجك؃حټئكئسكحسڪڝؠقكجئندجڪسنضزنجز؃؃آككحضؠحئڝضؠسقكئقدجټننجسآجض؃ضآزكزضكحنڪؠآئزټئسدضټقڪسسنجنڝآڪضقڪضزحسڪكؠززؠسد؃ټ؃سكڝسقجزڝنآنقآنحدڪ؃زؠ؃زكئق؃ؠټككټقجحڝڝقآدقنضندآڪسنڪززئ؃حكټحكؠسؠحټڝټؠڝنكضدجنڪجنآزآجڪ؃ڪټ؃نټسحجؠڝئؠټقآئڝجسڪدؠدزجضآ؃ضآڪكټس؃حڪڝحټققئضڝدسټڝنڝزدئك؃جآآكضزڪحزڝ؃آ؃قحضحدئڝجنسقدجق؃دټحكجنزحضڪڪؠزكحئكدحڪئنئؠقجسڝڝآقكدضنحجڝجؠضقزئزدحټكؠحسؠجئ؃جآسؠكضقحقڪنؠجزآئضدئټزنحسكجحڝؠڪئقټضسحضڪقؠززنئؠ؃آڝضكڪسزجسڝكآققؠكټدټڪآ؃ڝزكئك؃نټؠكآسسحڪڝقآ؃قكټسدؠڪئنټزؠجڝ؃قټدكنؠڝحآڝؠؠڪقڝض؃دنڪحآؠټزجټ؃آآڝكټسدضكڝجټآڪقئڪدټڪ؃نڝزحقؠ؃ئڪټڪڝس؃حڪڝدآ؃قجكضدضڪئ؃ززدئد؃حټدكئضڪحسڝدؠققدآڪدجټآنضزججز؃؃آككحس؃حئڪټؠسق؃ئقددټننجآقجض؃ئآزكقضكحجڪؠټئڪ؃ئسدضټقنسسنسحڝآڪضڝدضزحسڪكؠقزؠكن؃ټڝسڝقسكجزڝنآكقآكڪدڪڪټد؃زنئن؃ؠټؠكټسزحڝڝنآدقنټزدآڪضنڪزآئ؃؃كټحكؠسكحټڝسؠڝقكضددنڪجنآؠڝجڝ؃ټټ؃ندسححآڝئؠټقسئڝدڪڪدننزججآ؃ضڪڪكزس؃حڝڝحآدقئزكدسټڝنقزدئ؃؃جآڪكضضڝحز؃حؠكقحضددئجآنسسڝجقحدآنكجسححضڝئؠزؠضئكدحټؠنئزئجس؃حآقكدضنئجڪآؠضقضئزدزټكڝجسؠجئڝټآسكزضقحسڪنؠجزآئض؃ڪټزنسسكجنڝؠآضقټضسدڝڪقؠسزنئض؃آټضكڪسزج؃ڝكآحقؠضضدټڪسنڝزټئآ؃نټجكآسقحڪڝزآ؃جحضسدؠڪئنټنآسكحقټ؃ټجسسحآڝضؠڪؠآزنجضڝڝنڝزئجټ؃سڝڪؠڪزححجڝنؠآقضئڪدزكجنكزحجؠ؃ئآټكسضڝئقئنؠؠقجئآدضټڪنكز؃جكؠضآؠكسضټحسڪڝؠققدسنزسټآنزسڪجك؃؃آآكحزؠقزڪټؠقزڝئنددټؠنجسآكدڝڪآزك؃ضؠححڪآؠئزټزجد؃ټقندسؠججڝآآضقڪضزح؃ڪكؠحزڪئئ؃ټټسدڪسآجدڝنآجؠؠزؠحڝڪ؃حدزټئح؃ؠټئآضكنئضڝزئڪقڪضجدآڪضڝسنؠضس؃قټزكؠسئحټڝسدټقكضحدنڪجنآزضجڪحزټ؃ككسجحؠڝضؠټقزئڝجقڪدننزضجآ؃ضآڪكنس؃جكڝحؠؠقضئټدقټڝننزدجن؃جآآكضضڪحقڝ؃ؠكقحئآدئټټنسسڝجق؃دآنكجضټحضڪڪؠزق؃زسدجټؠنئسڪجسڝڝآقكدضنحجڪآؠضزڝئزد؃ټكڝزز؃جئڝټآسڪززڪجضڪنقسق؃ئض؃ڪټزن؃دآجحڝآآئقټضسدڝڪقټدټټئج؃ټټضكڝسزجدڝكآححزضئدڪڪسؠدزقئد؃نټجآكسسحڪڝزآدقكضحدؠڪضنټزسجڝ؃قټئكنسجحآح؃آنقزض؃دكججڪضك؃جئټټقڪجدټؠكججآڪؠكنحددڪڪ؃نكزحسآجڪڪكقټجسڪزقن؃ڝكجئآدضټڪآؠكسئئڝقن؃ضز؃؃ؠحضزڝكقئضآ؃ضؠئسجټ؃جآ؃؃آككحضؠقحڪڪؠززڝئقددټننجقآجضڝڪآقك؃ضنححڪټؠئكټئس؃ڝټنندسنججڝټآضكڪضزح؃ڪنؠحزڪئئ؃ڝټسكڝسقجدڝنآجقټضضدڪڪزؠدزكئح؃ؠټئن؃سسحڝڝقحئقڪضجدآڪضټسنؠضس؃ققككڝسئحټڝس؃زؠآسزدك؃؃ؠدزضجڪ؃زڝڪؠڝسآدؠآڪآحقسئڝدقڪد؃قزئجټ؃ضآڪكزس؃حكدحؠؠقئئڪدسڪ؃نقزئجنحجآآكضس؃حزڝ؃ؠكقئئؠحئټټنسز؃جق؃حآنكضضآحضڪڪؠزق؃ئكدجټؠنئسټجزڝڝآقكدضنحزڪآؠضزڪضسح؃ټكنحسؠضقحجټدقضحټڪئقټجڝڪئقسددڪككحئدڝ؃ضټحزكقضسدڝڪقڝئنحئڪڝآؠدسجڝڪؠسضڝ؃ڪؠټسجحنڪسنڝزقسضجؠټآقنجڪآڪن؃ئؠڪڝكقئكڪآسضنڝئئ؃قټدكنؠكضك؃حؠسضنضزدكڪحنؠزئقڪ؃سآڝكقسدحنڝجؠآنضئڪدزڪ؃نكزحجؠ؃زآټكسضڝحقڝحؠنقئئآدضټڪآزز؃جك؃جآؠكضضټحنڪڝټققدئندئټآنسسڪجك؃؃ټككحضؠحئڪټؠززڝئكددټننجسآجضڝڪآقك؃ضكححڪؠؠئزټئس؃ڝټآندسنججآدآنقڪضزح؃جڝټڝققجآڪ؃كؠنڝسقجدڝنڪزؠحس؃دئؠآزجدآآڪزجدضن؃زقحدټ؃زڝڪآڝآحكڪضنڪززكدئجڪڪكحجؠڪآقڝجكڝدكنئكڝقسئكحئؠ؃زټ؃ككقسضآڝټنؠضڝڪڝآدسآد؃ؠكسن؃ټقسكڪس؃حكڝحؠؠټضئټدسټڝنقزدجن؃جڪآكضضڪحزڝ؃ؠكقحئڝدئټټنسسڝجك؃دآؠكجضآحض؃ڪؠزق؃ئندحټآنئسڪجسدڝآقكدضؠحجڪټؠضقدئزح؃ټكنحسؠجئڝڝآسك؃ضقحدڪنؠجزآئض؃ڝټزن؃سكجحڝؠآئقټضسححڪقؠدزندسدكټضكڪسزقدججټڪقححؠټآزڝحكڪدقنجكڪقضئحنجڪڝزآ؃قكزسئدڪڝنجئؠ؃حنؠضټ؃حنئحڝ؃زؠ؃ضڝ؃ڪزؠئضؠززئجټ؃سڝجآكسندقآآضآحڪټكزټحسټززنئ؃؃ئآټكسضڝقسڝحؠؠقجئآدضټڪنزك؃جك؃حآآكئضڪحسڝحؠقندئندجټڪنضسڪجز؃دآكنحضؠحئڪڪؠسقدئقدجټننجسآجضڝڪآزكدضكححڪؠؠضزټئس؃ڝټقنكسنججڝآڝ؃كجضزح؃ڪكڝننآئټڝڝؠزڝئسټجدڝنآجټڪزټحزټڪقن؃كئح؃ؠټئكټآكججڝقآدقنكؠئټڪڪن؃نحئئ؃كټحكؠكجضج؃زؠقنضضكدنڪجنآؠنسئدؠآزسكدئآحزسك؃قنئڝدقڪدڪ؃كټضآ؃ئضؠكآس؃حكڝحدجننسددسؠحآحزدجن؃جآآئقضڪحكڝ؃ؠكقحئؠدئڪټ؃جسڝجن؃دټحكجضټحضڪڪسنق؃ئؠدحټؠنئسټجسدڝحؠكدضآحجڪڪؠضقجئزح؃جسنحسټجئ؃ئآسك؃ضقحدكټؠجزڪئض؃ڪټزن؃سكضحضڪآئقڝضسحدڪقؠضزنئكزټټضن؃سزجنڝكآجقؠضضدټڪنزسزقئد؃نټټكآسسحڪڝؠقزقكضحدؠڝقنټززجڝ؃ققئكنسضحآڝضؠڪقزض؃جكئضنؠزسجټ؃قآڝكآسدض؃ؠسؠآقزئڪحسڪ؃ننزحجڪ؃ئټدضټضڝحقڝدآكقجئټدضڪحسڪز؃جك؃حټڝكئضڪحسڪڝسؠقدئآدجټټنضسڪجزح؃حآكحضټحئڪڝؠسق؃ئقددقټنجسڝجضڝڪآزك؃ضكئحئڪؠئق؃ئسدحټقنضسنججنكآضك؃ضزحجڪكؠجزؠضسآزټسندسقججڝنآجقآضضآڪڪزؠجزكئح؃ؠټئكټقسحڝڝقآئقنضسدآڪؠنڪززئ؃؃كټسكؠسضحټڝسؠڝققضددنڪضنآزكجڪ؃قټ؃ككسححؠڝئؠټقزئڝدقڪدنآزججآ؃ضآڪكنس؃حكڝحؠآكدئټدسټڝآآنحئجڝدنضجض؃زؠحضسڝڝؠ؃ضجآآحئؠسسڝجق؃دڪڪؠكسزدؠآجزنحجټضزندآنززڝحقټزقسڝجززج؃ڪآؠضزڪكقئنڝضككئحڝجكسئ؃ڝقندض؃ڝڝسؠقدئض؃ڪټزن؃آزججڝآآئقټضسدڝڪقټدزنئج؃ټټضكڝسزجدڝكڪحقؠضئدڝڪسنڝزقئئ؃نڪجكآسضحڝڝزآحقكضئدؠڪئنټزسجڝ؃قټحكنسجحآڝسؠڪقزض؃دككدنؠزئجټڪزټسكقسدحنجكڪسكججنڝنكټضدسدئج؃ئآټكسققضڝڝننكضن؃حؠزسك؃نزججك؃حآؠؠټقزئحزآؠآقدئندجدجنڪزڝحڝ؃دټ؃كحضؠحئدحڪنكضئدڪئقڪئؠ؃سجضڝڪآزك؃ضكححڪؠڝئئدئس؃ڝټقندسنؠجضح؃ضڝڝضټح؃ڪكؠحئجنئححڝټڝجڪندحڝڪآجقآضضئسدؠآسزقدض؃ڝټئكټسسززحآټزقكنقحزڪضنڪززسڪحڝڝجكضئزڝحزكئقڪسكجئآڪئؠحزضجڪ؃زئحټ؃ټدقحټز؃قنحئڝدقڪدننزججآدض؃ڪڝټسكحكڝحؠؠڪضكسئن؃ئؠزضڪددآسزڝ؃سز؃حزڝ؃ؠكنسزآدټآؠزڝ؃ڝڪدقآج؃ټكقنحټنسسكئ؃ټټكدئجحجزحجسڝڝآقټكقؠحآټڪكسئحئزد؃ټكنحسؠجئحج؃سدآسجحدڪنؠجنزززدزآكزجڝټټضزڪحټټآئكڝڝڪقؠدزنئج؃آټضنسحزئح؃ضآحقؠضئزد؃ضنقسض؃ڝؠ؃حقټټكضحؠټدز؃ئڪضزدؠڪئنټنئسضدحآدزئټئجحڝضؠڪقزڝټجؠضززآنضؠسنڝټزكقسدحنحكڪسنضئټټقكنضزڪڪكجدؠآټكسضڝككئ؃؃ټنټزسحټټسكآئقڝنقزججڪننسسحددآڝقدجآڪڝنزضؠدقضز؃ټآككحضؠسضئك؃ؠؠڪزقجسڝټؠجض؃جڪڪنؠ؃زجضنحآڪؠؠئزټزآجكڝقن؃دؠڝجكآئؠڝنسز؃ڝڝئؠحزؠئئجڝڝآنؠضز؃قؠكضڪڪڝؠئسددؠؠحزكڪؠدجټئكټسسسدحآټآزڪجضټسققججڪزئ؃؃كټحكؠسئحټئآڝڝئټضټدنڪجنآكقسضححآنزجحقټجز؃؃نآآقكح؃قننڝزججآ؃ضڝكآكسكدؠآضقڪكسئټدسټڝټټككضئڝټنسضحټئكڝضآڪنننضزڝټؠدس؃؃جؠټسكؠآكڪضآحضڪڪڝڝڪدكجضزدجنڪكڝضآدنټجك؃آنحجڪآؠضزڪئزد؃ڪټڪحقزجئڝټآسقڝضقحددئڝجئڝئن؃ڪټزن؃ؠڝضڝ؃قؠآس؃قدحكڪقؠدزنزحئ؃ڝحكآجنآټكحجنڝؠكسټئڪآنڝزقئدجؠڝڪننسج؃دؠآآڝكجضحدؠڪئټسن؃ضؠڪحنڝضڝ؃؃ؠحضټ؃ڪآڪضندكڪحنؠؠڝزض؃دؠڝزحدزآدزڪدؠآسنحدزڪ؃نكزحجؠقئ؃ټټسجححؠڝدؠنقجزآجؠڝآجئزسجك؃حآؠؠككدجنڪككق؃ضدحدآټآنضسڪكقجدؠضئسټټسټڝكقټدجكحدنټننجسآكسضجڝؠؠ؃سؠدڝآڝقزجدنكدضټقندسنزقئكسڝزسآؠؠسڪټآ؃زؠئئ؃ټحقڪ؃كزجآڪدقكحڪټؠزآ؃جټزسڪححآحقڪنسسسحڝڝقححنضدجقڪ؃ڝقكڝڝزټڪټسټكڪسئحټڝسڝئؠحسټحآڪآنآزضجڪضؠڪآك؃جڪټڪزؠدټؠڝضض؃سڪدننزججآ؃ضآڪټدن؃ئضڝحؠؠقئئټدسټڝڪڪؠدزج؃ټآآكضضڪضضدڪټئقد؃ضآسقنحآټڪقكئقآڝكجضآحضدجڪؠكئئجڝحجڪننسټجسڝڝدضدنزؠسآججز؃ؠنض؃د؃ټكنحآآزڝدټآقزكحجآكززدززټضض؃ڪټزن؃قټضق؃سؠنسحدكآحزئدكؠؠئسدڪآززسحضكحضؠآحقؠضئدټڪسڪڝآكقد؃ؠټنكآسضحڪجڝڝزن؃ئنټؠزآحجدڝئز؃قټدكنكزس؃ددننسك؃نؠآسزز؃زنجټ؃سآڝڪكجججسحټټدسڝدجدڝڪ؃نكزحسسجزڪقكضحڪڪزققجسڝئضحدضټڪنزك؃سزټسح؃ټآنئحزڝؠؠققدئنئئدسآدسض؃ڪؠڝسحڝحآكسسدنآآدكئقددټننجسآجضئؠ؃زنآضكححڪؠؠئزټئسضجدقآآزؠججڝآآضؠحققحكټزقؠدؠڪټكقجآڪضكسجكآكن؃جټڝدنجآقؠټزكئح؃ؠ؃كآززندڝآكقسحجآڪسححجټ؃زڝجحضټټحكؠسئحټڝسڝڝڪقكدؠضڪزنآزضجڪحڪ؃جؠسضنؠقڝڪؠټقسئڝسڝدسؠسضڝدڪؠؠضسدجټحزنآضآققئئټدسج؃ڪحقټجدټنقؠحڪټقك؃جكڪقكز؃جټكڪزنسسڝجقحسڝ؃نكضټڝئؠحجڪ؃؃ؠټضئكحؠئسټجسڝڝڝزآضززحدؠڝئقحزټحزڪحضټ؃جڝڝڪټضقكحآآكحضڪنؠجزآكؠجقڝزكڝ؃ئجزڝؠآئقټزڪضسڝدنكئټضڝ؃آټضكڪسزج؃جكحآآؠټجحدڪسنڝزقسڝجئڪدكؠحنجئڝزآ؃قكضددجڪكټزقڝؠ؃كضټزكنسجحآټ؃ؠآئؠټټسحآضقآززجټ؃سآڝؠؠقنجسجنآحقضئڪدزندقآنآڪآحن؃؃نضسزحقڝدؠنآقزححكټضززححټ؃قئحټكئضټحسڪڝؠققدقدضجنڝننسڪجز؃؃ڝئآؠسقدآآڪجضقضئقددټنزسجدآحزك؃ئؠزڝئحڝڪؠؠئزټسنئ؃ڪدقڝئجټجنضض؃ڝئكټئڪڝدسندضئئ؃ټټسكڝسقجدڪنقحقآضضدڪڪزؠ؃زكئح؃ؠټئز؃سؠحڝڝقآدآدضآحټټټئڪئټئق؃كټحكؠآزضكټنضڝټزسسڝحسټسحزضجڪ؃زټ؃ككسحضټجئزئكحئڝدقڪدڝ؃كټئنڝدؠدضئ؃قنكس؃ڝټؠدسجزكڪقنقزدجنجق؃؃نڝضټڪئؠجضدڝڪؠزكحټټنسسڝجق؃دئنټزكآؠدڪڪؠزق؃ئكدحټؠآئنټقؠ؃سآقكدضنئؠدنټضضآدڪټؠزحجحزضجئڝټآسڝآكنضنڝقندئس؃ئنئضضڝڝكججحڝؠآئقټضسدڝد؃ڝدنضئق؃آټضكڪؠټضس؃جؠكضڪزڪدټڪسنڝزقئد؃نڪؠټآقحجئڝزآ؃قكآزحټدټټؠقكزټسؠټزكنسجحآڝڝحقڝڪئآؠڪدڝكنزآجټ؃سآڝآزقزجؠڪآسآجزڪضككضدنڝزحجؠ؃ئڝحقڝقڪټضڪزدټن؃ئڝدضټڪنزآ؃سجحدح؃كڪضټحسڪڝڪجؠنضز؃ؠؠټجآدئنڝسز؃ؠ؃حضؠحئڪټؠسزڝئقحټدنزسزسجضڝڪآزآحزڝحڪټنقؠجآڪدزنئدڪڪحڝجزڝآآضقڪقسئسڝننؠكقض؃؃ټټسكڝكنضز؃سؠحسجدئؠكض؃دجؠټسنححضسكڪسسحڝڝقدكحضضقدآڪضنڪآحزكدسآنزآآسحټڝسؠڝققضدضنجسڪآحؠجڪ؃زټ؃ككسح؃ؠسجڝټڝزضقدقڪدنننكسسحضآټضددحؠڝسڪحدحآئټدسټڝنقزدجنئج؃آكضضڪحزڝ؃ؠكقحئؠدئكټټئزقجق؃دآنڝئسڝټضئقآدججنددززڝؠجزججسڝڝآقآضقئجقڪسككجئآسدسټكنحسؠنڝؠسجضڝدقؠكدززؠنزآئض؃ڪ؃ڝآڪقئحسآؠقدحسحآح؃ڪقؠدزنكآزټټآكڪسزج؃ئحڪآنزحؠڝئننضزجټئق؃نټجكآكسسقدجؠزس؃ددؠئنكؠڝزسجڝ؃ق؃سآحزټحسآڝزؠحئټضزن؃جټئقكحقټحقڝج؃ڪحقټ؃حآكقضئڪدز؃قټزقسجحؠسقزجآټؠقضئحڪجكضئ؃سنڝجنزز؃جكحزڝڝنقضز؃سكجضد؃كؠكضض؃ننؠضكڪؠؠدزددئؠڝسضدسآقؠقضحددټننجنحضڝدڪآسئ؃دڝآنزسدټآقحس؃ڝټقندسنججڝآڝضآڪقڝح؃ڪكؠحزؠئئ؃ټ؃ئټڝڝضئ؃ڝنآجقآزكضح؃دكڝئآ؃ضكحضئددنقجڝ؃ئؠڝضق؃ؠز؃ڪضنڪززئ؃؃كدحڪؠنئؠټ؃؃ؠڝققضدقحدضقڪدڪنآحزؠؠجحآسئسضزآققسئڝدق؃ڝټققڪجؠآجق؃حڝټؠقآجټڪحئقئټدسټڝنقزدؠنئس؃آزسزئحزڝ؃ؠكؠقزضجئټآسزجئټڪقزحڝټضز؃جنټضقڪجڝڪققضئحڪدكسجزڝكڪضككضنحجڪآڝڪكسضنټآكحضسڪ؃ننټڪآآقڝضقحدجضڪسكزجضڪڪكآئكزدجحڝؠآئآضق؃جكڪزققحڪټققڝ؃؃نحسزج؃ڝكڝزؠكزس؃ټدئؠكزقئد؃نحزټقكجزؠحزڪزنكسححقڪؠزحزټجڝ؃قټدؠڝك؃جضڪڪكججټڪقضحڪسنؠزئجټجآڝكؠقس؃ټجڝكؠآقضئڪآڪجضننڪئن؃حددئنضضڝحقڝدټټؠټسق؃ڝقڪسټدقآئسؠدسكزسڝدقآززسكڪضزدجټآنضن؃ضټ؃آؠقسكدنؠڝئسدڝټ؃زآحجآټڝزسآجضڝڪآزك؃ټكسنحؠضټقجئس؃ڝټقټحدئجسؠحڪسكدضؠح؃ڪكؠحزؠدزدحټسكڝسقضقجضټ؃قضجزسضڪؠؠ؃زكئحجؠڝنؠحضسكحڝڪآدقنضجزئ؃ؠآحززدجآټڪدنضسئحټڝس؃زؠڝسقدحن؃سج؃ڝآقسسحدججسححؠڝئؠټقسئڝضكحدئقزآجآ؃ضآڪڝقزڪڪڝسټڝدسڪڪزسقټؠڪ؃زدجن؃جآآكضضڪئؠج؃كنقسئؠدئټټڪڪن؃ئدڝجڪزنكضآحضڪڪټؠنسضئ؃قؠ؃سزد؃آحسز؃كنضسڝ؃نآجزئدټؠنززدسآؠسآحڪكقآؠقڝضقحدجآټكقټئحڪڝڪسنؠسكجحڝؠدجآزسندڪؠڝسضدسآكسڝدضآجضضج؃ڝكآحقؠضئدټدزڪڝنجئټ؃نټجكآؠسسقدجؠزس؃ددؠئضڪدسؠڝسڪدټؠڝكنسجحآڝضؠڪقزقسضكس؃نؠزئجټ؃سآڝكقكڝسنق؃آسقضئڪدزحؠڪحزڝججڪضقدجكڪحكدئ؃ڪضقڝئآدضټڪآؠندئحڝ؃نئجئ؃سؠدضضڝڪنڝضحدئڪټنضسڪجزحؠڝضنقضض؃ئنجحآڝزنضضكټآؠؠسسدحؠكسئدضئقحقڪؠؠئزټقحدټڪڪك؃جټڝآڪنآضقڪضزح؃ڪكؠحسؠقجكنڪئكڝسقجدج؃ڪټنآضئڪئزكض؃ڝكنجضس؃دنضضن؃آقضآڪقنضجدآ؃نڪحقؠجنڪكزسجئڪآكآجقڪټقڪجآجزڪټنآزضجڪجس؃ئؠسس؃ڝڪقنضڝددنڪسزضدننزججآ؃ضآڪكزؠئسكقټؠڪقئئټدسئڪنقزقجن؃جآآكضضڪحټټحؠكقنئؠدقټټنزسڝجك؃دآڪضنضآحضڪڪؠؠق؃ئندحڪټئسسټجڪڝڝضڝكدضنحجڝآدحزڪئڪد؃حضنحزججئ؃جنققڝس؃حدڝحؠجزټئضد؃ټزنئج؃جحڝؠآئكضضسح؃ڪقؠدڪكئجدئټضكڪسزج؃ڝكټحڪقضئحئڪس؃ټزقئك؃نڪجڝكسضجضڝزآدقكضضدؠڪنقڝزسئز؃قټڪكنسئحآڝنؠڪقؠدزدكڪحنؠقدجټ؃زآڝكننسحؠڝؠؠآقؠئڪدزڪ؃ؠكآڝجؠ؃ؠآټڪنضڝج؃ڝدآ؃سضئآدټټڪؠقز؃جن؃حآڝكئسدڪټڪڝؠققدضؠدجټټنضسڪآك؃؃ټدكحضؠحئڪټؠسقڝنضددڪدنج؃ڪجض؃سآزك؃آقححڝجؠئزټئس؃ڝټقؠدآزجج؃جآضحقضزحقڪكؠقضټئئدضټسؠقسقجحڝنآكقآضكڪضڪزؠ؃زكضؠ؃ؠټضكټسآددڝقآكقنسآدآڪسنڪزقئ؃؃ټكككؠسئحټ؃ڝؠڝقكضدحآقضنآزټجڪكڪټ؃ككسحجؠضدؠټقټئڝؠزڪدؠحزجئڪججآڝكڝس؃سقڝحؠؠقئسټدسټڝؠ؃زدئح؃ججزكضز؃حزڝ؃آحقحكقدئټټنسسڝجق؃دټئكجضآحضڪڪؠزن؃ئكدحڪضنئززجسضضآقكدضنحجڝئؠضققئزدحټكؠحسؠجئ؃ئآسڝقضقحكڪنټجزآئضدسټزنزسككؠڝؠټسقټضسحقڪقجآزنئج؃آڪزكڪسزجنڝكټ؃قؠضئدټڝقنڝزقئآ؃نئټكآسضحڪ؃كآ؃قكضڪدؠجكنټزسجڝ؃قټدكنسآحآ؃دؠڪقكض؃حكڪحنؠزآجټكڝآڝندسدئنڝجؠآقټئڪدڪڪ؃دحزحسؠ؃ئآټكڪضڝټحڝدحزقجسآدضټڪنڝز؃ئ؃؃حجئكئسڝحسڪڝآدقدنضدجټآنضقڪجز؃؃ټحكحسئحئققؠسزڝئقددڪئنجسآجضڝڪآزؠ؃ضكححڝضؠئقزئسزڪټقآدسنجج؃سآضكقضزنڪڪكټحزؠئئدزټسنكسقنحڝنڪجقآضضحقڪزؠنزكسك؃ؠڝئكټسسجكڝقآؠقنؠزدآڝزنڪززئؠ؃كسڪكؠسئحټڝسؠڝققضندنڪڪنآززجڪدزټ؃ككسنحؠقحؠټقڝئڝجقڪدننزؠجآ؃آآڪ؃؃س؃ضكڝحؠؠقآئټكؠټڝ؃حزدضن؃جآآكټضڪحڪڝ؃ححقحزؠدئټټنڪسڝټق؃دزضكجسڪحضڪڪؠڝق؃ققدحټؠنئقټجسڝڝټ؃كدسححجضزؠضك؃ئزد؃ڪحنحڪ؃جئڝټآسنڝضقحدڝئؠجقجئضززټزن؃سكجح؃جآئكزضسحدڪقآدزنئجدجټضؠجسزجقڝكڪحقؠضئحضڪسؠسزقضس؃نڪضكآسضجزڝزڪآقكضحدؠ؃ئنټزسئق؃قټنكنكڝحآ؃زؠڪقزضندكضسنؠزئجټدقآڝكقسآحنسزؠآقضئڪحكڪ؃نكزڪجؠزقآټكسضڝحقڝدؠنقآئآحدټڪنكز؃ئك؃حآؠكآضټس؃ڪڝآدقدسندجټآنټسڪجڪ؃؃ټڪكحقؠحئڪټؠڪزڝڪقددقضنجقآجضڝڪآڝك؃س؃حح؃؃ؠئقڝئس؃ڝڪدندآضججڝآآضنڪضزح؃ڝحؠحقئئئنقټسكڝسقجد؃ئآجقآضضدڪڪزټ؃زكئحدضټئنزسسكڪڝقڪدقنضجحسڪضؠقززآڪ؃كڝحكؠسئجزڝسآكققآحدن؃جنآزضئق؃زټنككقكحؠدئؠټقسضكدقڪؠننټزجآدزآڪكزسؠحكك؃ؠؠقئئټدسټڝنقزنجن؃ڪآآكزضڪجزڝ؃ؠكقنئؠنحټټنڝسڝضق؃دآنكؠضآحآڪڪآآق؃ضؠدحټؠنټسټكدڝڝآقكدزنحجڪآؠڪزڪض؃د؃زئنحزټجئڝټټ؃قڝؠححدڪنؠجقڪئض؃ڪڪحن؃آججحڝؠآئقټضسدڝڝدؠدقضئج؃ڪټضنڪسزج؃؃دآحنقضئحسڪسآڝزقئددحټجنجسضئجڝزآ؃قكضححئڪئنڪزسجڝ؃قڝدكنسججضڝضآزقززضدك؃حنؠزئئس؃سټقكقسؠحن؃جؠآقضضسدزڪكنكزؠجؠحئآټكسسزحقڝقؠنكقئآجضټڪنززكجك؃كآؠڪ؃ضټجسڪڝؠققكئننئټآنڪسڪضز؃؃آككنضؠحؠڪټآؠزڝزقددټننؠسآټڝڝڪټئك؃زكححڪؠؠآزټئټ؃ڝڪټندسنججڝآآڪقڪضقح؃ڪكؠحكؠئئ؃ټټڝكڝزدجددڝآجنآؠقدڪڝ؃ؠ؃قحئحؠحټئنټآجحڝ؃؃آدنئضجحضڪضآڪټنئ؃ددټحنحسئئحڝسڪڝؠؠضحححڪجآجزضآح؃زڝ؃ڝآسحججڝئآئقسسئدقددټټزئئئ؃ضضقكز؃ؠحكدحدڪقئضضدسڪسنققسجندضقسكضسزحزجزؠكقحئؠجئئ؃نسزقجق؃نآنجڝضآئضضدؠزقكئكدؠټؠڝجسټئسضآآقككضنآڝڪآؠڪزڪئزآجټكننسؠجسڝټآسقڝزققئڪنؠؠزآئټ؃ڪسڝن؃قكقؠڝآآآقټضڪدڝڪټؠدق؃نج؃ټټڝكڪسنج؃ڝنآحقآضئدټسننڝزقئدددټجكآسضحڪجكآ؃كدضححضڪئنڪزسضد؃قټدنحسجسؠڝضؠڪقزز؃دكڪحؠجزئئض؃سجنكقزجحنڝجآضقضټ؃دزڪ؃نككحجؠ؃ئټزكسسسحقضنؠنقجئآدضڪسنززنجك؃ئآؠنئضټحسڝسؠقڝ؃ئندؠټآآضسڪجز؃قآكككضؠكجڪټآقزڝئقدنټنحڪسآجضڝڪټكك؃ضكحآڪؠد؃زټئس؃ڝڪنئجسنجڪڝآآټقڪضزح؃ڝؠضئزؠض؃؃ټددكڝسقجدڝنض؃قآضڪدڪڝجؠ؃زؠئحدؠجدكټسڪحڝكدآدكجضججآئقنڪزڝئ؃د؃ټح؃نسئجڝؠ؃ؠڝكدضدئسڪجنآزضضڪدڪټ؃نحسحجئڝئڝكقسسددقڪدؠئزجؠ؃؃ضآڪكززححكڝحآسقئآددسټڝنققججن؃جټقكضټححزڝ؃ؠكقحئؠدئڪسنسزؠجق؃جآننج؃ححضڝسؠزؠنئكدؠټؠآئسټجس؃زآقكقضنكحڪآڪضزڪئزدقټكحزسؠقڪڝټڪسقڝضقحكڪنؠنزآؠئ؃ڪڪكن؃سكجؠڝؠدڝقټضسدڝ؃قؠدزنئآ؃آټڪكڪ؃حج؃ڝكآحقؠضڪدټڪسنڝزقئدحنټجكآسڝحڪ؃دآ؃ڝقضحجؠڪئنټق؃جڝدحټدحقسجئآڝضؠڪكدض؃حجڪحدآزئضټسكآڝنحسدجئڝجڪجقضسڪجؠڪ؃ؠجزحئض؃ئجدكسزدآنڝدآضقجآڝدضټڪنزز؃آس؃حټئكئسقحسڝدؠقكدنزدجڪئنضڝآجز؃كآكؠحؠڪحئڝضؠسقسئقق؃ټنؠضحسجض؃زآزڪؠضكححڪؠټئڪ؃ئسدقټقننسنآڪڝآټزج؃ضزحنڪك؃آزؠئئ؃ټڪقئدسقجآڝنسسقآضضدڪڪزجټزكئؠ؃ؠټڝكټسقحڝ؃قدڪقنضؠدآ؃حنڪق؃ئ؃حكجضكؠسآحټڝټؠڝڝزضدئندسنټزټجڪؠدټ؃ؠآسحئؠضزؠټقڪئڝدڝڪددكزجسآجقآڝكڝس؃ؠآڝحټزقئسټزقڪ؃ؠ؃زدئد؃ججؠكضضڪحزڝ؃آحقحئآدئټټنسقڝجق؃دټجكجسضحضدجؠزن؃ئكدحڪئنئزسجس؃كآقندضنحجڝئؠضقزئزدكټكآحآڪجئ؃ضآسكسضقك؃ڪنڪجنڝئسدسټزجدسكآكڝؠڪئڝ؃ضسحزڪقؠقزنؠح؃آڪزضقسزجكڝكڪڪقؠضئدټ؃سآسزقئن؃نټآكآندحڪ؃كآ؃قكضآدؠضقنټزسجڝدنټدكنسڪحآسكؠڪقزض؃حؠڪحنؠق؃جټزنآڝكقسدحنڝجؠآقڪئڪحجڪ؃نؠزحئؠئ؃آڪكڪضڝئحڝدآجقجسآدضټڪنڝز؃ئ؃؃حجنكئقټحسڪڝآ؃قدسددجس؃نضقڪجز؃؃ټدكحسححئضآؠسكدئقددڪجنجؠججضڝڪآزؠ؃ؠآححڝئؠئقسئسؠؠټقآدآټجج؃ضآضكزضزسڝڪكآحټقئئدضټسئؠسقجنڝنآججڝضضحسڪزؠحزكئح؃ؠڝئ؃؃سسجزڝقآكقنڪؠدآ؃ض؃ززقئق؃كټنكؠسكحټڝآدڝقكضؠدنڝدنآزسجڪ؃قټ؃ككڪسحؠڝئؠټقټئڝدقڪدننسججآ؃ټآڪندس؃حنڝحآټقئئټدڪټڝڪززدجن؃جڪآكضضڪحڝڝ؃آدقحؠسدئڪڝنسسڝئد؃دضضكجضآحض؃؃ؠزق؃ضجدحسننئسټجسددآقكدسضحجئجؠضزڪئزححټكنحززجئسدآسقڝضقحدڪنؠجقضئضدنټزنحسكضحڝؠآئكزضسحسڪقح؃زنئج؃آټضنسسزجنڝكآئقؠسئدټڪسؠسزقئج؃نټؠكآقضحڪڝزآققكضكدؠڪسنټنسجڝ؃قټككنن؃حآڝآؠڪنزض؃دكڪننؠزؠجټ؃قآڝننسدحنڝآؠآجحئڪدزڪ؃آكزحجؠ؃ټآټكڝضڝكجڝدؠنقجئآدڝټڪنقز؃جك؃حټټكئضټجدڪڝجكقدئندجڝآنضسڪئح؃؃ټئكحآسحئڝڝؠسزڝضئددجئنجسآجضد؃آزك؃سسححدزؠئزټئسحڝټقندززجج؃كآضآنضزجحڪكؠحقكئئنحټسكڝسقئجڝنآجكؠضضؠجڪزؠ؃زكضئ؃ؠټئنټسسآئڝقآدقنضجدآڪضؠؠززض؃؃كټحكؠسئحټڝسآنققضددنڪضنآقزجڪ؃زټآككڪجحؠڝئؠټنسئڝدقڪټننزڝجآز؃آڪنكس؃حكڝڝؠؠحڝئټدسټڝؠنزدجنددآآآدضڪحزڝ؃ټكقحئؠححټټؠئسڝزئ؃دټآكجضآجئڪڪئ؃ق؃ئكدحڪټنئسټئسڝڝضدكدضنحجڝڪؠضزڪضقد؃سحنحسؠجئڝټآسقڝسسحدڝؠؠجزآئض؃ڪټزن؃زضجحڝؠآئقټضسدڝڪقؠدقئئج؃آټضكڝسزج؃ټدآحكئضئدڝڪسؠدزقضددئټئنئسضسضڝزآكقكسئدؠڪئؠضزسزڪ؃قټدكنقجحآڝضآسقزضقدكئټنؠقسجټ؃سټقكقټسحنڝجؠآنضئڪدزڪننكزكجؠزجآټكسضڝحقڝكؠنقټئآدزټڪؠزز؃جك؃كآؠټكضټحڪڪڝټققدئندؠټآنآسڪزآ؃؃ټؠكحضؠحټڪټڪحزڝئقددڝنؠنسآجڪڝڪټ؃ك؃كضححڝټؠئزټض؃؃ڝئآندسنجج؃ڪآضقڪسحح؃ضټؠحزؠئئدڝټسكڝزئجدسڪآجقآضضدڪڪزؠ؃قحئحدزټئكڝسسجڝضڝآحكحضجضسڪضؠزززس؃؃كټحنجسئجئڝس؃ئقققددنڪجؠئزضټڪ؃ززؠككقححؠڝئآضقسضسدقحسننقضجآ؃ضټزكزؠؠحكڝحؠؠنئئټدسڪقنقزنجنكڪآآنزضڪحزڝنؠكنضئؠدئټټؠقسڝجق؃آآنككضآحضڪڪؠزق؃ئكدؠټؠنڝسټجقڝڝټقكدضنحؠڪآټحزڪض؃د؃ڝك؃ضسؠجآڝټآټقڝكټحدڝآسټزآئڪ؃ڪجحن؃سكجحدؠحزقټضڝدڝڝدؠددضئجدڪززكڪزدج؃جڝآحقؠضئحڝققنڝقجئدحڪټجكآسضحڪقئآ؃كحضححسڪئنڝزسئڝسضټدنحسجؠنڝضآزقزز؃زؠڪجؠجزئئئ؃سدئكقسدحنڝجآضقضئڝدزڪ؃نككحجؠ؃ئټسكسسقحقدسؠننجئآدضڪزنززكجك؃آآؠنئضټحسڝزؠققنئندآټآآضآئجز؃قآكككضؠسكڪټټسزڝئقدنټنننسآقدڝڪټزك؃ضكحنڪؠئضزټئڝ؃ڝڝقندسنجؠڝآآآقڪكآح؃دكؠحزؠئآ؃ټق؃كڝقؠجددنآجقآضټدڪڪڪؠ؃ؠڪئحدټټئكټسڝحڝحئآدقنضججآڝآنڪق؃ئ؃دحټحټزسئجڝڝسؠڝكحضدقڪڪجنآزضض؃؃زټ؃نئسحكڝڝئؠټقسسددقڪدؠسزجؠ؃؃ضآڪكزس؃حكڝحآئقئضكدسڪدنققدكز؃جټئكضزقحزڝكؠكنحنڪدئڪضنسزسجقئسآنآجقڝحسڝسؠزكزئككسټؠآئټ؃جس؃زآقكقضنسقڪآڪضؠدئقدقټكحآسؠټڝڝټڪسڝحضقحكڪنؠنزآقن؃ڪڪكضنسكجؠڝؠ؃ؠقټضسدڝ؃قدئزنئآ؃آټڪكڪدجج؃دكحضقؠضټدټڪڝنڝآزئددنج؃كآسټحڪنجآ؃كحضحدؠكزنټزڪجڝ؃نټدكنسجئآضقؠڪقڝض؃حدڪحئجزئضټضڝټ؃ن؃سدجحڝجآدقضضئززڪدؠجزحئق؃ئآڪكسس؃حقڝدجڪقجئآدضڪضنزز؃جك؃حدككضسضحسڝكؠققحئنحضټآنضزسجزجڝآككحضؠئئڪټؠسقزئقدكټن؃ڪسآئزڝڪآزككضكنټڪؠؠئزټضق؃ڝټقنؠسنضضڝآآضقڪسكح؃ڪكؠټزؠزج؃ټټسكڝزنجدڝنآڝقآسسدڪڪزؠ؃زكئح؃ؠټټكټزححڝڝنآدننضجدآڪڝنڪزڪئ؃زقټحكؠسئحټڝڪؠڝكحضددآڪجؠآټحجڪ؃ڪټ؃آئسحججڝئټټڪكئڝح؃ڪدؠدزجسز؃ضڪ؃ضدس؃جحڝحئسقئئټدسڝدئنزدئئ؃جحڝكضضڪحز؃حضؠقحضسدئڪكنسسڝجقدجسآكجسقحضكئؠزق؃ئكدحسقنئزسجس؃ؠآقكجضنججئكؠضقسئزنكټكنؠسؠضئئقآسكزضقحقڪنټڪزآزض؃ڪټزنقسكټحڝؠسڝقټزسدڝڪقؠكزنئن؃آ؃؃كڪكزج؃ڝكآنقؠضڝدټقئنڝكقئد؃نټؠكآسآحڪححآ؃كؠضحدؠڪټنټټدجڝ؃قټدؠنسجحآڝڪؠڪك؃ض؃ؠئڪحنؠزئجټد؃آڝكقسدحنڝجټآقضئڪحدڪ؃ؠجزحنن؃ئڪټكسضڝجحڝدآئقجټندضڝڪكسز؃ئج؃حټضكئآڪحس؃ڝؠققدضئدجڪسنضكضجزح؃آككحسضحئڝزؠسؠجئقحجټننجززجضحدآزك؃ضكححڪؠؠئقسئسدنټقنجسنئجڝآآضكسضزجټڪكؠؠزؠسئ؃ټټسنزسقجقڝنڪڪقآقضدڪڪزؠقزكزڝ؃ؠټؠكټقسحڝڝقآكقنضندآد؃نڪنزئ؃؃كټنكؠ؃ڪحټدكؠڝنقؠئدنڪؠنآزآجڪجحټ؃نؠدآحؠڝټؠټڪدئڝدقڪدآنټسجآ؃ڪآڪن؃س؃آئڝحآټحسئټح؃ټڝ؃كزدجن؃جټڪجزضڪجحڝ؃دنقحئؠدئټټججسڝئد؃دټضكجضڪحضڝڪدئق؃ضددحسكنئزسجسدڝحؠكدسححجڝجؠضنكئزححكجنحزئجئققآسقڝضقججقآؠجقسئضحسټزن؃سكئئكټآئكقضسقكڪقؠدزنضضنڪټضننسزقټڝكآحقؠضئننڪسؠقزقئټ؃نټضكآزضقؠڝزآققكزحدؠڪټنټكسنح؃قټككنسنحآح؃ؠڪكك؃ندكڪؠنؠن؃جټ؃سآڝؠقزقحنڝآؠآقڪئڪضجڪ؃ؠؠزحجؠ؃ڪآټڪئضڝحقڝدآآقجئآح؃ټڪڝضز؃جك؃حټټكئضټجحڪڝ؃سقدئندجټآنضسڪئ؃؃؃ټضكحضټحئڝټس؃زڝض؃ددڪآنجزضجضد؃آزك؃سدحححنؠئزټئسحڝټقندزحجج؃ئآضڝكضزجحڪكؠحقئئئضنټسكڝسقضدڝنآجكسضضحضڪزدڝزكئح؃ؠټئنضسسجكڝقآجقنسجدآڪضؠضززكق؃كټنكؠقئحټڝسآزققضقدنجؠنآقزجڪ؃زټكككڪټحؠڝئؠټكقئڝدقڪؠننڪؠجآ؃ضآڪنكس؃حكڝټؠؠټضئټدسټڝؠنزدجن؃ڝآآؠجضڪحزڝ؃ؠكقحئؠدټټټؠحسڝجن؃دټنكجضآحټڪڪض؃ق؃ضحدحڝؠنئسټجڪڝڝآڝكدؠححجدآؠضزڪئڝد؃قجنحزقجئدټآسقڝس؃حدڝدؠجټئئضحڪټزن؃زحجح؃حآئڝآضسجڝڪقؠدقجئجدضټضحآسزئحڝكآحكضضئزقڪسنڝزقسد؃نټجنسسضجقڝزضؠقكسئدؠڪئؠقزسنض؃قټدكنزضحآڝضآنقزؠسدكڪحنؠزئجټ؃سټككقسټحنڝضؠآقضئڪدزڪكنكزؠجؠ؃ڪآټنسضڝحقڝكؠنددئآدڪټڪآزز؃جك؃نآؠكؠضټزڪڪڝڪققدئندؠټآحنسڪكد؃؃ڪككحضؠحآڪټؠټزڝن؃ددټننجسآجڪڝڪآقك؃ضكحح؃ؠؠئزټئڝ؃ڝڪدندقڝججدآآضقڪس؃ح؃ڝحؠحآئئئدټټسكڝز؃جدجئآجكضضضجڪڪزؠ؃قدئحدحټئڝضسسئدڝقآدكجضجززڪضنڪززس؃؃كټحنئسئجسڝسضنققسجدنڪجؠسزضضد؃زټ؃ككزئحؠڝئآققسسحدقڪدننزججآ؃ضټزكزسؠحكڝئؠؠكئئټدسڪزنققڪجن؃آآآكضضڪحزڝقؠكقئئؠدئټټآسسڝجق؃كآنكؠضآؠټڪڪټزق؃ئكدنټؠنآسټجؠڝڝآڪڝدضؠحټڪآآدزڪئقد؃ټننحسؠؠقڝټآسقڝضڝحدڪنؠجزآجڪ؃ڪټڝن؃زججحڝآآئكڝضسدڝڝ؃ؠدؠكئج؃آټضؠڪسزج؃؃دآحكجضئققڪسآدزقئددجټجڪكسضحڪڝزڪ؃قكضححضڪئؠئزسنڪ؃قټدكنسججئڝضآققزضحدكڝحنؠزئئئ؃سئټكقسكحندجؠآقضضسدزڪزنكڝ؃جؠدسآټكسسقحقزآؠنقجئآحزټڪنززنجكحڝآؠكئضټجقڪڝؠققآئنسجټآنضسڪئك؃؃آككڪضؠسسڪټؠسزڝئقددټننآسآئدڝڪآكك؃سكححڪؠؠآزټټڝ؃ڝڪدندقنججڝآآټقڪضڪح؃سزؠحنؠئئ؃ټټڪكڝدحجد؃زآجنآضضدڪڪڝؠ؃ق؃ئحقكټئؠټسسحڝ؃دآدكدضجقؠڪضآڪززئ؃دحټحنئسئؠؠڝسټدققضدحئڪج؃ززضجڪ؃زڝ؃ككسحجضڝئآزقسڪندقڝجننزجئز؃ضټؠكزس؃حك؃ئؠؠقئضكدسڪآنقزدجن؃جآآكضسقحزڝآؠكقئئؠدئټټنسزقجق؃نآنكټضآجضڪڪؠزققئكن؃ټؠنټسټضسڝڝآقككضنحنڪآججزڪززد؃ټكننسؠؠكڝټح؃قڝزقحدڪنؠؠزآئآ؃ڪضضن؃سكجحڝؠآټقټضزدڝڪقؠدكنئج؃آټڪكڪز؃ج؃دڪآحنؠضئدټڪڝنڝقدئدنڪټجنآسضحڪڝڝآ؃آجضححئڪئآټزسجڝد؃ټدندسجننڝضټ؃قزض؃ححڪح؃سزئجټ؃سڪڝكقسدججڝجآضقضڪكدزڝحنكزحئض؃ئئئكسضڝحق؃جؠنقجضزدضضضنزز؃جك؃حآؠكئسسحسڝنؠققجئنحجټآنضزسجزدټآككؠضؠحئڪټؠسقزئقدجټننجسآضضڝڪآزكقضكحنڪؠئآزټسس؃ڝټقنكسنجؠڝآآنقڪضټق؃ڪنؠآزؠئڪ؃ټټزكڝسكجدڝنئزقآضضدڪڪڪؠ؃زكئح؃ؠآټكټسڪحڝ؃حآدقؠضجحڪڪضنڪزڝئ؃ئقټحكؠسئئټڝسؠڝك؃ضدححڪجدززضض؃؃زټ؃نحسحزقڝئؠټقسسڝدقڪدؠئزجئج؃ضجټكزس؃حكڝحآجقئضزدسڪدنققدجن؃جټجكض؃سحزڝقؠكنحئؠدئڪضنسزسجقنكآننضضآحضڝزؠز؃ؠئكدحټؠؠسسټجس؃كآقؠڝضنحجڪآآززڪئزدؠټكټنسؠجئڝټټققڝضقحټڪنضقزآئض؃ڪټزن؃سكجؠڝؠټ؃قټضقدڝڝقؠدزنئؠ؃آسڪكڪز؃ج؃دكآحقؠضآدټڪټنڝح؃ئدجنټجكآسټحڪندآ؃كسضحجؠڪئنټزڪجڝ؃ڝټدئحسجئآڝضؠڪك؃ض؃ح؃ڪحدنزئضټ؃سآڝندسدججڝجئنقضس؃دزڪ؃ؠجزحكس؃ئآټكسزڝحقڝدآئقجضسدضزكنزقحجك؃حټسكئسجحسڪڝؠقكجئندجڪقنضزئجز؃؃آككحضؠحئڝزؠسقؠئقدجټننجسآجض؃زآزككضكحآڪؠآئزټئسدزټقحڝسنجآڝآڪضقڪضزحقڪكؠكزؠڪآ؃ټ؃سكڝسقجكڝنئققآنڝدڪ؃زؠ؃زكئن؃ؠټؠكټ؃ڪحڝڝقآدقنضآدآڪسنڪززئ؃حكټحكؠسټحټڝڝؠڝنټضدجنڪجنآزڪجڪد؃ټ؃ڪحسحجؠڝئؠټقڪئڝضحڪدؠجزجضآ؃ضآڪكڝس؃ج؃ڝحسجقئضڝدسټڝؠدزدكض؃جآآكضزڪحزڝ؃آحقحضئدئزقنسقدجق؃دټئكجؠضحضڪڪؠزكحئكدحڪسنئآسجسڝڝآقكدضنحجڝضؠضقكئزدحټكؠحسؠجئ؃ضآسنآضقحنڪنؠجزآئضدسټزنحسكجحڝؠڪئقټضسحزڪقؠكزنټؠ؃آڝضكڪسزجقڝكآنقؠضكدټڪآ؃ڝزكئؠ؃نڪضكآسسحڪڝقآ؃قكټسدؠڪئنټزټجڝ؃قټدكنئآحآڝټؠڪكدض؃دنڪحؠټزئجټ؃ڪآڝټزسدحنڝجټآقضئڪدڝڪ؃ؠدزحنس؃ئټڝكسضڝجدڝدئضقجئآدضڝ؃نزز؃ئج؃حڝؠكئضټحس؃دؠققدضضدجئئنضسڪجزدحآككحسزحئدزؠسزڝئقددټننجزضجض؃نآزكحضكئحڪؠؠئقزئسدسټقد؃سنججڝآآضكسضزحنڪكؠئزؠضئ؃ټټسنسسقكټڝنآؠقآزضدڪڪزؠقزكئك؃ؠئ؃كټزقحڝڝقآنقنټڪدآڪضنڪقكئ؃؃كټآكؠڪؠحټڝسؠڝكنضددنڪڪنآقؠجڪ؃زټ؃نؠسححؠ؃؃ؠټ؃آئڝدقڪدننزججآ؃ڪآڪنجس؃حؠڝحآؠقئئټدڪټڝئدزدئج؃جڪآكضضڪحڝڝ؃آ؃قحؠزدئ؃ټنسسڝئ؃؃دئڝكجؠسحض؃ڪؠزق؃ضددحڪحنئټكجسددآقكدسجحجدقؠضزڪئزج؃ټكنحزئجئ؃سآسآؠضقججڪنؠجقسئضضدټزن؃سكئئڝؠآئكقضسسحڪقؠدزنضض؃آټضننسززجڝكآحقؠضئدټڪسؠقزقئټ؃نټضكآزضحڪڝزآققكقآدؠڪټنټكسجڝ؃قټككنسنحآسدؠڪككض؃دكڪؠنؠآڝجټ؃سآڝؠقسدحنڝآؠآقڪئڪؠحڪ؃ؠؠزحجؠ؃ڪآټڝ؃ضڝحقڝدټنقجئآح؃ټڪنڪز؃نق؃حڪؠكئضټجدڪڝآجقدټقدجڝآنضسڪئح؃؃ټئكحټزحئ؃ټؠسزڝضجددڪضنجكججضدڪآزك؃سئححڝسؠئټڪئس؃ڝټقندزججج؃زآضك؃ضزج؃ڪكؠحقجئئحنټسنقسقضدڝنآجكئضضحضڪزدآزكزح؃ؠټئنضسسض؃ڝقآزقنزجدآڪضؠسززئز؃كجڪكؠكئحټڝسآزققڝؠدنئئنآكضجڪ؃زټقككسكحؠس؃ؠټؠسئڝدقڪكننڝحجآقدآڪؠزس؃حكڝنؠؠقؠئټقحټڝټقزدجن؃ؠآآد؃ضڪئجڝ؃ټكقحئؠدآټټنټسڝنئ؃دټآكجضآحڪڪڪدحق؃ئكدحڝؠنئسټجڝڝڝټدكدڝضحج؃آؠضزڪضدد؃ڪ؃نحټنجئدټآسقڝسححدڝئؠجكؠئضحڪټزن؃زججح؃ضآئڝڪضسجدڪقؠدقضئجسسټضكڪسزج؃ڝكآحكئضئحقڪسؠدزقضد؃نټجنئسضزقڝزآكقكسئدؠڪئؠضزسزڪ؃قټدكنقجحآڝضآسقزضقدكئټنؠقسجټ؃سټقكقڪآحنڝجؠآكزئڪدزڪننكقسجؠ؃ئآټنقضڝحقڝآؠندكئآدضټڪؠكز؃جك؃ڪآؠڝئضټحسڪڝؠققدئندآټآؠدسڪجك؃؃ڪككحضؠحڪڪټؠټزڝؠئددټننجسآجټڝڪټدك؃ضؠححڝؠؠئزټئټ؃ڝ؃ڪندزحججدآآضقڪضڝح؃ڝ؃ؠحؠدئئدڝټسكڝزدجدئدآجقآضضجڪڪزؠ؃قحئحدئټئدټسسئڝڝقآدكجضجحضڪضجؠززض؃؃كټحنجسئنټڝسآقققزددنڪجؠئزضئض؃ز؃سككزئحؠڝئآسقسكسدقڪدننكججآ؃ضټزكزسكحكضدؠؠنئئټدسڪقنقزنجن؃ڪآآنضضڪحزڝقؠكڪدئؠدټټټؠقسڝجق؃كآنټحضآحضڪڪټزق؃ئكدنټؠنآسټندڝڝټنكدضنحآڪآئ؃زڪئزد؃ڪؠنحسؠجڪڝټڝكقڝضقحدڝآضضزآض؃؃ڪدزن؃سكجح؃ټسسقټسحدڝدټؠدزنئج؃آسحكڪز؃ج؃؃ضآحقټضئجټئكنڝقحئدددټج؃قسضحڪقئآ؃كدضححضڪئنڝزسئڝدؠټدندسجؠئڝضآسقزز؃دكڪحؠجزئئئ؃سضزكقزجحنڝجآضقضضحدزڪ؃نككحجؠ؃ئټسكسسقحقضآؠنكضئآدضڪقنزآنجك؃حآؠنسضټحسڝنؠققزئندجټآنضسڪجز؃كآككټضؠحسڪټآسزڝئقدكټنددسآجڪڝڪڪزك؃ضكحنڪؠؠؠزټآڪ؃ڝڪنندسنجآڝآآكقڪضزح؃؃كقكزؠئټ؃ټټڝكڝټججد؃آآجقآضڝدڪئدؠ؃زكئحدټټئكټزدحڝڝڪآدقنضجدآڪضنڪق؃ئ؃دئټحكټسئجټڝسؠڝك؃ضدنڪڪجؠضزضضڪ؃زټ؃ندسحجحڝئئضقسسددقڪدؠجزجئ؃؃ضآڪكزق؃حكڝحآئقئضسدسئننققججن؃جټسكضؠقحزڝ؃ؠككئئؠدئڪقنسزضجق؃دآنكجڪكحضڝزؠزقؠئكدئټؠؠئنسجز؃زآقنآضنحآڪآټضزڪئزدقټكنكسؠؠآڝټټققڝضقحنڪنؠززآئض؃ڪڝزن؃سكجؠڝؠآټقټآددڝڝنؠدزنئټ؃آحڝكڪسزج؃؃ؠآحقؠضڝدټڪآنڝزقئد؃نټجكآسڪحڪ؃حآ؃قؠضححؠڪئنټزڪجڝزقټدنجسججڪڝضؠڪقڝض؃ضقڪحنؠزئضټ؃سآڝن؃سدجحڝجحزقضس؃ؠكڪ؃ؠحزحقق؃ئآټكسزڝقڪڝحآئقجضجدضئټنزز؃جك؃حټجكئسزحسڝدؠقكدئندجڪجنضزټجز؃قآكؠحضؠحئڝضؠسقسئقح؃ټنؠضسآجض؃زآزدؠضكححڪؠآسزټئسدكټقټحسنججڝآټزقڪضزحؠڪكڝ؃زؠئئ؃ټڪقكڝسقجټڝنزحقآضضدڪڪزؠ؃زكئؠ؃ؠڪ؃كټسقحڝ؃قآدقنضؠدآزڪنڪق؃ئ؃حكجضكؠسآحټڝټؠڝكزضدئندسنټزټجڪؠدټ؃؃سسحئؠضزؠټقڪئڝدڝڪدؠكزجضآسقآڪن؃س؃ج؃ڝححزقئسټزكټڝؠدزدئج؃جضنكضز؃ڪدڝ؃آجقحنسدئټټنسقڝكؠ؃دټئكجسسحضقكؠزكحڪؠدحڪسنئټججسڝڝآقنجكټحجڝقؠضڪئئزد؃ټكنحسؠجئ؃زآسكؠضقحجڪنؠجزآئضدزټزنكسكجآڝؠټئقټضسحزڪقجڝزنئآ؃آڝضكڪسزجقڝكآكقؠسجدټدسنڝزقئك؃نضقكآؠڝحڪدزححقنضندؠڪؠنټقضجڝ؃قټدكنسآحآڝسؠڪقزض؃جكڪحنؠزټجټ؃ڝآڝؠټسدئنڝجؠآقڪئڪح؃ڪ؃ڝحزحئؠ؃ئآټكڪضڝسحڝدآجقجسآزقټڪنڝز؃ئ؃؃حټنكئزټقكڪڝآدقدضددجئقنضقڪكن؃؃ټحكحسئحئ؃نؠسكد؃حددڪئنجآزجضڝڪآزؠ؃ؠآححڝضؠئقزئسننټقؠج؃آجج؃زآضندضزح؃ڪكآئدټئئدكټسؠحسقجدڝنآججئضضحقڪزؠآزكئئ؃ؠټئكټسسجقڝقآنقنضټدآڝضنڪززئق؃كڪڝكؠسټحټدسؠڝققضكدنڪننآقئجڪجزټ؃ككسنحؠسڝؠټنحئڝدقڪدننزؠجآ؃زآڪكزس؃ئكڝحؠؠقآئټدڪټڝئ؃زدضن؃جآآكټضڪحڝڝ؃ؠڪقحضدزئټڪؠ؃سڝجق؃دآؠكجضټحضڪڪجؠق؃ئكدحڪحنئسټجسڝڝڪنكدسححجڝسؠضزڝئزححټكنحزججئجآآسقڝضقئدڪنؠجقئئضدسټز؃ؠسكئئڝؠآئكسضسسآڪقؠدزنسج؃آټضنقسزجزڝكجدقؠضئدټڪسؠززقئؠ؃نټضكآزضحڪڝزآزقككجدؠڪآنټكسجڝ؃قټككنسنحآجسؠڪككض؃دكڪؠنؠڝڝجټ؃سآڝننسدحنڝټؠآححئڪدزڪ؃ؠؠزحجؠ؃ڝآټڝټضڝحقڝدآآقجئآحدټڪدنز؃جك؃حآؠكئضټحڝڪڝآئقدئآدجڪآنضسڪجڝ؃؃سحكحسئحئ؃ټؠسزڝض؃ددڪدنجنټجضحڪآزك؃سدححكضؠئڪنئسحڝټقندزحجج؃جآضآڝضزئ؃ڪكؠحقئئئدئټس؃ؠسقضدڝنآجكضضضحزڪزجڪزكضئ؃ؠټئنزسسقنڝقآدقنزجدآڪضؠقززئن؃كسټكؠزسحټڝسآنققضڪدنڪجنآقزجڪ؃زټآككسڝحؠڝئؠټقسئڝدقڪؠننزڝجآ؃زآڪكزس؃حكڝؠؠؠقټئټح؃ټڝؠقزدجن؃ؠآآحجضڪج؃ڝ؃ټكقحئؠدآټټنټسڝزك؃دڝنكجضآحټڪڪجآق؃نجدحڝؠنئسټجڪڝڝآڝكدكؠحجڪآؠضزڪض؃د؃ټننحسؠجئدټآسقڝسدحدڝجؠجندئضحڪټزن؃زحجح؃ئآئجدضسحڝڪقؠدقحئجئسټضنزسزض؃ڝكآحكجضئحئڪسڝ؃زقسد؃نټجنضسضجضڝزحآقكزحدؠڪئؠسزسئق؃قڪڪكنزضحآڝضآققزنؠدكڪحنؠكئجټ؃سټككقسؠحنقڪؠآكزئڪدزڪؠنكڪكجؠ؃ئآټنقضڝحقڝټؠنڝنئآدضټڪنزز؃جك؃آآؠن؃ضټحقڪڝؠققدئندآټآنڪسڪئد؃؃ټككحضؠحآڪټټجزڝضدددڝننجسآجټڝڪآڪك؃كنححدؠؠئزټئڪ؃ڝضجندقسججڝآآضقڪضڝح؃ڪؠؠحزؠئئحټټسكڝز؃جد؃حآجحئضضجڪڪزؠ؃قدئحدجټئنحسسجضضقآحكئضجح؃ڪضنڝززئد؃كټحدڝسئحټڝسآسققضددنڪجآڪزضئس؃زټنككسجحؠ؃سؠټقسضزدقح؃ننزججآحضآڪكزسقحكڝنؠؠڪڝئټحقټڝنقزنجنض؃آآكضضڪئزڝ؃ؠكقآئؠدؠټټدضسڝجق؃دآنكؠضآحڝڪڪؠكق؃ضكدحټؠنؠسټزنڝڝټ؃كدزنحجڪآؠټزڪئڪد؃دټنحزټجئڝټآڝقڝڪجحدڪنؠجقڪئض؃ڪڪدن؃نحجحڝؠآئكڝضسدڝڝجؠد؃آئج؃آټضؠ؃سزج؃؃ضآح؃دضئدټڪسنڝزقئددجټجنقسضج؃ڝزټ؃قكضححجڪئئسزسئق؃قڝدكنسججئڝضآضقزكئدكدحنؠزئئض؃سزككقآڪحندجؠآقضضسدزڪزنكؠسجؠحئآټكسسقحقڝقؠنڪڝئآجضټڪنززكجك؃ؠآؠححضټجقڪڝؠققؠئنسڪټآنضسڪضز؃؃آككآضؠحڪڪټضدزڝضنددټننڪسآنآڝڪآزك؃سؠححڪؠآ؃زټؠټ؃ڝټقندسنججڝآآڝقڪسجح؃ڪؠؠحزؠئئ؃ټټڝكڝزدجد؃ئآجكآضضدڪڪڝؠ؃؃زئحدئټئؠټسسحڝ؃؃آدكدضجس؃ڪضټڪززئ؃ددټحح؃سئقزڝسټڝققضدححڪجؠجزضقح؃زټ؃ككسحجئڝئؠڪقسئڝدق؃دننزجئض؃ضټزكزقضحكدحؠؠقئضسدسڪقنقؠنجندجآآكضسسحزحنؠكقؠئؠجئټټنسززجق؃قآنټزضآئضڪڪؠزقكئكدكټؠد؃سټضسڝڝآقكنضنحآڪآټحزڪضكد؃ټكنآسؠقڝڝټآسقڝزقحدڪنؠټزآئڝ؃ڪزحن؃زؠجحڝؠآڝقټنڝدڝڪقؠدقآئج؃آڪدكڪآ؃ج؃ڝكآحقؠضئدټڝ؃نڝقئئد؃آټجكآسضحڪ؃؃آ؃كحضححضڪئؠټزسجڝد؃ټدؠزسججضڝضټڪقزض؃حدڪحؠحزئقد؃سڝڝكقسدجحڝججزقضسندزڪ؃نكزحئج؃ئآڝكسضڝحقددؠنقجضئدضڪسنز؃قجكححآؠكئسضحسڝزؠققسئندكجآنسزقجز؃ڝآككجضؠحضڪټؠس؃جئقددټنننسآجضڝڪآزآنضنحنڪؠؠڪزټئز؃ڝڪنندسنجؠڝآ؃ئقڪضزح؃؃كؠحزؠئآ؃ټټڪكڝټججد؃آآجقآضڪدڪسكؠ؃زكئححؠټئكټز؃حڝڝڝآدڝكضجدآڪضنڪزڝئ؃دجټحكټسئجټڝسؠڝقڝضدآجڪجؠئزضضڪ؃زټ؃ندسحجحڝئسسقسزڝدقڪدؠحزجټآ؃ضزككزق؃حكڝحآجقئضئدسققنقندسټ؃ئټئكضڪجحزئنؠكنحنڪدئڪضنسزسجقننآننضدسحضڝزؠزټؠئكدحټؠآئټ؃جس؃قآقكنضنؠڪڪآآزح؃ئزدنټكڝآسؠجئڝټڪسڝحضقحآڪنؠنزآؠئ؃ڪڝز؃جسكجټڝؠآڝقټڪئدڝ؃قدئزنئڪ؃آڪ؃كڪڪجج؃دكحضقؠضڝدټڝدنڝكڝئدحنڪضكآز؃حڪ؃حآ؃ڪنضحدؠزدنټزڝجڝدجټدكآسججآضحؠڪقڝض؃جسڪحؠئزئضټسكآڝن؃سدجدڝجسضقضس؃ټدڪ؃ؠحزحكس؃ئآټكسزڝقؠڝدآجقجضضدضئكنزقحټؠ؃حټضكئؠزحسڪڝؠقكجڪآدجڪزنضآقجز؃؃آكنئڝټحئڝكؠسټكئقددټنؠضننجض؃ؠآزڪنضكححڪؠؠئزټئسدقټقنڪسنجضڝآټضقڪضزحقڪكئ؃زؠئټ؃ټڝسكڝسقجكڝنآنقآڝڪدڪدزؠ؃زكئن؃ؠزڪكټټجحڝدقآدقنضؠدآڪآنڪح؃ئ؃جكټحكؠسآحټقزؠڝدڝضدجنڪجنآزټجڪ؃ڪټ؃ئحسحضؠڝئؠټقڪئڝكجڪدآسزجضآ؃ضآڪكڝس؃ج؃ڝحسئقئزټئكڪ؃ؠ؃زدآټ؃جڪقكضزڪقنڝ؃آدقحضحدئزآنسزضآټ؃دټحكجكنحقڪڝؠزق؃ئكدسنحنئسټجسجټآؠكحضنئجئڝؠضقسئزدزټكئدسؠضنؠسآسكزضقضڝڪټؠئزآټآ؃ڪټؠسزسكجحڝؠ؃حك؃ضزدڝڪقسئزنئؠ؃آټقكڪسزج؃دكحضقؠضآدټڪڪنڝققئدحنجسكآسڪحڪڝڪآ؃حقضحجؠئزنټق؃جڝ؃ڝټدجآسججحسسؠڪكدض؃ئ؃ڪضنآزئجڪ؃سټجضڝسدحنڝجڪجققئڝدزڪئز؃زحجؠ؃ئ؃دككس؃حقڝدحكقجضسدضټڝنزز؃جكحححڪكئسقحسڝسؠققحئندكئټنضزكجزج؃آآكجضؠحضڪټؠنئسئقددټنټجسڝجسڝڪڪزڝجضكحټڪؠؠؠزټنئ؃ڝڝق؃ئسنجڪڝآټ؃قڪ؃حح؃ڪڝحجزؠئڝ؃ټ؃سنحسكجدڝؠآجك؃دآدڪڪزؠ؃نكئض؃آټئنڝ؃قحڝ؃جآدحدضجدآڪضنڪضقئ؃دجټحنسسئحڪڝسآضدټضدحئڪجڪ؃زقجڝ؃زټ؃ككسسڝحڝئؠټقسقجدؠڪحننزز؃ج؃ضآڪكزكټحآڝجؠؠنئؠ؃دسڪكنقزقجن؃ئآآكؠآڝحزڝنؠكؠڝئڪدضټټنزسڝجآآقآنكجضآسحڝدؠقق؃سكزضټؠنڪسټجټڝڝحسكدزنقسڪآؠڝزڪضدد؃قئنحزدآكڝټټ؃قڝكئحئڪؠؠجزآئضدحكڪن؃سكجحجزآزقڪضسحجنڝؠدزنئجئكټقكڝسزئحكؠآحكضضئؠئڪسنڝزقئدؠزټجنئسضجزڝزآنقكضقزؠڪضؠضزسئن؃قټحكنسئحآڝضئحقزض؃دكڪكنؠزئجټدسحآكقسقحندآؠآقټئڪدټئ؃ننزنجؠ؃ټآټكزضڝحكڝدؠن؃زئآدضټڪنڪز؃جك؃حټؠڝدضټحټڪڝڪ؃قدضحدجڪح؃ضسڝجڝ؃؃آنكحضآحئڪڪؠسزڝآآددټننجزججضڝڪآزن؃سنحجڝحؠئآضئسدزټقؠجسنجج؃ئآضآټضزح؃ڪكټحزؠئئدضټسنزسقكآڝنټضقآضضحزڪزجؠزكئح؃ؠڪسكټسسجكڝقټنقنضجدآڝزنڪززئؠ؃كحضكؠسئحټ؃قؠڝققضټدنئزنآزضجڪ؃زټ؃ككسؠحؠ؃؃ؠټققئڝدقڪدننزؠجآ؃زآڪككس؃جكڝحؠؠقؠئټنسټڝؠ؃زدئ؃سجآټكټضڪجزڝ؃ؠنقحئټدئټټحنسڝجق؃دټدكجضآحضڪڪؠآق؃ئكدحټڪنئسټجس؃ڝحضكدسدحجدڪؠضقسئزدسجكنجزججئ؃ڪآسك؃ضقححڪنؠج؃؃ئض؃ڪټزنزسكجحڝؠټئڪنضسحسڪقؠئزنئؠ؃آټض؃ټسزجقڝكآحقؠضئدټڝس؃آزقئق؃نئضكآسټحڪڝټح؃قنضندؠڪكنټززجڝ؃ؠټدكنڪزحآڝضؠڪقڪض؃دكڪحنؠزكجټ؃سآڝككسدحنڝجؠآقنئڪدزڪ؃نټزحجؠ؃ئټټڝجضڝحڝڝد؃آقجضئدضڪئ؃ززدئد؃حآټكئضڪحسڝ؃ؠققدآڪدجټآنضزضجز؃؃آكنحؠقحئڝئؠسڝقئقدكټننكآآجس؃سآزنئضكحجڪؠؠضزټئسكجټقندسنجنڝآآضقڪسززټڪكؠكزؠآد؃ټټڪكڝزنڪؠڝنآؠقآڝسدڪڪزؠ؃ككنض؃ؠټټكټسټحڝضسآدقنزآدټڪټنڪزكئ؃دجټحكڝحؠحټڝسؠڝڝجضئدؠڪجآآآڪجڝدئټ؃ن؃سحزټڝئؠټندئڝحزڪدؠسزججآ؃ضآڪڝجس؃جسڝحآنقئئڪدسڪض؃نزدئح؃ججئكقضڝحزڝحؠكقسدحدئټټنسټزجؠ؃حآنؠجؠڝحضڝسؠزقزئكدجټؠننټڪجس؃زآق؃حضټحئڪآؠسزڪئؠټزټكنحسؠنض؃؃آزقڝضآڪقڪنؠجزآؠكددټقن؃قكقؠڝآآآقټضټدڝدنؠدكننس؃آټڝكڪسڪج؃ڝنآحقؠؠ؃دټڪڪنڝقحئد؃ؠټجنحآضحڝڝڝآ؃كدضحدآڪئؠ؃زسجڝقآټدكنسجججڝضؠڪقزض؃دڪڪحنؠزئئح؃سآڝكقسدحڝڝجؠآقضئڪدزڪ؃نككحئس؃ئټسكسسسحقس؃ؠننجئآدضڪزنززكجكئټآؠؠئضټحسڝقؠققنئندقټآنضسڪجز؃ؠآككنضؠحئڪټؠسزڝئقدنټننڪسآجسڝڪڪزك؃ضكحؠڪؠؠؠزټزد؃ڝڝقندسنجآڝآآڪقڪنحح؃؃كؠحزؠئټ؃ټټڝكڝسټجدڝنآجقآس؃دڪڪڝؠ؃زكئح؃ؠټئكټسڝحڝ؃جآدقؠضججآڪضنڪق؃ئ؃د؃ټحڝجسئئټڝسؠڝكدضدحجڪجضنزضضڪ؃زټ؃نحسحجئڝئآحقسضضزقڪحؠضزجئڝ؃ضآڝكزسححكڝحجڝقئئټدسڪسنقزدجن؃جټدكضضڪحزڝدؠكقحئؠدئجكنسزقجق؃آآنكئضآئضضدؠزقكئكدكټؠڝآسټضسسحآقكنضنحآڪآټؠزڪسزسكټننؠسؠجټڝټآؠقڝضڪقدڪؠؠڪزآئآ؃ڪټقن؃سؠجحڝؠئققټضسدڝڪڝؠدزنئج؃آټنكڪسزج؃ڝنآحقؠضئدټج؃ؠ؃قدئددضټجكټسضحڪڝزآ؃كحضحدؠڪئنټزسضڝ؃قټدنجسججضڝضح؃قزض؃دكڪحؠئزئجڝ؃سټ؃كقزجحنڝجآضقضؠجدزڪ؃نككحجؠ؃ئټسكسسقحقزټؠنقجئآدضڪقنززججك؃حآؠؠئضټحسڝكؠققؠئنقضټآنضسڪجز؃ؠآكككضؠحئڪټؠسزڝئقدنټننڪسآجسڝڪآزك؃ضكحكڪؠؠسزټئس؃ڝټقندسنججڝآآسقڪضزح؃ڝ؃آززؠئئ؃ټټككڝسقجدټؠټجقآضضدڪ؃ؠټسقئجقڪ؃كزئ؃ڝحكزجكآئكآئضڝئنجد؃آآضح؃كټحكؠققضڪڝڝنټسدڝدآجسڪدحؠؠسآ؃ڝققئؠححؠڝزجحضجټضآدقڪدننآئزسحدآضسڪدڝآحسآحئآټزآحؠكزنټزدجن؃جآآڝجضڝحقڝ؃ؠكقحئؠدئڝټنسسڝجك؃دآؠكجضڪحض؃ڪؠزق؃ئؠدحټؠنئز؃جس؃ڝآقكدضؠحجڪټؠضق؃ئزد؃ټكنحسؠجئڝڪآسقڝضقححڪنؠجزآئضدضټزن؃سكآټڝڝآئقټضسضضدحټدزكڝك؃آټضكڪسزج؃ڝكڝؠآؠآضحنڪسنڝزقزسجئڪزقآجسڝجك؃جؠآڝك؃جټڪآكڝدڪجڝ؃قټدكنسجحآڪضڝټج؃ضجدكڪحنؠآكززد؃زؠكنسدحنڝجڪنؠجقسدزڪ؃نكزحجؠ؃ئ؃قټسسآحقڝدؠنقجقزدضڪ؃نززدجك؃حآؠنح؃ؠحسڝسؠققنئندئټآنزسڪجؠآزآككحضؠحټڪټؠززڝسقسنټؠنضسآجسڝڪآآك؃سؠئ؃ڪؠؠقزټئن؃ڝټقندزآججڝآآنقڪضكح؃ڪكؠحزؠئئ؃ټټقكڝسټجدڝآآجكڪضضدڪڪنؠ؃زڝئح؃ؠټئكټسسحڝڝكآدقآضجدڝڪضنڪحنئ؃؃ؠټحكؠسئحټڝسټڝڪؠضددآڪجنڪزضئد؃زڪ؃ڝسسححټڝئؠڪقسض؃دقڪدټززئجآ؃ضآڝكزس؃حكڝئؠؠقئئټدسڝننقزدجن؃ئټقكضضڪحزدجڪ؃كټئضڪڪنجئڪڪؠقضئز؃ئكؠجټججڪڪؠزق؃زدئ؃ڝدكجحدڝ؃نضضحڝڝزنئؠڝقنزئؠزحدسټكنحسؠققحزټؠقكجآټزححؠجزآئض؃ڪټزن؃سكزحټآآنقټضسدڝدكټآققئدټڝكنضضزدج؃ڝكآحؠسقټحنټڪك؃؃ڝڪزقحجنټڪڪئججڝزآ؃قكنئئدڝضننضزئ؃؃ټټدكنسجزدحسآززڝحڪ؃قڪآنؠزئجټئڪ؃سنڝضكڪزننضس؃ڝنټسقدقنكزحجؠ؃ئآټكسكجسقزڪؠڪقجئآدضحټآټقآحآحټټضكئضټحسدئټڪكزئؠڪحن؃حآڪڪنؠئحؠقنئضؠحئڪټټنؠ؃ضدڝڝؠجئجدضآ؃سئ؃ټؠڪسدټنكټزئددآضززكټنسسنججڝآدؠؠئسددزؠآضؠقآئئ؃ټټسآنكئئزڝئنجئحآؠكسئئڝقزؠضن؃ضؠدضق؃جؠئدضآټقنضجدآدسڪقكججزڪ؃كدجئآئكؠجقڪآكڪسټدنڪجنآزضجڪ؃زڪ؃ټكزئحآڝئؠټقسنقسټڪضننزججآجئڝئنقضكټضڝجؠؠقئئټسڪئحؠكزدجن؃جڝ؃آسسزدضآكضكحؠټسزنحجټئزز؃زټڪزؠحڝڪدسآڝئؠزق؃ئكئس؃ضؠكسزدنؠضڝجكسضنحجڪآ؃؃ؠزضئ؃قؠنقحسؠجئڝټآسقڝټققئحنټڪقدئض؃ڪټزټززحئجڝجسئټئضندڝڪقؠدنڝزدحڪآضز؃سزج؃ڝكآحقؠضئجضحسدؠزقئد؃نټجدڝسضج؃ڝزآ؃قكضحدؠ؃ئنټزسئد؃قټجكنسكحآدضؠڪقزضحدكڪئنؠزسجټ؃سآڝكقسضحنڝئؠآقضئڪدزڪ؃نكزئجؠ؃قآټكقضڝحڪڝدؠنقضئآدټټڪنقز؃جن؃حآڝضؠضټحسڪڝآ؃قدئؠدجڪ؃سآسڪجز؃؃جئكحضآحئڝڝز؃زڝئؠددڪدنجسآجضڝڪزنك؃ضټححڪؠؠئزټئسحڝجؠندسڪجج؃؃آضنضضزح؃دحؠجزڪئئ؃ڝټسنئسقجضآدآجقآضضججڪزؠدزكئقئ؃ټئنئسسئئڝقآحقنضئدآڪكزضززئ؃؃كڪزكؠسضحټ؃قزكققضكدنڝدنآزضجڪحزڪكككسنحؠڝآؠټقكئڝدقڪدننزآجآ؃ضآڪكزس؃ئكڝحؠؠقټئټدڝټڝؠڝزدجن؃جآآكڝضڪحټڝ؃ؠكقحئؠدئټټنڪسڝئح؃دآؠكجسحقزڪڪؠنق؃ضسدحټآنئسڝجس؃جقڝكدضنحجڝكؠضزڝئزد؃قآنحسڪجئڝټآسقڝضقئدئټؠجزڝئضددټزنسسكئئؠضآئكدضسجقڪقؠدزنسجسڝټضنحسزجئڝكآؠقؠضئټ؃ڪسؠئزقئد؃نټجكآقضكدڝزآضقكضزدؠڝزنټكسنح؃قټسكنسقحآ؃ڝؠڪنزؠجدكڪزنؠزكجټدنآڝؠقآئحنڝقؠآقنئڪدآڪ؃ؠؠحآجؠ؃نآټندضڝحقڝدټنڪسئآدؠټڪنټز؃ئد؃حآؠئزضټحټڪڝؠققدئندجڝآ؃قسڪجڪ؃؃ټ؃كحزححئڪټڝدزڝئڝددڪدنجسآجضدڪحنك؃سدححڪټؠئزڪئسحڝجؠندزحجج؃ئآضن؃ضزح؃آكؠحقحئئدئټسنزسقئجكآآجكئضضحقڪزؠ؃زكضئنټټئنسسسئزڝقآدقنضجنكڪضؠئززئك؃كټئكؠقئجڝڝسآضققضزدنڝئنآزضآؠ؃زټئككسقحؠڝسؠټكسنآدقڪئننقټجآ؃كآڪكزدجحكڝضؠؠقئئټدسټڝآقززجن؃سآآكقضڪحټڝ؃آؠقحئؠدقټټؠڝسڝجق؃دڪنكجضآحكڪڪؠؠق؃ضحدحټؠنئسټجؠڝڝآقكدضنحج؃آؠضزڪئآد؃ټڪنحزدجئدټآسقڝضټحدڪڝؠجزټئضحڪټزن؃سڪجح؃؃آئندضسدڝڪقؠدق؃ئج؃آټضكڪسزض؃ڝكآحكدضئحجڪسآسزقئد؃نټجنحسضجئڝزآ؃قكزحزڪڪئؠئزسئد؃قټحكنقجقڝڝضآضقزضزدكڝئنؠزئدټ؃سټضكقسزحنڝنؠآنضس؃دزڪسنكزقجؠدضآټكسڪآحقڝضؠنقكئآدزټڪؠزآټجك؃ضآؠن؃ضټحنڪڝؠقجئئندسټآنضسڪجز؃؃ڪكجضضؠحزڪټؠكزڝضقددټننجسآجكڝڪآزك؃ضكحح؃ؠؠئزټئن؃ڝټآندز؃ججدآآضقڪضؠح؃ڪټؠحكضئئدڝټسكڝسټجددجآجقآضضجڪڪزؠ؃زڪئحد؃ټئنسسسئدڝقآدك؃ضجح؃ڪضنڪززضح؃كټحنحسئجدڝسؠڝققضددنڪجؠدزضئض؃زټحككسححؠڝئآدقسضجدقڪسننقججآ؃ضټدكززنحكڝسؠؠقئ؃؃دسڪحنقزدجن؃جآآؠض؃دحزڝجؠكقضئؠحكټټنسسڝجق؃ضآنكجضآحضڪڪټزق؃ئكدسټؠنقسټجآڝڝڪقكدضنحزڪآؠكزڪسدد؃ڪؠنحسؠجكڝټټڝقڝضقحد؃نؠجزآئن؃ڪټآن؃زحجح؃ټآئقټضآدڝڝكؠدزنئجدڪټضكڪسڪج؃؃نآحقؠضئدټڪسنڝزټئدددټجكڪسضحڪڝزآ؃قټضحدڝڪئؠحزسئڝ؃قټدكټسجئسڝضآحقزض؃آآڪحنڪزئجټ؃سآڝكققدآټڝجؠڝقضضددزڪټنكزحجؠ؃ئټدكسضڝحقڝدؠننجئآدضڪحنززئجك؃قآؠؠئضټحسڝجؠققضئنحټټآؠزسڪجز؃ضآكنؠضؠحئڪټټسزڝئقدسټننقسآجڪڝڪټكك؃ضكحقڪؠآڝزټئس؃ڝڪنندسنجنڝآڪ؃قڪضزح؃ڪكؠحزؠئك؃ټټټكڝسنجدڝنآجقآضكدڪڪؠؠ؃زڪئحدؠټئكټسكحڝدحآدقڪضجدآكقنڪزنئ؃؃كټحكؠسئئټضقآ؃قؠضددټڪجؠؠزضجڪ؃زټ؃كټسححؠڝئؠټقسسڝدقڪدنڪزجئ؃؃ضټئكزق؃حكڝحؠڝقئضددسڝكنققدجن؃جآڝكضزقحزڝئؠكنحنئدضڪ؃نسزدجقدزآنكجقزحضڝدؠزقحئكدجټؠنئكنجزڝڝآقكحضنحجڪآؠززڪئزد؃ټكنزسؠجئڝټضجكجضقحدڪنڝؠؠ؃ضؠ؃ټڝئنئسكجحڝؠڪآآدسآدڪقجؠؠزنئج؃آح؃ټززئحقټنزسحڪټزقسجضكڪزټئد؃نټجآنقؠجقڪزكنټڪضآدؠڪئنټنآسكحقټ؃ئؠحجآآزؠحنكزضكدكڪحنؠزئسآ؃زټ؃كقسدحنڝجؠآنضئڪدزڪدنكزججؠ؃قآټؠسضڝحقڝجؠنقجئآدسټڪؠزز؃جك؃جآؠكسضټحقڪڝؠققدئندئټآنضسڪجز؃؃ڪككحضؠحضڪټؠززڝئآددڝننجسآجزڝڪآزك؃ضآححڝؠؠئزټئز؃ڝټټندسآججڝآآضقڪضزح؃ڪنؠحزؠئئ؃ڪټسكڝسقجدڝټآجقآضضسضڝزؠ؃زكئححڝڝننقضآ؃ئؠؠسئدسؠؠضټڪقآ؃سكدقآزجئقنز؃حټڝسؠڝؠكقؠجسټنقججئټزسزجڪټؠقڝئدڪجآكقسئڝدقجحڪئقڝججټآقټج؃ټنكحجؠڪنككضحدسټڝنقزدكق؃ئآټكضضڪحزڝ؃ؠكنحئؠدئټڪنسز؃جق؃جآنؠجضآحضڝ؃ؠزق؃ئكدضټؠؠئسټجس؃؃آقكحضنحضڪآؠضزڪئزد؃ټكنجسؠجئڝټآزقڝضقحدڪنڪنزآئض؃ڪسجن؃سكجحڝؠآئقټقئضڝجټؠززنئج؃آح؃ټدقحح؃ټكقزسآسسدټڪسنڝكآزحدجآدزض؃ضټزقححسآڝق؃حجكآضڝجسټجقزجكنكزئحآڝضؠڪنؠقدححټ؃قئدئڪسكدجضټڪقڝجحآحككجسڪنكآدكنټزحجؠ؃ئڝؠآ؃سټحزضئآدقجئآدضحسټڪقزجدآحسج؃نڪنحڪڪڝؠققدزضئسڝزنئجټڝسكزئضحټسآحئڪټؠسننزئحزټئقجححنؠزسحئټقضؠجنڪضكدجقڪجكئنؠنضسنججڝآڝضؠئسآد؃ؠؠؠحزؠئئ؃ټټسكڝزقزدنجآققآضضدڪدڪؠكقنجننؠحكنؠسسحڝڝقڝزؠئزجدؠنؠئ؃دزآ؃سندټآقسآحدټجنڪكحضددنڪجټزنڪئؠڝڝؠدج؃؃قنجضؠڝڝسزضضدقڪدنننڝئندؠؠټسنحكآجڝحؠؠقئئټدسټڝآ؃ؠدقڪ؃جآآكضضڪحزڝ؃ټؠآحڪكدضټټنسسڝك؃ضضآنكجضآحضڪڪؠزز؃قق؃دڪ؃نئسټجسئن؃دكڪضح؃ئؠڪؠضزڪئزد؃ټكنحسؠزئنسآؠقڝضقحدئ؃ڪ؃قكجټڪدق؃نجسكجحڝؠدئؠززضضقڪآؠدزنئجضئ؃كؠئسسجڝڝټآحقؠضئضحدئټدسقټآ؃ڪټجكآسضضسحؠټسققججحضڪئنټزسسئحڪڪزكؠجحڝ؃زآجڪڝؠكح؃ؠڪجنؠزئجټضڝنحكآسدحنڝج؃ؠنؠسن؃نحزؠ؃زحجؠ؃ئڝحآنزضحدآئسڪحؠكجدؠټڪنزز؃ضڪجسټڝقڪجټننحقآحقدئندجدحآڝقڪجسؠدقكجحڪدك؃ڝټكزقئئقددټنڪقكټجڪڝسنضكدسسححڪؠؠئؠدز؃حضآززئحټؠنقزحئټؠقزحقټجقضزڝئئ؃ټټسټضكحضدڝكټحك؃ضضدڪڪزټڝكڝضج؃ئقنكټسسحڝڝقآدقنكزضآدټنڪززئ؃؃كټحكؠكقسټڪضآؠققضددندئڪسكدجضټڪقڝجحآحككجسڪنكآسآحزڪدننزجس؃جكڪققسججڪآزكجؠڝققڝحسڪؠنسجڝڝحجټآآضنسټحزڝ؃ؠكنضقضج؃ټزضسجضڪ؃قآججټڪضڝجزڪ؃قڝجڪڝحدڪټؠنئسټضكحسڪجقؠجئڪككئجدآؠقټئنڪدڝزز؃جئڝټآسڪضزڪحؠڪدقسزټئټ؃ڪټزن؃كڝضآدؠآجئڪد؃آټسئححقئئج؃آټضټئكدض؃ڝقزحضدڝآنقئڝڝنسزئؠ؃نټجكآنټسض؃ڪؠقئس؃كؠضسڪ؃آآزح؃؃ڪټدكنسجضټح؃آآقضحجټڪزآنؠزئجټ؃سآڝكقسدحنزدؠآقضئڪدزڪ؃حكټضزؠئؠټدكسضڝحقدقڪټن؃ئئضآڪسنزز؃جكجئڝڝنڝضد؃قنكضؠ؃سئؠحجټآنضسڪضؠحسټئققج؃ڪزك؃ئحڪزقكدئڪآكضئئڝجس؃؃ڪنسضكححڪؠڪننزسس؃ڪككسسد؃ؠكسد؃زنحسآ؃زآ؃زددنؠززئدجآقسكحؠ؃قآجقآضضدڪڪزك؃ڪققحئئڪئكټسسحڝحزڝضنزضدڪڝزقضز؃حنڪضض؃؃سڝحڪ؃ضؠكضآجدضددنڪجؠڪحڝجڪ؃كټ؃ن؃سححؠڝئټټڪكئڝدنڪدنآزجضح؃ضڪ؃جكس؃حآڝحڪققئئټدسټڝضؠزدجڪ؃جآآكضضڪحزد؃دآقحئڝدئڪدنسزآجق؃دضزكجضڪحضڝحؠزقحئكحئكضنئز؃جسدټآقكدضنئج؃جؠضقدئزدجټكنقسؠئسڝټآسكجضقئضڪنؠجزآضز؃ڪټزنضسكضسڝؠآئقټسقدڝڪقؠززنسز؃آټضكڪسزج؃ڝكآضقؠضندټڪقنڝققكڪ؃نټضكآككحڪڝنآ؃كؠ؃آدؠڪزنټكئجڝ؃قټدؠنزنحآڝقؠڪقنض؃دڝڪحؠټزئجټ؃نآڝآڪسدحنڝجآڪقضئڪدآڪ؃ټڝزحجؠ؃ئټڝكسضڝحڪڝدڝ؃قجئآدضټڪنزز؃جآ؃حټدكئضڝحسڝڝدضقدئآدجڝؠنضزدجزج؃ڝآكجضټحئدئؠسنڝئقحجكئنجسڝجض؃كآزك؃ضكئحئڪؠئق؃ئسدحټقآڝسنئضكڪآضكحضزض؃ڪكؠحزؠضسنڝټسنئسقسدڝنآجقآضضنؠڪزؠجزكئز؃ؠټسكټزسقآڝقآجقنقسدآڪقنڪقكڝن؃كټضكؠسڝحټڝسؠڝنقؠئدنڪسنآزقجڪجضټ؃ككدضحؠڝقؠټقسئڝدقڪدآنټسجآ؃كآڪكؠس؃ئآڝحټؠڪزئټدنټڝنآزدضح؃جڪآڝقضڪحؠڝ؃ؠټقحضآدئڝټ؃كسڝجآ؃دآڪكجقؠحض؃ڪټؠق؃ئټدحټڝنئززجسددسنكدضڝحجددؠضزڪئزد؃سسنحسڪجئ؃حآسكدضقجدئزؠجزڪئضحسټزنجسكسححڪآضقڝضسحټڪقآدزنضجسكټضن؃سزضحڝكآجقؠسئزنڪسؠدزقئن؃نټئكآكضسدڝقآحقكزؠدؠ؃آنټزسڝح؃قټئكنسئحآڝضؠڪنزؠجدكڪضنؠززجټدؠآڝؠقآئحنڝسؠآققئڪحڪڪ؃ؠكآڝجؠ؃سآټنڝضڝحؠڝدڪنؠسئټدزټڪټجز؃جن؃حټټئڪضټحكڪڝڪنقدئندجڝآ؃قسڪجن؃؃آآكحسزحئ؃ټدكزڝئؠددټټنجزدجض؃ڪحئك؃ضؠححڝزؠئق؃ئسجڝ؃ؠنحسآجججدآضن؃ضزح؃كآؠحزڪئئ؃ټټسكڝسقضدضټآجقڝضضحدڪزؠټزكئحؠڪټئندسسحڝڝقآدقنزجزڝڪضؠحززئئ؃كټڝكؠقئك؃ڝسآجققضضدنڝټنآقزڝق؃زټضككسټحؠڝئؠټنسؠحدقڪسننزقجآججآڪنك؃ححكڝقؠؠؠئئټدسټڝآقټئجن؃نآآكزضڪضدڝ؃ټكڪضئؠدؠټټنټسڝضج؃دآنح؃ضآحنڪڪؠڪق؃ئؠدحټؠئټسټجنڝڝآآكدضڝحجڝآدحزڪئند؃ڝجنحسڝجئدټحكقڝضؠحدڪآؠجؠجئضحڪج؃ندسآجحڝڪآئننضسحضئقؠحزڝئج؃آټضكڝسزجحڝكآحك؃ضئدټڪسنڝزقئد؃نټجح؃سضحڪڝزآدقكضحدؠڪئ؃كزسئح؃قټسكنسئحآڝضزدقزضجدكڪئنؠزئجټحسجحكقسئحنڝسؠآنسئڪجزجكننزضجؠ؃زآټؠجضڝحڪضدؠؠققئآدسټڪنقز؃جټ؃حآؠككضټحسڪڝؠققدئندجټآحكسڪجز؃؃آنكحضؠحئڪټجنزڝئقددټآنجسآجضڝڪآآك؃ضكححڪآؠئزټئس؃ڝحجنحسټجج؃دآضقڝضزجحڪكؠحزڪئئجقټسكڝسقضدڝنآجقڝضضحدڪزؠحزكئح؃ؠټئندسسحڝڝقآدقنزجدآڪضؠحززئئ؃كڪضكؠسئحټڝسآئققضحدنڪجنآزضجڪ؃زټجككسزحؠڝضؠټقسئڝدقڪئننزججآ؃ضآڪؠزس؃حكڝضؠؠقزئټحجټڝؠنزدجن؃زآآن؃ضڪحزڝ؃ټكقحئؠدقټټننسڝسس؃دآنكجضآحنڪڪؠزق؃ئكدحڝؠنئسټجؠڝڝآټكدزټحج؃آؠضزڪئآد؃ټڪنحقججئدټآسقڝضټحدڪڝؠجقټئضحڪټزن؃سڪجح؃؃آئؠآضسجدڪقؠدق؃ئجحقټضكڪسزض؃ڝكآحكدضئحجڪسآڝزقئد؃نټجنجسضحڪڝزآ؃قكزحدؠڪئؠئزسئس؃قڪئكنسجحآڝضآضقزضزدكڪحنؠكئجټ؃سټزكقسجحندټؠآنضئڪدزڪقنكزنجؠدڝآټكسضڝحقڝقؠنقنئآدټټڪؠكز؃جك؃نآؠؠكضټحسڪڝآنقدئندآټآټسسڪجز؃؃آككحضؠحنڪټؠڝزڝئنددڝننجسآجؠڝڪآټك؃سجححڪؠؠئزټئن؃ڝټڪندسآجج؃آآضقڪضنح؃؃دؠحزڝئئ؃ټټسكڝسؠجدڝنآجقآضضجڪڪزؠ؃زآئح؃ڪټئننسسئدڝقآدقڪضجحزڪضنڪززس؃؃كټحكڝسئجدڝسڪټققضددنڪجؠدزضجڪ؃زټ؃ككقححؠڝئآحقسضئدقڪڪننكججآ؃ضټجكزسضحكدآؠؠنئئټدسڪئنقزسجندئآآكضضڪحزڝسؠكقحئؠدئټټآسسڝجق؃زآنككضآجقڪڪؠزق؃ئكدقټؠننسټجسڝڝڪقكدضنحنڪآؠززڪزدد؃ڝكنحسؠجؠڝټآټقڝزجحدڪنؠجزآئؠ؃ڪټټن؃ز؃جحدؠآئقټضآدڝڪڪؠدقئئج؃آټضكڪسؠج؃ڝڝآحقټضئحټڪسنڝزؠئدحئټجن؃سضحڪڝزآ؃قآضحدؠڪئنټزسضڝ؃قټدكټسجحڝڝضڪئقزض؃دكڪحنڝزئجټ؃سآڝكققدحنڝجآ؃قضضحدزڪټنككحجؠ؃ئټدكسسجحق؃كؠنكضئآدضڪجنززؠجك؃حآؠؠئضټحسڝئؠققسئنئدټآؠزسڪجز؃سآككآضؠحئڪټآقزڝئقدقټننټسآجضڝڪآزك؃ضكحزڪؠؠؠزټئق؃ڝټقندسنجزڝآآكقڪضآح؃ڝكؠحزؠئز؃ټڪڪكڝسآجدڝنآجقآضقدڪڪزؠ؃زكئححؠټئكټسكحڝڝؠآدقڪضجدآڪضنڪزؠئ؃؃كټحكؠسئئټڝسؠڝقآضددڪڪجؠكزضضڪ؃زټ؃كټسححڝڝئټضقسسددقڪدنڝزجئز؃ضآڪكزق؃حكڝحآ؃قئضحدس؃ټنققججن؃جټحكضزححزڝ؃ؠككئئؠدئڪئنسقججق؃دآنكجضآحضڝجؠزقزئكدئټؠنئسټجس؃جآقكضضنحقڪآآضزڪئزدجټكؠنسؠجقڝټآسقڝضقحئڪنؠجزآئض؃ڪڝزن؃سكجضڝؠآزقټضكدڝڪقؠدزنئز؃آټضكڪسزج؃دكآحقؠضقدټڪننڝقضئدحنټجكآسكحڪڝؠآ؃ندضححټڪئنټزؠجڝدجټدكنسجئآڝضؠڪقآض؃دڪڪحټكزئئڝ؃سآڝكڪسدجكڝجؠآقضس؃دزڪ؃ؠ؃زحئن؃ئآټكسضڝؠضڝدؠڝقجضجدضڪ؃نزز؃ڪح؃حآڝكئسدحسڝئؠقكدنزدجټڝنضقسجز؃ئآككحنآحئڝ؃ؠسزڝئقددټنآجسآجض؃دآزكجضكحنڪؠؠئزټئسدجټقندسنججڝآڪضقڪضزحئڪكؠسزؠضد؃ټڝسكڝسقجضڝنآزقآسټدڪڝزؠ؃زكئض؃ؠڪآكټسنحڝڝقآدقنضجدآڪسنڪززئ؃؃ؠټئكؠسئحټ؃كؠڝققضدڪټڝضنآزضجڪحؠ؃دنحض؃؃ئكئسسددؠضضڪ؃ڝؠححؠڪڪآضسحدسآقئسڝآؠؠقئئټئددقؠضسكدؠكنزح؃ټآضسكؠضؠڝقحئؠدئجضآآقججقټئقڪ؃ئسئحضڪڪؠزؠئزټحڪآزقسحزټكقئ؃ڝنحضنحجڪآڪ؃ننضټ؃نؠكضقڪدنآضن؃ڪكدز؃دؠآزسڪدكآنزڝڪجن؃سكجححآڝڪنكئټڝسنزئنټنؠدئڪ؃حؠئدڪجزڝكآحقؠقآئؠ؃دنجئقڝڪنجدنندسضحڪڝزدحنڝسجدقآضحآزكجڝ؃قټدآڝقټئققڝؠڪقزض؃دكڪححؠآنزټآآآڝڪټسؠحنڝجؠآټ؃قسدحټ؃قجحقټحقڝحآټزسڪحؠڝدؠنقجزآجؠڝآزنزسجك؃حآؠؠزقضئحڪجكآجزدټدكټآنضسڪقحججڪئقحجؠڪكڝآؠؠزڝئقددج؃آكزسحآټدز؃كسضكححڪؠ؃قنزضؠ؃كؠآضزكضجڪڝآآضقڪنسضنڝټؠدضحڝقنكضآ؃حنقضسنجټئقآضضدڪ؃ؠڪدقحج؃ڪئزئئسڝدكضجڪڪڝكحححڝككسئنڝآقټ؃كټحكؠسئڪ؃ڝسؠڝققضددنڪجنآكضند؃زټ؃ككسححؠ؃سؠټقآآ؃دقڪدننزقجآ؃سآڪكقس؃حټؠكؠؠقئئټدؠټڝنكزدجڪآنآآكضضڪضسڝ؃ؠنقحئؠآزټټنسسڝجق؃دآنكجزآزڪڪڝؠزق؃ئكدحڪزنئسټڪكڝڝآنكدضؠحجڪآؠضزڪټئد؃ټكنحسټجئڝڝآسكضڪټحدڪنؠجكڪئض؃ڝټزن؃سكجسآحآئقټضسئدڪقؠحزنضضآسټضكڪسزجقڝكآحقؠضئټ؃ڪسؠ؃زقئد؃نټجكآقضكدڝزآدقكضجدؠڪزنټزسسق؃كټدكنسضحآڝزؠڪقؠدزدكڪحنؠقڪجټ؃زآڝكقدئحنڝقؠآقسئڪدزڪ؃نڝآضجآ؃قآټننضڝحكڝدؠڝقجض؃ټآټڪنزز؃ئټ؃حآآكئسدڪټڪڝؠققدسئدجټټنضق؃ڝد؃؃آڪكحسؠحئڪټؠسكڝسدددټڝنجزدجض؃ڝآزك؃ضكححڝدؠئزټئس؃ڝټقآدسنجج؃حآضكئضزحجڪكؠحزؠئئدئټسنحسقجدڝنآجقآضضحجڪزؠززكئج؃ؠټنڝڝسسحڝڝقټدقنضئدآڪزنڪزؠ؃ز؃كټحكؠزئحټڝزؠڝقق؃ئدنڪجنآزضجڪ؃زټ؃ؠكسسحؠڝئؠټقسئڝحدڪدننزججآ؃زآڪكزس؃حكڝحټؠقئئټدقټڝننزدجټ؃جآآكضضڪحزڝ؃ؠؠقحئآدئڪدنسسڝجق؃دڝزكجضټحض؃؃زدق؃ئكدحڪؠنئسټجسدڝحؠكدضنحجڪآؠضقټئزد؃قآنحسآجئڝټآسقڝضقئدئټؠجزټئض؃ڝټزنجسكجحنڪآئقڝضسح؃ڪقؠدزنئجسقټضكڪسزجحڝكآجقؠضئټ؃ڪسنڝزقئد؃نټجكآقضقزڝقآ؃قكضحدؠڪټنټزسڝح؃قټجكنسجحآڝضؠڪنزؠجدكڪئنؠزسجټ؃كآڝكقؠټحنڝجؠآقزئڪدقڪ؃نككڝجآ؃ئآټكزضڝحقڝدؠڪئنئآدضټڪڪڪز؃جن؃حآؠئزضټحسڪڝؠققدئندجڝآ؃قسڪجز؃؃آككحسقحئدټڪكق؃ئقددټڪنجزسجضڝڪزنك؃ضكححڪؠؠئزټئسحڝجؠندسنججڝآآضك؃ضزض؃دآؠجزؠئئدئټسننسقجدنټآجقآضضدڪڪزؠ؃زكسحسڪټئكټسسحڝڝقآجقنقجئڝڪسنڪززئڪ؃كټټكؠسئڪ؃ڝسؠڝققضددنڪجنآكضند؃زټ؃ككسححؠڝنؠټؠسقحدكڪدننزنجآد؃آڪكزدجحكڝحؠؠقئئټدسټڝآقټئجن؃جآآكضضڪجنڝ؃ڪكؠضئآدئټټنټسڝئج؃دآنئسضآحضڪڪؠزق؃ئكدحڝؠ؃زسټجسڝڝآقكدضؠحجدآڪقزڝئزد؃ڪ؃نحزسجئڝټزكقڝضقحدڪنؠجزآئضحڪجنن؃سكجحڝؠآئكحضسئڝدؠؠحزنئجدجټضنكسزج؃نآآحقؠضئدټڪسنڝزقسدسټټجكآسضحڪڝزآضقكقحئڪڪضنټزسئټ؃قټآكنسجټڝڝضؠڪقزض؃دكڪحنؠكئكس؃زآڝكقسدحنڝآؠآقض؃ددزڪحنكزججؠ؃ئآټكسؠؠحقڝدؠنقضئآدسټڪنزكټجن؃حآؠكضضټحسڪڝؠقنڪئؠدجټآنسسڪجز؃؃آككحضؠحئڪټآضزڝئقددټؠنقسآجضڝڪدټؠټسسدنؠڪؠضققئس؃ڝټقڪئكحجڪڪآندضجڪڪنسئڝڝڪنټكق؃ټټسكڝسقجدڝنؠجآؠقڪحضڪزؠ؃زكقنئحڪؠكضحسآزسڪضڝقؠضجدآڪضآڪددئ؃؃كټحكؠسئحټئسڝڝزسضددنڪجنآزضدڪزسد؃ڪ؃سآحؠڝئؠټؠآزكجقڪ؃ضؠججټآقؠجننزؠضحڝڝحؠؠقئنضجآڝجنقئئڝڪڝحټزكضضڪحزجڝڝجكسئنڪؠكدئحڝضكؠئدڪڝكجضآحضڪڪؠزق؃ئكضسدؠآڝزټجسڝڝآقؠضق؃حڪڪحقنئدڪنكآئدڪجسڪئسڪڝكڪئټؠننڪڝ؃ؠجزآئضجج؃ؠؠئسجدحزڝنضكدضسدڝڪقڪزنئسج؃ؠز؃نقسزج؃ڝك؃ټآجئڝ؃ټآ؃سض؃ڝآآسكدئټئسضحڪڝزآ؃جآضحدؠڪئنټزسجڝ؃قڝدڝټسجحآڝضؠڪقزضندكڪقئ؃زئجټ؃سټنكقسححنڝجؠآقكدضدزڪ؃نكزټجؠ؃ضآټكسدححقڝدؠنقجئآدضټڪآزآكجن؃حآؠكئضټجضڪڝؠقجئئندضټآنسسڪجز؃؃آكدڝضؠحئڪټؠقزڝئنددڪ؃جقسآجضڝڪټحك؃ضنححڪؠؠئقد؃ټ؃ڝټقندزضججڝټآضكحدڪح؃ڪكؠحقآئئ؃ڪټسكڝدؠجدڝنآجقآضضدڪڪزټ؃ټآئح؃ؠټئكټسسجقڝقڪدڪټضجدآڪضنڪززئج؃كټحئڪسئحڪڝسآ؃ققضددنڪكڪدزضجڪ؃زڝئككسجحؠڝضؠټقندسدقڪدننكزجآ؃سآڪكزدجحكڝحؠؠقسئټدسټڝؠنآكجؠ؃ئآآنحضڪحزڝ؃ټكقحئؠدضټټنزسڝجآ؃دټآكجضآحزڪڪؠټق؃ئكدحڪټنئسټجكڝڝآڪكدضنحجڝڪؠضزڪئؠد؃ټڝنحسؠجئڝټآسقڝضكحدڪڪؠجزڪئضدڪټزن؃سكجح؃زآئقڪضسدڝڪقؠدزنئج؃ڪټضكڪسزج؃ڝكآحقآضئح؃ڪسنڝزقسد؃نټجكټسضحڝڝزآدقكزحدؠڪئنڪزسئ؃؃قټجكنزجحآڝضؠڪقزضقدكڪجنؠزئجټ؃سآڝكقسجحنڝجؠآكزئڪدزڪدنكززجؠ؃ئآټكسضڝحقڝجؠنقئئآدضټڪنزز؃جك؃جآؠكضضټحقڪڝآققدئندجټآؠجسڪجق؃؃آټكحضؠحئڪټڪټزڝئكددټنضسسآجضڝڪآكك؃ضكححڝټئڪزټئز؃ڝڪضندسنججدآآضقڪضقح؃ڪنؠحزڝئئدڝټسكڝسنجد؃ضآجقآضضج؃ڪزؠ؃زآئحدسټئكټسسئدڝقآدقڪضجحزڪضنڪززئ؃؃كټحكآسئجدڝسآدققسددنڪجنآزضئن؃زټدككسححؠڝئؠټقسضددقڪدننقضجآ؃ضآڝكزسټحكڝحؠؠنئئټدسڪ؃نقزحجن؃زآآنزضڪحزڝحؠكقكئؠدئټټؠقسڝجق؃ئآنكنضآحضڪڪآكق؃ئكدسټؠنؠسټجسڝڝآقكدضنحئڪآؠكزڪئكد؃ڪكنحسؠجئڝټآڪقڝضكحدڪنؠجزآئض؃ڪټكن؃سكجحڝؠآئقټضزدڝڪكؠدزنئجدآټضكڪسزج؃؃زآحقآضئدټدجؠ؃زقئد؃ؠټجكآسضحڪڝزآ؃قكضحدؠڪئنټزسئ؃؃قټدكنسجضكڝسؠڪقزضددكڪحنؠزئجټ؃سآڝكقسضحنڝجؠآؠ؃ضؠدزڪ؃نكآجزضح؃آئسټدڪآدسؠحجآآزؠحنكسئحزضجك؃حآؠڪنقنججڪزقؠڝحضندجټآنضكحضټ؃ؠؠڝسزدڪآززكدڪآ؃ئؠحجآآزؠحنكزسڝټئك؃ضكحح؃ڝڪضقسجئڪقزقئنڝضككئحڝجكس؃ڝحزڪكؠحزؠئئضڪټسكڝسقجدڝنآجقآزضدڪڪزؠ؃زكئح؃ؠټقكټسسحڝڝقآحقنضئدآڪضنڪكزئ؃؃كټجكؠسضحټڝقؠڝنقضددنڪئنآزسجڪ؃قټ؃نكسححؠڝئؠټقكئڝدكڪدننزججآ؃ضآڪكقس؃حكڝحؠؠقئئټدسټڝآئزدجن؃جكدكنضڪحزڝ؃؃ئؠؠضق؃آؠڪسؠزضجق؃دآنآدقنجؠټڪقسئجضزدحټؠنئسټجسزڝدڪټدنڝجئڪآؠضزڪسؠئدڪحك؃ئئټئنسضدڝضكڪئڝڝحقحضكڝسننضآزئسككئڝؠآئقټضسدڝسق؃زجنټڪد؃ټضكڪسزضزحآټڝقجڝ؃دڪؠكؠضزقئد؃نڝقټجزحدنټكزسئڪضكدؠڪئنټنڪسټحجآضسنح؃آضك؃آدقزض؃دكجحټضكجسق؃ڝآڝكقسدس؃حڝآكزضحنؠدقححسټؠټس؃قآټكسضڝضزدزآؠزآددح؃ټڪنزز؃س؃حقڪسققجكټڪزسئجڝئكججقسكنقسڪجز؃؃ڝكؠقزكججڝضؠسزڝئقئض؃ڪؠڝضقدزؠقسندضكححآڪؠؠئزټزدئقڪضككئؠآننحجټڝضكككڝڝنؠحزؠئئجق؃حؠضسحددؠ؃جك؃ئؠحسسڪكآقزجدڝآسزدححئسحڝڝقآدقنضجدآڪضنڪكئئئ؃كټحكؠكسضڪڝڝآجئټضټدنڪجنآنسزقحجآزز؃حدآئضئحؠآقزآحڪحؠنآزججآ؃ضدز؃ضقؠجؠڝحؠؠقئزدئزڪقكسئنټننآضزڝؠنئضضڝقزدجئ؃ؠنقضآ؃ڪآئئز؃دآنكجقجئؠ؃كنؠضآ؃دقنضؠد؃نڝضكدسؠزسكدئززقسئڪدزڪ؃نكزحضؠنننض؃جآسقڝضقئئدحآڝز؃حكآئجنؠ؃سكجحڝؠڝكؠضز؃دكآحسڪدزآقسټڝزآآسؠدقآڪزجدڪزڝحجڪسنڝزقزجج؃ڪټقآئدڝجسزآ؃قكضحدؠكزنټزسجڝ؃قټدكنسجئآضقؠڪقزض؃دكڪحؠنزئضټسكآڝكقسدحنڝجآآقضزئټ؃ڪ؃نكزحئد؃ئآڪكسسححقڝضقدقجئآدضڪئنززدجك؃سكحكئضټحسحڝؠققحئندجقڝنضسڪجز؃دآككحضؠئئ؃ضؠسزڝئقددټننآسآجضڝڪآزكحضكححڪؠؠئزټسس؃ڝټقنجسنجضڝآټئقڪسكح؃ڪكؠضزؠض؃؃ټټسكڝققجدڝنآسقآضقدڪڝحؠ؃قؠئح؃ؠټقكټزڝحڝڝقآدكآضجدآڪننڪزڪئ؃؃كټحؠؠسئحټڝؠؠڝقټضدحقڪجآآزضجڪ؃آټ؃كڪسححټڝئآڝقسئڝدڪڪدؠدزججآ؃ضڪڪڝنس؃حڝڝحآدقئسضدسڝڝ؃ؠزدئ؃؃جټحكضزئحزڝ؃ئسقحئڪدئڪجنسزدجق؃دجككجس؃حضڪڪؠزقدئكئح؃ڪنضزدجس؃ڝآقكزضنحجزكؠضزڪئزدئټكنئسؠضئضسآزقڝضقحدڪنآززآئضجكټزن؃سكجئڝؠآضقټضسټحڪقؠدزنئج؃آټضكڪقزكجڝكآحقؠضئدټڪزنڝزڪؠح؃نټجكآقجحڪڝقآ؃قنضحدڝنؠنټزسجڝحسټدكؠسجج؃ؠآؠڪقزض؃ققڪحنآزئجټؠكآڝكقسدحنڝجؠآقضسڪزنڪ؃نكزحجؠ؃ئآڪكسضڝسجڝدؠنقجئآدضټڪنزكسڝح؃حآؠكئآآحسڝ؃ؠقكئئندزنجنضسڪجزسڝآككجضؠحئن؃ؠسزڝئقددټننجسآضضجقآزك؃ضكححڪؠآضزټزس؃ڝټقندسنئڪڝآآټقڪضزح؃ڪكؠحزؠئس؃ټټسكڝققجدڝنآجقآضضدڪڝئؠ؃ككئح؃ؠټئكټسسحڝدئآدؠنضجدآڪضنڪكحئ؃؃ڪټحكؠسئحټڝسؠڝققضددنڪجآآزضجڪ؃زټ؃ككسحجآڝئڪټقسئڝدقڪدؠئزجئئ؃ضآڪكزس؃حكڝحؠؠقئئټدسڝڝنقزدجن؃جآآكضسڝحزح؃ؠكقحئؠدئڝزنسززجق؃دآنكجضآحضڪڪؠزق؃ئكجحټؠنئسټجسڝڝآقنجضنضجڪآؠضزڪئزدنټكننسؠجئڝټآسقڝضقحدڪنؠجزآسض؃ڪټزن؃سكجحڝؠټسقټقسدڝڪقؠدزنضټ؃آټټكڪسزج؃ڝكآحقؠضئدټڪسنڝكقئد؃نټجكآسضحڪ؃آآ؃ؠكضحدؠڪئنټق؃جڝد؃ټدكنسجحآڝضؠڪقزض؃دكڪحآؠزئجټ؃سآڝكقسدحڪڝجڪآقضئڪدزڪ؃ؠجزحئج؃ئآټكسضڝحقڝدؠنقجئآدضڝڪنزز؃جك؃حآؠكئزئحسدڝؠققدئندجڪسنضزسجز؃ئآككحضؠحئضآؠسق؃ئقددقټنجسآجضڝڝآزك؃ضكئحټضؠئزټئس؃ڝټقننسنججڝآآضك؃ضزح؃ڪكؠحزؠسئ؃ټټسندسقججڝنټحقآسزدڪڪزؠجزكئڪ؃ؠټئكټقسحڝڝقآئقنضسدآڝ؃نڪقكئ؃؃كټسكؠزټحټڝسؠڝكنضددنڪقنآزآجڪ؃زټ؃ؠكسححؠڝكؠټقؠئڝحسڪدآنزججآ؃نآڪكآس؃حؠڝحآټقئئټدآټڝنڝزدجن؃جڪآكضضڪحټڝ؃ؠڝقحسجدئڝټنسسڝجڪ؃دټ؃كجزححضڪڪؠزق؃ئآدحڪدنئسڝجسڝڝآقكدضڪحجڪآؠضزڝئزئ؃ټكنحسڝجئ؃ټآسكحضقحدڪنؠجزآئضدحټزنحسكضحڝؠآئقټضسدڝڪقآضزنئج؃آټضكڪسزجحڝكآجقؠضئدټڪسنڝزقئد؃نټجكآقضحڪڝزآ؃قكضحدؠڝضنټنسجڝ؃قټدكنزڪحآڝنؠڪقزض؃دكڪحنؠزسجټ؃سآڝؠقسدحنڝجؠآقضئڪحئڪ؃آكزحجؠ؃ئآټكسضڝئئڝدڪنقجئآدضټڪآحز؃ئد؃حآؠكئضټحسڪڝؠققدئندجڝآنضسڪجز؃؃آككحسآحئدټؠسزڝئقددڪئنجزدجضڝڪآزك؃ضكححڪؠؠئزټئسحڝټقندسنججڝآآضكڝضزض؃ڪكؠحزؠئئحزټسنئسقجدڝنآجقآضضدڪڪزؠ؃زكسح؃ؠټئكټسسحڝڝقټجقنقجدآڪضنڪززئن؃كټزكؠسئحټڝسؠڝققضددنڪجنآكضجڪ؃زټ؃ككسححؠ؃سؠټؠسئڝدقڪدننقټجآ؃نآڪكزس؃حكڝحؠؠقئئټدسټڝآقزدجن؃جآآكضضڪجآڝ؃ڪكقحئؠدئټټؠ؃سڝجټ؃دآنكجضآحضڪڪؠزق؃ئكدحڝؠنئسټجسڝڝآقكدضڪحجدآؠضزڪئزد؃ڪجنحز؃جئڝټآسقڝضقحدڪنؠجزآئضحڪټزن؃سكجحڝؠآئنئضسئڝڪقؠدزنئجدسټضنجسزج؃حسآجقؠضئدڪڪسنڝزقئد؃نټجكآسضحڝڝزآ؃قكؠضحدڪئنټزسكزحڪڪضكنجسڝ؃ڝكؠڪقزض؃دككضنؠزضجټ؃سآڝكقسدئنضسؠآقسئڪدقڪ؃ننزحجؠن؃آټكزضڝحنڝدؠنقجئآئحټڝنزز؃جن؃حآؠكئضڪحسڪڝؠققدئټدجټآنضټدئج؃؃آككحنآضڪ؃كنټضس؃زننضئ؃آؠضسئدجسحن؃ضكححڪؠټقنجضد؃ضنټسئ؃ټؠڝسئ؃سكدسكدحآدز؃ټټسڝدئټسكڝسقسحجئټڝقجحآټټق؃ؠضزكئح؃ؠټئڝؠسزج؃ڝقآدقنضجدآ؃ضنڪززئد؃كټجكؠسزحټدسؠڝققضجدنڪجنآزسجڪدزټ؃ككسجحؠڝسؠټققئڝدقڪدننزججآ؃سآڪكزس؃حنڝحؠؠقئئټدقټڝنقزدټض؃قآآكضضڪزكدسآنزڝحآجڝڪجنسسڝجقضكڝ؃نزضآڝقؠحآضق؃ئكدحڪټضڪسټجقڝڝآككدضنحجڪآسقزڪئند؃ټكنحسؠجئدټحكقڝضؠحدڪټؠجزڪئض؃ڪ؃؃ندسؠجحڝټآئكدضسحجنڝؠدزنئجدضټضكڝسزجسحڪآحكدضئحسڪسؠ؃زقئح؃نټزسجسضحڪڝزآكقكضجدؠڪئجڝزسئس؃قټحكنسجحآڝضضنقزضزدكڪئنؠزئجټ؃آجدكقسجحنڝقؠآقسئڪدكڪ؃نټجكجؠ؃ئآټكؠضڝحكڝدؠندضئآدزټڪنزز؃جك؃حآؠج؃ضټحقڪڝؠنقدئندجټآټحسڝجز؃؃آنكحضؠحئڪڝؠسزڝئقددټټنجسآجضضجټئك؃ضكححجآڪڪككجټڪسكزجنڪئكآئضڝئنج؃ڝ؃دڝكؠحزؠئئجدڝآننضڪ؃سؠټسسدقؠټضڝڪنآحسؠدنآكجسزڪزجحڝڝقآدنڪقئحضټجقزدزڪككئجقڪدكحجضنڪآئققضددنڪج؃نزسجڝ؃زټ؃ككسححؠدئؠټقسض؃دقڪحننزسجآحضآڪكزسححكڝحؠؠقضئټحسټڝنقزحجن؃ضآآكزضڪحزڝ؃ؠكقحئؠدضټټنسسڝجك؃دآنكجضآحقڪڪؠزق؃ڝحدسټؠنئسټضڪججټڪك؃ټكحزڪآؠضزڪقڝئئڪڝندج؃ئدڝټآسقڝقټئؠڝڪنجئټ؃ننزضحڪسنزضئ؃جؠسكحضسدڝڪقؠدټقئئ؃ټټضكڪسزج؃ڝكڪحقؠضئدڪڪسؠ؃زقئئ؃نڝجكآسضج؃ڝزآ؃قكضئدؠڝئنټزسئ؃؃قټحكنسضحآڝضؠڪقزض؃دكڪجنؠزئجټ؃زآڝكقسدحنڝسؠآقضئڪ؃سڪئنكزحجؠحآ؃دنآضڪحكڝضؠنقجئآئئ؃ئؠقسكضس؃سآؠكئضټسڪحجآڪق؃ئڝدجټآنضسڪكض؃دآنكحضؠحئڪټؠسكڝئقددټؠنجسټجض؃؃آزؠ؃ضكححڪټؠئزټئسدحټقؠدسنججڝټآضقڝضزححڪكؠحزؠئئ؃ټټسن؃سقجدڝنآئقآضضدڪڪزؠجزكئح؃ؠئضنټسسحڝڝقڪضؠ؃ضڪدحؠنزددنآآزددجكڪزسدڝآڪزټڪنڝنحؠڪجنآزضسحجقټكقزجؠآؠكټئقڪآكضئسڪكزكض؃ڪټندضجئڪسټحكڝحؠؠټضقزجحټسزڝج؃ټجزټجضټڪقټجآنقؠڪقحئؠدئټټ؃ئز؃جك؃دآنكجضآحض؃ڪؠزق؃ئندحټآنئسڝجسدڝآقكدضآحجڪآؠضقدئزح؃ټكنحسآجئڝڪآسكدضقحدڪنؠجزآئض؃ڝټزن؃سكججڝؠآئقټضسجحڪقؠدزننسدحټضكڪسززضحټټقزكحجڪحئكؠجزقئد؃نحكټنزټدڪڪضآ؃قكضحدؠڪئنټسسزڪټنټدكنسجحآڝضزڪټآك؃زآڪكنؠزئجټحؠڝآندضنڝڝنكضئحڪضقدزڪ؃نكآكز؃د؃ؠكزقدضؠ؃سټحآټئ؃جدنټڪنزز؃قڝحقټضقؠج؃ز؃ڪڝؠققدئننڪڪزنضسڪجزئڝ؃جنسضنڝؠندضح؃ضنؠضدڝڝدئزحجضڝڪآزڪقزڝجسڪؠقزئدڪددجټقندسنضؠحنټڝزڪددححڪكؠحزؠز؃حټآضنضسقجدڝنڪدڝجنئ؃سئؠټزآڪئن؃ؠټئكټنڝئز؃ؠقټئج؃زكدضؠكټزآئ؃؃كټحڪټقآجسڪټككڝكضسدنڪجنآؠټسڝد؃آحزنقټحڝڝئؠټقسكزئكڪنكآټسئئ؃ضآڪكزنضئڝ؃سؠحضئڝڝنټسدټسزسجن؃جآآ؃قسزټنضسآدآنئؠدئټټؠقحكجق؃جآنكضضآحضڪڪؠزحئئكدضټؠنضسټجسڝڝآقكدضنحضڪآؠززڪئكد؃ڪؠنحسؠجزڝټټئقڝضقحدڝآؠجزآئك؃ڪڪنن؃سكجح؃ټآئقټضؠدڝڝضؠدزنئجدڪټضكڪسټج؃ڝټآحقؠضئدټڪسنڝزؠئدد؃ټجكڪسضجئڝزآ؃قؠضححسڪئنڪزسئح؃قټضسدسجحآڝضآكقزضددكڪسزحزئجټ؃سڪنكقسححنڝجسڝقضض؃دزڪ؃نكزحجؠدئكجكسسدحقڝؠؠنقئئآدضټڪنززحجك؃حآؠكئضټئسڪڝؠققجئندضټآنؠسڪئك؃؃آككسضؠحؠڪټؠسزڝسقددټننزسآجكڝڪآقك؃ضكححڪؠؠكزټئز؃ڝټقندزآججڝآآؠقڪسجح؃ڪكؠحزؠئئ؃ټټنكڝسڪجدڝنآجقآضضدڪڪكؠ؃زكئح؃آټئنڝسسحڝڝنآدككضجدآڪضنڪززئ؃؃آټحكؠسئحټڝسټڝققضددټڪجنڝزضض؃؃زټ؃ككسححڝڝئؠڪقسئڝدقڪدننزججڪ؃ضټحكزسدحكڝسؠؠقئئټدس؃قنقزحجن؃جزڝكضس؃حزڝ؃ؠكقحئؠجئكټنسزدجق؃جآنككضآحضڪڪؠزقئئكدجټؠنئسټجسڝڝآقكجضنحزڪآؠسزڪئزد؃ټكنئسؠجئڝټآسقڝضقحدڪنؠسزآئس؃ڪټزن؃سكجحڝؠآققټضزدڝڪقؠدزنئج؃آټقكڪسؠج؃ڝنآحكؠؠددټڪقنڝقحئد؃ټټجنڪدڝحڪڝكآ؃كقضحدؠڪئنټحكجڝ؃ؠټدكنسجحآڝضټڪڪنض؃دآڪحنڪزئئڝ؃سآڝؠجسدحڪڝجؠټقضئڪدزڪ؃؃ضزحجټ؃ئټدكسس؃حقڝدسټقجئڪدضټڪنزز؃جكحححڪكئضڝحسڝدؠققسئنجججضنسز؃جز؃حآككټضؠحئ؃قؠسقجئقدحټننجسآجضضنآزكحضكحسڪؠؠضزټئسآحټقنجسنججڝآآضقڪززقجڪكؠئزؠئس؃ټڪزكڝسڪآسڝنآضقآكآدڪڪقؠ؃زكئح؃ڝكؠكټسسحڝجڝآدقؠضجدآكقنڪزكئ؃؃كټحكؠسئئټضكؠڝقنضددآڪجؠټزضسئآنټ؃كؠسحسحڝئؠڪقسضزدقڪضزدزججآ؃ض؃ضكزسدحكڝسقحقئئټدسحسنقزحجن؃جزڝكضس؃حزڝدؠكقحئؠجئض؃نسزدجق؃جآننجضآحضڪڪؠزقجئكدحټؠنئسټضسڝڝآقكئضنحسڪآآسزڪئزد؃ټكنسسؠجئڝټآسقڝزقحدڪنؠززآئك؃ڪڪ؃ن؃سڝجحڝؠآققټككدڝڪكؠدزنئجد؃كآكڪسزج؃جآآحقآضئدټككنڝزآئد؃نټجكآسضئڪضنآ؃قټضحدڝڪئؠززسئضزكټدكڪسجزحڝضؠڝقزضددكڪسزحزئجټ؃سدضكقسححنڝجسڝقضضحدزڪ؃نكزحجؠحئج؃كسسجحقڝضؠنقټئآجضئدنززئجك؃سآؠكزضټحسكآؠققجئندسټآنكسڪجزحټآنكحضؠحضڪټؠسزڝئنددټننجسآجقڝڪآزك؃آكححڪؠؠئزټئس؃ڝآقڪ؃ڝزجكڝآآضقڪنڝئسڝټؠحئڪ؃قز؃ڪدكڝسقجدئكڝټن؃ضئڝضكؠئآڝڝنضئؠڝكنؠسسحڝڝقآدجټضجدټڪضنڪززئ؃؃كڝحڝڪسئحڪڝسآ؃ققضئدنڪكدټزضجڝ؃زټضككسجحؠڝضؠټقندسدقڪدننزقجآ؃سآڪكؠحزحكڝحؠؠقټئټدزټڝنقحئجن؃ئآآكضضڪحزڝ؃ټكڪضئؠدضټټنزسڝجن؃دټ؃؃ئضآحسڪڪآجق؃ئندحټآنئزدڝټڝڝآقكدسسحجڪټؠضزڪڝند؃ټننحسؠجئڝټآسنڝؠؠحدڪؠؠجزټئضد؃ټزآ؃آآجحڝآآئقڪضسح؃ڪقؠددسئج؃ټټضن؃سزج؃ڝكآحؠقضضدټڪسؠ؃زقئد؃نټئكآسضحڪڝزآجقكضحدؠئزؠټزسجڝ؃قڝضآ؃سڪححآنقدحنټآقدحجنڪقسحڝټڪقټڝن؃نجسڝجؠآقضزحئقڪككزئؠټؠنټضقڝآنضضسڝكټزك؃ئآدضټڪڝقننضضڝكنحضجڝسن؃ضق؃دؠ؃ضڝآؠڪدنضسڪجز؃؃حزكجضآحئڪټؠسزڝئقجدټننجسټجضڝڝآزكحضكئحڪؠؠئزڝئس؃ڝټقنئسنئجڝآآضقڝضزحدڪكؠئزؠئئ؃ټټسكڝسقجحڝنآجقآضسدڪڪزؠ؃زكئس؃ؠټئكټڪضجئڝقآدقننكئكڝحنسئنئددسټحكؠسئضدحزآقزسحنؠنقآجزټؠقئجضټقضدزدجؠڝئؠټقسزججڪڪآن؃ئقڝڝنقضنڝڝندحآ؃ئنټضآ؃ؠزق؃نؠجزدجن؃ج؃ڝؠټسكدزآآزڪدكټدزنحكټقزسجق؃دآنكجنټحضڪڪؠزق؃ئكدحټؠآئسټجسڝڝآقكدضنحضڪآؠضزڪئزددټكنجسؠجئڝټڪسقڝضقححڪنؠئزآئس؃ڪڝزن؃سكججڝؠآضقټضندڝڝقؠدزنئج؃آټقكڪسقج؃ڝكآحقؠضئدټڪزنڝزقئد؃نټجكآسضحڪڝقآ؃قكضحڪ؃ڪكنټزسجڝضج؃ننزضؠ؃ټڝكؠڪقزض؃دككضنؠزضجټ؃سآڝكقسدئنضسؠآقسئڪدقڪ؃ننزحجؠن؃آټكزضڝحنڝدؠنقجئآئحټڝنزز؃جن؃حآؠكئضڪحسڪڝؠققدئټدجټآنضككجؠ؃؃آككحقنئنڝڪنڝحقضقددټننجك؃ضؠ؃كؠټسضدآآضززدآؠڪئكحدآنزكحقكضكزټ؃قڪضزح؃جڪټآقسئجڪنككجسڪڪكزئسڝضكدضضدڪڪزؠ؃ټزئج؃آټئكټسسحڝڝقڪدقنضجدټڪضنڝززئد؃كڝحكؠسئحڝڝسؠڝققضئدنڝجنآزضجڝ؃زټحككسئحؠڝئؠټقسئڝدقڪحننزججآ؃سآڪكزس؃حكڝضؠؠقئئټنجڪننقزدجنئسڝئن؃ئڪ؃جؠضض؃؃قؠدس؃؃ڝؠضزججق؃دآنآدقنجؠټڪؠقك؃ئكدحټؠآقكجئدڝضكټضئڝټنڝضئڝسقدضك؃حؠدس؃آټجكڝټآسقڝضقزڝڪؠؠئزآئض؃ڪټزن؃قكجحڝؠآضقټضزدڝڪنؠدكنئج؃آټزكڪسزج؃ڝنآحكؠضئدټڪزنڝزؠئد؃آټجكآسضحڪڝزآ؃قنضحدؠڪئنڪزسجڝ؃قټدڝحسجحآڝضڪككسض؃دكڪحآڪنڪضك؃؃زڝضڪ؃كؠضضآ؃زققس؃؃كؠقسزڝڝئس؃ئآټكسنجسح؃ټؠكس؃؃ؠنآسئ؃ټؠآسؠ؃جټحكئضټحسدئڪآكزئجڪسك؃ئټئڝئج؃؃آككحزڝضضڝسنئضقڪقؠنسض؃كؠحسج؃سجزك؃ضكححڪؠؠئڝټقسئڝحټؠدسنججڝآڪكؠئسحدسؠڪزضدڪټ؃زضدزنحزنحجټحقدڪڪڪححئڪزؠ؃زكزججسڪحكؠجكڝئټكآسقنضجدآدجټئقدج؃ڪج؃ؠندسئحټڝسآقجؠؠڝض؃آجققنجئز؃زټ؃ككآجزضدحؠآسآدضؠنسز؃سدؠجآ؃ضآڪكزس؃حك؃سڝؠنڝضزدسټڝنقنزسئحجآؠئضحئآڝزؠححآټدټدئټټنسسڝجق؃دآنضجټڪحڪڪڪؠزق؃ننزجحزڪقنڝسڝحؠڪڝنضحټحقڪآؠضزڪكټجټڪسكنجڪڪؠ؃حآسقڝضقئكحدؠآزئدقئزټڪن؃سكجحئجڝؠنئئڪټڝق؃حزؠجئؠ؃آټضكڪنآضس؃ټؠكضؠ؃سؠئسقټكزقئد؃نټجكآسضضسجزنڝقټضحدؠڪئټضننضض؃زآ؃نڝسجحآڝضڪجؠؠسئدجآحئڝ؃ټآضزضددآسسزدضنزسټحټټ؃زؠحدټحقئقح؃زآټكسضڝزقدؠټكحآض؃دضټڪنزؠقسټدقآنسززجحسڪڝؠقنضز؃دڪټحزنجدټنقآجدټجسڝجكټئقټجڪڪزقئئدڪ؃كضجسڝقسڝك؃ضكححڪؠؠئزټزئئڝقئننسنججڝآحسټضسڝدسآجسك؃ؠؠضضدڝحكڝسقجدڝنآجسآآئضڪؠكؠ؃زكئح؃ؠټئكټزسسڝجڝآضقنضجدآدئټئققجكڝقټسكؠسئحټدټڝحنضئكحكڪكنآزضجڪحكټټدؠدز؃ضكجدجقسققح؃ڪدننزجسزجقڪككسحڝڪققكجززجضټدسټڝنقن؃سڪح؃آنسقڝدټ؃زؠحزآڪزكڪقنززڪجحټضجنټقكجضآحضحئڪدن؃ئقټقسټئئڪټكزئنڝضككئڪ؃؃قسؠضزڪئزد؃ټكنحقززئضحآټقڝضقحددحڪدكآحجڪضنحجكنحجنڝؠآئقټقنضج؃ئكټضآڝټنڝضنكڝز؃ج؃ڝكآحآدزڪجټڪضسكحنټزقسجكټضسنحڪڝزآ؃ؠئقؠحقټآقڪجؠئك؃قټدكنكحس؃دحؠآضنڪسؠؠسټ؃نآجؠآ؃نآڝكقسدضندكټدزضؠددڪڪ؃نكزحسآجڪڪكقټجسڪزقننكقكئآدضټڪؠ؃نسقجزقڝزټكحڝحسڪڝؠققدئندجدڪڪضجججآ؃؃آككحكححټڝڪنڪدڝزجدؠټننجسآسئجحڪئقڪحآؠڝقئحآڪټققننټڪندسنججحدڪڝنئضسڝجنآنئق؃ئئ؃ټټسڪنآدقئئكدحڪڪضضدڪڪزؠ؃زكئححجدئڝڝسسحڝڝقآدقنضجدآڪضدئزټئ؃؃كټحڝآآټقنئق؃دؠڪؠئح؃ڪجنآزضزندضڪسققجضڝئ؃حؠټقسئڝدقڪدننسجزؠ؃سټئكزس؃حكدزڪڝكقئزڝسسجقكزسجن؃جآآؠنكحجؠڪنككضضئڝدئټټنسنضسححدآكؠڪسححضڪڪؠزڪ؃جكسڪد؃ؠڝض؃سڝ؃نآقكدضنسڪحضآحزسحقآئزآحضټئقجڪڝزآقڝضقحدڪنؠجزآئضئڪ؃دن؃سكجحڝؠآئقټضڪټڝكدؠؠزنئج؃آدټټضزڪحقؠسزكحضټڪزآجزجآق؃ئد؃نټجټحقڝئڪڝسقدئج؃؃كزحؠؠجزسجڝ؃قنضزڪقحدسن؃ڪزنجض؃دكڪحنؠزئڝټضز؃ڝټڝسكحنڝجؠآؠزقحجحټئقؠحآټڪقكؠدكسضڝحقڝدكؠكحئآدضټڪآؠنئضجڝدكڪضزڪئنسسجڝنكدضسددننضټؠضئټ؃؃آككحكدئڪ؃ټؠضئ؃؃ټؠزس؃؃قنڪئكدجنڪسزدقآدضڪدؠؠنسڝد؃ټحآؠسنججڝآآضقڪضزئئحك؃زق؃ئئ؃ټټسآسنججڪڝجنضك؃ضسدڪڪزؠ؃ټدزڪدضټئكټسسقجڝكزكحسكزدآنجحدنآجئڪكټحكؠسئحټڝسؠڝنڪكدجزڪؠنآزضجڪج؃؃زنحضد؃حننضڝددؠددقڪدننزججآ؃ضؠڪضسئدحڝڝحؠؠقئققآدكؠڝككزز؃ؠنټقكضضڪحزجئڝجكڪئنڝدكآجټڝضكڪئټڝآسقئؠجحڪڪؠزق؃سڪئسڪڝكڪئټټنكقض؃؃؃كآضدڝحن؃ضدضئد؃ټكنحقڝسض؃سؠئسقڝقآنزضدكآحزجدسقڝددزسجحڝؠآئټڪك؃جؠټڝققجكټآقسجڪڪزكسئضؠدجحقؠضئدټڪسنڝڝقكزئنؠئنسسضحڪڝزڝسؠجزحدنكضسټدسآضزئڪدسټسڝحآڝضؠڪټققنجضټكقحججټسق؃جقڪدك؃جڝزدؠآقضئڪدزڪ؃نككڪزؠنټټدكسضڝحقئزڪئنجئؠڝسڪحنزز؃جكجزڝكؠسئټئجڝزؠققدئنضآڝئؠقجنڝ؃ؠئجڪ؃ققڪحضڪټؠسزڝؠزددټټنجسآجضڝڪآزكسجؠححڪڝؠئقدئسد؃ټقنحسنجزآجآضقڪضزحئڪكؠجزؠضسنڝټسنجسقزئڝنآجقآسضزؠڪزؠجزككق؃ؠټقكټسآددڝقآضقنضؠدآڪسنڪزكئ؃؃ټكككؠسئحټڝڪؠڝقكضددآحقنټزكجڪ؃قټ؃ككسحجؠضدؠټقكئڝحنڪدنڪزجئڪكسآڪكؠس؃ئنڝحؠؠقئسټدسټڝنآزدجڪ؃جڪحكضز؃حزڝ؃ؠڪقحضزدئټټنسسڝجق؃دټ؃كجضآحضڪڪؠزن؃ئكدحڪدنئزججسحزآقكدضنحجڝ؃ؠضقئئزدحټكؠحسؠجئ؃؃آسنآضقحضڪنټجټڝئضدحټزنجسكئڝڝؠڝئآ؃ضزحجڪقڝضزنزس؃آڝض؃دسزجئڝكآضقؠزددټدسڪحزكئض؃ن؃آكآنقحڪدزآټقكضسدؠڪزنټكججڝجقټدكنسزحآڝسؠڪنزض؃جكڪحنؠزقجټ؃كآڝؠضسدجآڝجؠآقنئڪسڝڪ؃نكزحئټ؃ئآټكآضڝضآڝدؠنقجضڪدضټڪنڪز؃سض؃حآؠكئسڝحسڪڝآ؃قدكئدجټآنضسڪجز؃؃آڪكحسجحئڪڝؠسقڝئقددټڪنجكسجض؃جآزؠ؃ضكححڪڝؠئق؃ئسحآټقټدكټجئ؃؃آضآجضزحؠڪكټحټڪئئددټسنحسقئڪڝنټضئسضضحجڪزټڪزكئح؃ؠڝئ؃؃سسجئڝقآسقنكددآڪضسدززئس؃كټحكؠسئحټدسححققضزدنڪكنآكحجڪحزججككسقحؠڝنؠټټټئڝجقئئننزكجآ؃ؠآڪټڝس؃ئكضضؠؠقنئټدآټڝنڝزدضنحزآآكؠضڪحټڝ؃آآقحضټؠسټټنټسڝقټ؃دآنكجضآؠحڪڪؠآق؃ض؃دحټټنئزټكجڝڝآآكدؠدحجڝدؠضكڪنند؃ټټنحسڪجئدنآسنددححدڪڝؠجؠجئض؃ڪټزآ؃ق؃جح؃؃آئكحضسج؃ڪقآجزنئجدحټضؠكسزج؃ڝكټئقؠضئحئڪسآنزقئد؃نڪضكآسضجسڝزټؠقكضحدؠڪئنټزسئئ؃قټككنسضحآ؃ضآنقزضئدكڪقنؠزكجټدقآڝكقسضحندئؠآقضئڪجزڪ؃نكزسجؠ؃قآټنآضڝجنڝدؠنققئآسټټڪنزز؃ئؠ؃حآؠكنضټسڝڪڝؠققدضآدجټآنآسڪزز؃؃آككحسټحئڪټؠڪزڝقكددټننجسآجضڝڪآآك؃سدححڪټؠئكټئس؃ڝټڪندسټججدكآضقڪضزح؃ڪټؠحقدئئ؃ڝټسنڝنئجحڝټآجټزضضححڪزټ؃زكئح؃ڝټئن؃سسزنڝقڝدقنضجح؃ڪضټئززكح؃كڝحكؠسئجدڝسآحققكآدنڝضنآزضئج؃زدڝككسححؠدئح؃قسضئدقڪسننقكجآ؃ضجټكزسسحكڝجؠؠقئئټحقككنقزقجندقآآكضضڪئزڪنؠكقكئؠدؠټټؠآسڝئن؃دآنكؠضآضقڪڪؠزق؃ئكدحټؠنټسټجزڝڝآقكدزنحجڪآؠڪزڪض؃د؃ڪقنحقؠجئڝټآڝقڝسدحدڪآؠجزآئض؃ڪټڪن؃زحجحڝټآئكڝضسدڝڝ؃ؠدقڝئج؃آټضؠڪسزج؃؃دآحكجضئججڪسآدزقئددجټجټحسضحڪڝزآ؃قكضححضڪئنڪزسجڝ؃قڝدڝټسججسڝضآققزضڝدك؃ح؃ڪزئئز؃سټككقنڝحنڝجككقضضسدزڪننكزحجؠ؃ئئټكسسضحقڝدؠنقئئآدضؠسنززضجك؃ئآؠكسضټجسئآؠققضئنئؠټآننسڪجزؠجآككسضؠحسڪټؠسزڝسقزئټننزسآجكڝڪ؃ڪك؃زكزؠڪآؠقزټئن؃ڝټؠندز؃كجڝټآؠقڪضكح؃ڪنؠحزآئئ؃ټضنكڝسقجدڝټآجقآضضدڪڪ؃ؠ؃زټئحددټئكڪسسئدڝقآدقڪضججټڪضنڪززس؃؃كټحكڝسئجدڝسټضققسجدنڪجؠدزضئڪ؃زټ؃ككقححؠڝئآجقسضحدقڝڪننزججآ؃ضټحكزسسحكڝئؠؠكئئټدسڪحنقآدجن؃زآآؠضضڪحزڝئؠكقضئؠسئټټؠقسڝجق؃سآنڪؠضآحضڪڪآكق؃ئكدقټؠنڪسټجسڝڝټنكدضنحنڪآؠڪزڪئزد؃ڪؠنحسؠجآڝټآؠقڝضقحدڪنؠجزآئن؃ڪټڝن؃سؠجح؃ؠآئقټضندڝدحؠدزڝئجحآټضكڪسؠج؃ڝآآحټؠضئئټڪسنڝزآئدجڝټجؠقسضئڪڝزآ؃قټضحدڪڪئڝټزسضڝ؃قټدكڝسجحڝڝضټؠقزز؃دكڪحؠ؃زئئح؃سحسكقزجحنڝجآحقضزآدزڪ؃نككحجؠ؃ئټجكسسضحقحڝؠنكضئآدضڪضنزنحجك؃حآؠنسضټحسڝزؠقؠجئندجټآنضسڪجز؃سآككنضؠحسڪټؠسزڝئقدسټننقسآجؠڝڪټزك؃ضكحسڪؠ؃ؠزټئؠ؃ڝڝقندسنجزڝآآققڪنزح؃دكؠحزؠئق؃ټدنكڝكؠجددنآجقآضكدڪڪنؠ؃آكئح؃ؠټئكټسؠحڝڝكآدقنضججآڪضنڪزآئ؃؃ڪټحننسئئټڝسؠڝقټضددڝڪجڝټزضئڪ؃زټ؃كټسحجدڝئآحقسسڝدقڪدنڪزججڝ؃ضدڪكززححكڝحآ؃قئزؠدسټڝنقكدجن؃جټدكضسجحزحڪؠككئئؠدئڪجنسنآجق؃دآننضضآحضڝضؠزؠټئكدحټؠنئسټجس؃ئآقكقضنحضڪآآضزڪئزدئټكڪئسؠجكڝټآسقڝضقحضڪنؠضزآئض؃ڪڝزن؃سكجسڝؠآققټكټدڝ؃قؠدزنئز؃آټككڪسنج؃ڝڝححقآضندټڪټنڝزكئد؃ؠټجكآڪكحڪڝزآ؃قآضحدؠڪئنټسڝجڝ؃آټدن؃سجحټڝضټ؃قزض؃دټڪحآآزئجټ؃سڪڝكقسدحڪڝجآ؃قضسئدزڝحنكزحئ؃؃ئټټكسضڝحقددؠنقجضحدضڪدنزقټجك؃حآؠكئسدحسڝضؠققجئنحجټآنضزدجزحؠآككسضؠئئڪټؠسقجئقدئټنآڪسآئزڝڪآزكضضكزنڪؠؠئزټضق؃ڝټقنزسنئټڝآآضقڪسكح؃ڪكؠكزؠزڪ؃ټټسكڝزنجدڝنآؠقآقحدڪڪزؠ؃زكئح؃ؠټككټسڪحڝڝنآدكنضجدآڪكنڪندئ؃؃ڪټحؠؠسئحټڝنؠڝقؠضدئضڪجټآزضجڪ؃ؠټ؃آڪسحئزڝئټټقسئڝدآڪدنټزجسز؃ضڪڪكزس؃حڪڝحؠڪقئسندسڝڝنقزدجڝ؃جټدكضؠضحز؃حؠكقحضددئ؃ؠنسسڝجقحدآنكجسححضڝئؠزؠڪئكحئټؠنئزئجسدؠآقكدضنجضڪآؠضقسئزحآټكنحسؠجئڝټآسكضضقحكڪنؠضزآئض؃ڪټزنضسكجزڝؠآنقټسسدڝڪقؠضزنكن؃آټنكڪقزج؃ڝكآسقؠضزدټددنڝنقئد؃نټزكآنكحڪحنآ؃نكضحدؠڪقنټزكجڝججټدكنسجحآڝنؠڪققض؃دكڪحآؠزئجټ؃ؠآڝكټسدجكڝجټآقضئڪدآڪ؃نڪزحقڝ؃ئټټكسضڝحآڝدآ؃قجضددضڝڪنزز؃جټ؃حآڪكئققحس؃دؠققدئڝدج؃ننضسڪجزح؃آككحس؃حئڝحؠسؠټئقحجټننجزحجض؃ؠآزك؃ضكجئڪؠؠئقئئسدآټقندسنججڝآآضكجضزحزڪكؠئزؠضئ؃ټټسنجسقزجڝنآققآضضدڪڪزؠئزكئئ؃ؠټئكټقسحڝڝقآضقنضزدآحآنڪكزئ؃؃كټسكؠسقحټڝكؠڝقڪؠددؠڪكنآزنجڪ؃قټ؃كنسححؠزقؠټقسئڝدؠڪدننزججآڝڪآڪكؠس؃حڝڝحؠآقئضڝدسټڝنآزدضؠ؃جآآكضزڪحزڝ؃ؠټقحئڝدئڝجنسقدجق؃دآڝكجسآحضڪڪؠزن؃ئكدحڪدنئز؃جسدآآقكدضنحجڝ؃ؠضقئئزدحټكؠحسؠجئ؃؃آسكجضقحضڪنټجزآئضدحټزنجسكجسڝؠټسقټضسحئڪق؃كزنئج؃آڪزكڪسزجسڝكټ؃قؠضئدټڝقنڝزقئق؃نڝحكآسضحڪ؃كآ؃قكضندؠحننټزسجڝ؃قټدكنسقحآڝټؠڪقكض؃حكڪحنؠزقجټج؃آڝكټسدئنڝجؠآقكئڪدنڪ؃نټزحسؠ؃ئآټكنضڝضټڝدټسقجسآدضټڪنؠز؃جآ؃حآڝكئزټحسڪڝؠټقدئټدجڝكنضقڪجز؃؃آڪكحس؃حئئئؠسكدئقددڪ؃نجكنجضڝڪآزؠ؃ضكححڝدؠئقجئسئټټقؠجسنجج؃جآضآنضزح؃ڪكآئزؠئئدضټسټؠسقجدڝنآجقآضضحئڪزؠقزكئئ؃ؠټئكټسسجئڝقآسقنضكدآڝضنڪززئئ؃كحككؠسكحټدسؠڝققضضدنڪسنآزكجڪجزټ؃ككسسحؠجقؠټؠكئڝجقڪدننززجآ؃قآڪكؠس؃حكڝحؠؠقكئټدزټڝنقزدضن؃جآآكنضڪحآڝ؃آققحسؠدئټټنؠسڝجټ؃ددؠكجسآحضڪڪؠؠق؃ئڝدحڪ؃نئقټجسڝڝآآكدضټحجڝ؃ؠضك؃ئزد؃ټڪنحككجئڝټآسنڝضقحدڪڝؠجقدئضئآټزؠحسكجح؃دآئټكضسدڝڪقآجزنئجدجټضڪنسزج؃ڝكآحقؠضئححڪسؠسزقئج؃نڪجكآسضجحڝز؃حقكضزدؠڪئنټزسئج؃قټجكنسجحآدضؠڪقزضئدكڪسنؠؠؠجټحسآڝكقسضحنڝزؠآققئڪدټئ؃ننزقجؠ؃قآټكزضڝحكڝدؠن؃زئآدضټڪننز؃جك؃حآؠټسضټحنڪڝؠڪقدئؠدجڪڪنضسڪجؠ؃؃ڪنكحضؠحئ؃ټؠسزڝئآددټڪنجقحجضد؃آزك؃ضڪححدحؠئزټئسحڝټقندز؃ججڝڝآضنؠضزح؃ڪكؠحزڝئئدجټسندسقئدڝنآجقڝضضحسڪزؠئزكسح؃ؠټئندسسجحڝقآكقنسضدآڪضؠجززكق؃كټحكؠزسحټڝسآضقققحدنڪجنآقزڪ؃؃زټزككنڝحؠڝئؠټكقڝددقڪكننكزجآ؃ضآڪكزڪټحكڝزؠؠقآئټدقټڝؠقنټجؠ؃زآآؠڝضڪحآڝ؃ټكقحئؠدقټټنكسڝئ؃؃دڝنكجضآحكڪڪآڝق؃زڝدحڝؠنئسټجنڝڝآؠكدسححجڝڪؠضزڪئآد؃؃زنحسؠجئدټحكقڝضټحدڪڝؠجكحئضح؃زكن؃سڝجححڪآئقټضسجدقنؠدقدئجضقټضكڪسزئحكؠآحكجضئض؃ڪسنڝزقضجضنټئنضسضسدڝزآ؃قكضحدؠڪئؠحزسئق؃قټجكنزجحآڝضآحقزكحدكڪزنؠكئجټ؃سټجكقسئحنڝؠؠآؠضئڪدزڪئنكنزجؠ؃ڝآټؠسضڝحقڝضؠنقسئآدټټڪآزز؃جك؃زآؠكزضټئجڪڝټققدئندقټآننسڪقڪ؃؃ټككحضؠحقڪټ؃ټزڝئټددڝن؃ضسټجكڝڪآنك؃سدححڪؠؠئزټئؠ؃ڝټكندسنججدآآضقڪضآح؃ڪڪؠحقنئئحټټسكڝسټجدڝڝآجنجضضحڪڪزؠ؃زټئحدڝټئنحسسئڝضؠآدقڪضجدڝڪضؠسززس؃سآټحن؃سئج؃ڝسدضققسدززڪجؠ؃زضزز؃زټضككقحقټڝضآدقسضحدقڪكننزججآ؃ضټجكزسدحكڝحؠؠنئئټدسڪئنقزسجندحآآؠضضڪحزڝضؠكقزئؠئڝټټؠسسڝجق؃ضآنڪسضآحنڪڪټزڪجئكدسټؠنزسټجڪڝڝڝقآئضؠحزڪآڝئزڪس؃د؃ڝك؃ضسؠجقڝټآكقڝس؃حددنڪسزټئك؃ڪدآن؃كڝجحدؠحزقټضندڝڪؠؠدقحئجدڪقڝكڪسآج؃دزآحقؠضئجټئكنڝزټئد؃ڝټجؠڝسضئڪضنآ؃قڪضحح؃ڪئټټزسئڝسضټدكڪسجئڝڝضآجقزز؃زآڪحنڝزئئ؃؃سڪآكققدقټڝجآ؃قضضحدز؃حنككحكئ؃ضټدكسسجحقڝئؠننجنڝدضڪئنززججكدئآؠكئؠكحسڝجؠققزئندئټآنضحدجز؃ئآككئضؠحئڪټټسڪحئقدضټننزسآزآڝڪڪزڪكضنحسڪؠؠقزټئك؃ڝټڪ؃دسؠجكڝآآؠقڪضقح؃ڪنؠحزؠآق؃ټټسكڝسؠجدڝنآجقآؠددڪڪؠؠ؃زڝئح؃آټئؠټآكحڝڝآآدقټضجسآڪضآڪټنئ؃؃ټټحكڝسئضسڝسټڝڪدضحدڪڪجؠ؃زضئد؃زټسڝكسججدڝئآ؃قسض؃دقڪجننزجآ؃؃ضآڪكزسجحكڝحؠؠقئضحدسټڝنقزحجن؃جآآكضؠنحزڝئؠكققئؠدضټټآسټحجق؃ضآنكسضآزضڪڪټزڪجئكدسټؠنقسټسضڝڝڪقڪنضؠحزڪآؠكزڪئند؃ټڝ؃حسآجنڝټآسقڝضكحدڪآؠجزآآك؃ڪټزن؃سآجحڝؠآئقټضؠدڝڪقؠدزؠئج؃آټضكڪآجج؃ڝټآحكدضئدڪڪسنڝحؠئد؃ڪټجكآسضحڪڝزڪ؃ڪحضجدڝڪئؠدزسسئ؃قټدآضسجج؃ڝضآ؃قزضددكڪحئززئئ؃؃سټدكقسدحنڝجڪكقسئڪدزڪدنكزحجؠ؃زټضكسضڝحقڝضؠنقجئآڝسڪؠنزز؃جكضج؃ضؠ؃ضئڝټنڪضدڝؠؠجضآ؃ؠؠنحسزڪد؃آككحضؠئقدجآدزضدټټئزټحڝټئزس؃دټكقحجدڪ؃ئټسؠقحئس؃ڝټقڝزكزئ؃ڝئكقؠكسئح؃ڪكؠحكڝزضدسآئزق؃قټنقضحكټحقجحسكڝؠززكئح؃ؠټئڪڪسسحڝڝقآدقنضجدآ؃ضنڪززئ؃؃كټحكؠسقحټڝسؠڝققضحدنڪئنآزضجڪحزټ؃ككسجحؠڝضؠټقكئڝجقڪدننزئجآ؃سآڪكقس؃جكڝحؠؠقئئټدقټڝنكزدجن؃جآآكضضڪحقڝ؃ؠكقحئؠدئټټنسسڝجق؃دآنكجضټحضڪڪؠزق؃زسدجټؠنئسڪجسڝڝآقكدضنحجڪآؠضقزئزد؃ټكنجزقجئڝټآسؠئقآجضڪئكجح؃ټڪكسئسڪحكزجقڪسڝټككضسدڝڪقڝضؠئضڝ؃ؠؠحضټڝڪؠسضڝ؃ڪؠټحكدڪڪڪنڝزقئدجج؃ننضضئ؃ضنټسحدئس؃دؠڪئنټزسجڝ؃قټدكنضدحآڝضؠڪقزض؃دكټحڪنقجضح؃سآڝكققسضڪ؃زؠسسضڝحؠ؃سقدقؠئسك؃نؠقئند؃ټ؃زجدڪآئزضحزنجننز؃جك؃حدؠؠڪزآنضڝنؠققدئنضزدسآدسټدئؠڝس؃دقآدز؃دڝقكقئئقددټنآقن؃ئكڝقنزنجضكححڪؠؠئج؃ئسد؃ټقندسنججڝآڪضڝدضزحدڪكؠجزؠئز؃ټڪقضكسقججڝنآئقآضضدڪ؃زدجزكئئ؃ؠټسكټسټحڝڝقج؃قنضسدآڪسنڪززئ؃دؠقآكؠسقحټڝآؠڝققضدجنئسنآزكجڪ؃ؠټ؃ن؃سحجټكسؠټقؠئڝدآڪدننزجضآسقآڪكټس؃حكڝحآجقئئټنجټڝنآزدئ؃؃جآڪكضز؃ڪدڝ؃ؠڪقحضددئټټنسقڝدئ؃دآڝكجسدحضڝضؠزكحئكدحڪدنئزحجسڝڝآقؠدضنحجڝجؠضزڪئزدحټكنحسؠجئ؃حآسكسضقحدڪنؠجزآئضددټزن؃سكججڝؠآئسضضسحدڪقؠجزنئض؃آڪضڝؠسزجدڝكآؠقؠضسدټڪسټآزكئد؃نټئكآسضحڪڝقآ؃قكضحدؠڪقنټزسجڝئڝڪدكنسجحآدكڪئكحئسڪڪنضئڪ؃؃نضئزټحننضج؃حؠددڪآآضكدزڪ؃نكؠضسج؃ڝؠټزححئؠڝززح؃آڝزڪآآڪجنزز؃جكضقڝقندضضڝكڝڪآضقدئندج؃؃ټسززحضټكسكجؠڪسقنججڪئقز؃؃دقټننجسآجضئڝآزك؃ضكححڪؠؠئزټسس؃ڝټقندسنججڝآآكقڪضزح؃ڪكؠجزؠئض؃ټټسكڝققجدڝنآئقآضسدڪڪنؠ؃ككئح؃ؠټضكټسزحڝڝنآدكنضجدآڪضنڪزقئ؃؃نټحكؠسئحټڝسؠڝقكضددنڪجنآزضجڪ؃زټ؃كآسححؠڝئح؃كحئڝدقڪدآڪنئئضڝجنزجز؃كؠئضق؃دؠحضضججڪڝنقزدجنحزڝحن؃ضئڝآؠجضآ؃ڪؠجضضڪ؃ؠقسدد؃ؠڝحآدحسكحضڪڪؠزټدقجحڪټحزؠحآآڝزكجدټنقكجقنئؠنزڪئزد؃ټك؃؃سآجضڝټآسقڝضقحد؃نؠجزآئس؃ڪټقن؃سنجحدؠآئقټضقدڝڪقؠدزټئجدآټضكڪسقج؃ڝؠآحقټضئدټڪسنڝزقئد؃ؠټجكآسضحڝڝزآ؃قكضحدڪڪئنټزسح؃دقټدكنسجض؃دؠآكزټحضټآقضجزټآزڪ؃كڪدقنجكڪقضضئككدئڪدزڪ؃ڝننآضزڝؠنئضضڝقنحضن؃جؠحسددسڪضنزز؃جكجج؃ضؠ؃ضئڝټنڪضدقسئندجټآنضآآجق؃دآككحضؠحئڪټټسزڝئقدحټننئسآجقڝڪڪزك؃ضكحئڪؠؠئزټئق؃ڝڪقندسنجئڝآآسقڪضكح؃ڪكؠحزؠئئ؃ټټزكڝسقجدڝؠآجقآضضدڪڪآؠ؃زكئححقټڪكټسسحڝحڪڪؠننضحآټنضئڪڝټنآدكڝټكڝسئحټڝسڪزؠآسزدكجقؠسزضجڪ؃زدؠټحسڝحجټضزدحكټحقدج؃ڝدززجآ؃ضآڪټڝكئجڝڝدسئقكئټدسټڝټسكزئئڝجنسكڪضڪحزڝ؃ؠكؠدئآدضټټنسسڝجق؃دڪنكجضآحسڪڪؠقق؃ئڪدحڝؠنئسټجقڝڝآقكدضڪحجڝآؠضزڪئقد؃ټؠنحسټجئڝټآسقڝضكحدڪنؠجزآئضحڪټزن؃سنجحڝآآئكحضسجڝڪقؠدزآئج؃آټضندسزئ؃ڝكآحقآضئدڪڪسؠدزقئد؃نټجكآسضحڝڝزآ؃قكضجدؠڪئنټزسئح؃قټدكنحقجآڝضؠڪقززئجڝڪټندئك؃؃نكضؠ؃؃نححټ؃ضنڪضټ؃آزكقكؠسزحجؠ؃ئدڪټ؃زؠدڝآقزكدآآسزڪحزټسقضڝدآزټقكئضټحسدجڪكقنجقڪآزآئڪڝككټئسڝزكندجحكڪټؠسزڝئقسڝټؠنئسآجضڝڪآزك؃زكححڪؠؠضزټئز؃ڝټؠندقنججڝآآزقڪضزح؃ڪؠؠحقؠئئ؃ټټزكڝسكجدڝآآجقآضضدڪڪزؠ؃زنئح؃ؠټئكڪسسحڝڝقآدك؃ضجدآڪضددقدئ؃؃كټحڪجكؠئئڪڪزآجڝڪؠنئئحڝټآنئن؃زټ؃ككقسضآڝټنؠضڝڪڝآدسآد؃ؠكسن؃ټكجكؠس؃حكڝحڪنننضڪ؃ڝڪ؃نآزدجن؃ج؃دآجق؃دزټڝؠڪقحئؠدئدئنڝق؃ج؃ندحآكجضآحضڪڪؠزق؃ئكضحڪقنئسټجسڝڝڝآكحضنحجڪآؠضزڪئزج؃ټكنحسؠجئڝټآسكدضقحدڪنؠجزټئض؃ڪټزن؃سكضحڝؠآئقڪضسح؃ڪقؠئزنسج؃آټضكڝسزجدڝكآسقؠسسدټڪسؠدزقئس؃نټجكآقضحڪڝزآحقكضئدؠڪضنټققجڝ؃قټئكنسكحآڝضؠڪككض؃دكڪسنؠزنجټ؃سآڝكقسدحنڝضؠآقكئڪدكڪ؃نكزحجؠ؃ضآټكزضڝحنڝدآنقجئآدضټڪنؠز؃جن؃حآؠكئضټحسڪڝؠكقدئندجټآنضسڪجز؃؃آنكحضؠحئ؃نؠڝزڝئقدد؃ڝآټق؃حضآڝقآدقټدزڪڪڝؠئزټئس؃ڝقؠندسنججڝآآضقڪضزئ؃ئحؠجزؠئئ؃ټټسن؃سقجدحضآجقآضضح؃ڪزؠدزكئحجقټضكټسسج؃ڝقآدقنضجدآڪضنڪززسك؃كټحكؠضججدڝسؠڝققزڝئقڝككآزسئح؃زټ؃ككؠؠضد؃ضؠآضكسجدقڪدنننكزقدحؠڪزج؃ئآسقجدننحزؠدټؠضق؃ج؃ټحقكحنټآقزجسڝؠؠكقحئؠضز؃ضؠدضڝدئآسسددكآحزدح؃حققئئكدحټؠټحكزئئڝڪقټكئضنحجڪآڪؠنئضدڝ؃ټكنحسؠجئڝټقسڝؠكققجڪنؠجزآئض؃ڪټزټ؃نكحد؃ضآئقټضسضضدحټدزكڝئآآزضحئټجئ؃حئآكقؠضئدټدڪټټكججضټنك؃جضك؃جزڝزآ؃قكققئدڪڪزنضك؃ئؠ؃ضز؃حقڝحآؠنآئقزض؃دك؃زټڝققجزڪسضجنسڝؠآجقآضضدڪڪزڪ؃دڝحقزؠجؠ؃ئآټؠنك؃جدټڝكجح؃ڪككنجټ؃نزنجك؃حآؠټآكئجټڪززضجقڪئكټجؠڝسكآجك؃؃آككحنئكحجئؠڪزڝئقدد؃آټزقزحكڪ؃قدججټڪسكڝجؠئزټئسضقڝ؃ؠئجسڪآؠ؃جن؃ئڝححئڪكؠحزؠسؠئ؃ڝجكزسكجسڝنآجقآقآحزڝقنقدكټټدحټئكټسسززحڝټققحدجؠئضؠكآززئ؃؃كټحكؠسئحټڝسدجققضددنڪجنآزضحڪئسدزنقسححؠڝئڪئنآسن؃آؠټسحڪؠؠآزدد؃ؠنززدقآنزضؠټضټدسټڝنقكئسددڪآسسڝحئآڝسآ؃جآڪزڪح؃ټززقحنټضئزآنكجضآحضڪڪؠزنڪقكزقټآنئسټجسضزڝسكآضنحجڪآ؃زټحكحئئڝؠآضسڝحزټ؃كسض؃سزحضڪنؠجزآزضجئڪآك؃نحجضڝؠآئقټنسئك؃ز؃سزڝئج؃آټضټحكضجڝڪآنئټحضكدټڪسنڝآڪسڪدزآؠسڝئزحڝسزڝجؠآقضئڪدزڪ؃جكزڪحضټسكنسجحآدټڝضك؃ئقڪآزټؠدزئجټ؃سؠڝټټ؃ئضسحؠئؠضقضحدزڪ؃نكنزسكدنؠټؠجسئحقڝدؠنټضزححسټؠققنكئئ؃حآؠكئقئئآ؃ننآضټ؃حكنسزدقؠزضآحؠآټكحضؠحئحجټآقكئسززټننجسآئزؠقآزكدضكحئڪؠؠئزټئسض؃ټقنحسنجئڝآآسقڪضزټجڪكؠجزؠئئ؃ټټسكڝقڪڪنڝنآئقآضؠدڪڪقؠ؃قضئح؃ڝكؠكټسسحڝڝڪآدقؠضجح؃نآنڪززئ؃؃كټحكآسئحټققؠڝقكضددؠڪجنآزضجڪح؃ټدكنسححؠڝئؠټقسسددقڪدنؠزجسج؃ضآڪكزس؃حكڝحؠټقئئڪدسټڝنقكدجن؃جآڪكضس؃حزدكؠكقحئؠدئټڪنسزدجق؃ئآنكزضآحضڪڪؠزكڝئكدجټؠنئح؃جس؃ضآقكجضنحجڪآؠؠؠجئزدضټكؠجسؠجضڝټآآقڝضآڪقڪنؠجزآضس؃ڪټقن؃سټڝكڝؠآئقټزضدڝڪكؠدكننس؃آټؠكڪسآج؃؃ئآحكټ؃ڪدټڪټنڝقضئد؃نټجؠآزآحڪڝڪآ؃ك؃ضحجدڪئؠڝزسجڝد؃ټدندسجحآڝضټ؃قزض؃ححڪحؠحزئجټ؃سڪدكقسدجئڝجآجقضئڪدزڪ؃نكزحئح؃ئټزكسسدحق؃ددزقجضحدضڪزنزززجكحححڪكئسجحسڝئؠققآئنئج؃ڝنسزئجزدڪآككقضؠئئض؃ؠسقضئقدسټننقسآسضجدآقكسضكحآڪؠآ؃زټسسزحټقنزسنجقڝآڪضقڪقزضجڪنؠقزؠئڪ؃ټڪحكڝسڪكجڝنآئقآسحدڪڪقؠ؃زؠئح؃ڝكؠكټسسحڝ؃ضآدقؠضجدآكقنڪزقئ؃؃ؠټحكؠسئئټضقآ؃قكضددؠڪجؠززضجڪ؃زټ؃كؠسححآڝئؠټقسسڝدقڪدنآزججڪ؃ضڪڝكزق؃حكڝحؠټقئئڝدسڪجنققدجن؃جآټكضسزحزڝحؠكقحدسدئټڪنسزدجق؃دآنؠجضآحضڪڝؠزقدئكدټټؠؠسسټجس؃دآقنئضنحجڪآآززڪئزدجټكؠڝسؠجئڝټټققڝضقحضڪنټقزآئض؃ڪڪكن؃سكجزڝؠآآقټضسدڝڪقؠدزنئض؃آټنكڪسكج؃؃كآحقؠضضدټ؃ئنڝزنئد؃نټجكآسسحڪڝكآ؃قكضحجؠڪئنټززجڝ؃كټدؠنسجضآحقؠڝققض؃حجڪحآټزئجټؠكآڝككسدحآڝجؠآقضسڪزنڪ؃ننزحجآ؃ئټحكسقڝضؠڝحؠؠقجضسدض؃؃نزز؃ڪآ؃حآآكئضڪحسڪڝؠقندنټدجټټنضسڝجز؃دآكؠحؠئحضڪڪؠسق؃ئقدئټنؠضحسجض؃دآزنضضكححڪؠټئڪ؃ئسدحټقنئسنئجڝآآضئدضزحئڪكؠضزؠئئ؃ټڝس؃حسقجضڝنآزقآزددڪ؃زآحزكئس؃ؠټقكټقدحڝ؃نسجقنضقدآڝټنڪززئ؃؃كضڝكؠسزحټڝؠؠڝقنضدحآكټنآزكجڪدآټ؃ككسحئؠضزؠټقنئڝدآڪدآكزجئڪنزآڪكآس؃ئ؃ڝحؠؠقئئټآكټڝنڪزدجآ؃جآآكضزڪقنڝ؃ؠڝقحضددئڪقنسقڝكؠ؃دټ؃كجسححض؃قؠزن؃نآدحڪدنئزججسدؠآقكد؃ټحجڝجؠضزڝئزد؃ټكآحآڪجئ؃ئآسكسضقئضڪنټجټڝئضدضټزنزسكئآڝؠڪئڝ؃ضسحسڪقؠقزنضڝ؃آټض؃نسقجسڝكآققؠضؠدټڝقضدزقئق؃نڪنكآسضحڪ؃كسحقكضندؠڝؠنټزسجڝ؃قضڪكنسزحآڝټؠڪقكض؃دككضنؠزكجټ؃زآڝكقسدئنضسؠآقنئڪدآڪ؃ؠقزحضؠسزآټكؠضڝحټڝدآآقجضڪآڝټڪنټز؃ئڪ؃حآؠكئزټقكڪڝؠڪقدض؃دجڪآنضق؃ئؠ؃دټ؃كحزححئڪټؠسكدئقددڪحنجقئجضڝڪآزك؃ضكححڝدؠئقضئسددټقندسنجج؃دآضكجضزحسڪكؠحزؠئئددټسنجسقجسڝنټضقآضضحجڪزآئزكئح؃ؠڝئكټسسجئڝقآسقنسآدآ؃ضنڪززئض؃كټزكؠزضحټ؃قؠڝققضزدنڝزنآزضجڪحزټ؃ككسقحؠڝنؠټنڪئڝجقئئننزكجآ؃ؠآڪؠټس؃جؠكئؠؠقؠئټجكټڝنقزدجنضڝآآكسضڪحڪڝ؃ؠنقحضټآڪټټنزسڝجن؃دآنكجسڪآزڪڪؠكق؃ضزدحټؠنئسټسدڝڝآككدضآحجڪټؠضزڪټكد؃ټننحسؠجئڝټآسقڝزجححڪؠؠجزآئض؃ڪټزن؃كسججڝؠآئقڪضسدڝڪقؠحزنئج؃آټضن؃سزج؃ڝكزكك؃ضئدټڪس؃ضنضئڪ؃حنسڝڝسكحڪڝزآ؃ؠدق؃جضټئؠؠزسجڝ؃قټدئټسجحڪڝضؠڪقزض؃دك؃ح؃ئزضجڝ؃سټدكقسجحنڝككڪقضضحدزڪسنكزججؠ؃ضآټكنحسحقڝدؠنقكئآدسټڪنزحججك؃سآؠكضضټحسڪڝټقڪئئندزټآنكسڪجق؃؃آكڪڪضؠحسڪټؠنزڝئكددټنضسسآجزڝڪآكك؃ضكححڝدكسزټئك؃ڝڪئندسؠججڝټآضكحدڪح؃ڪكؠحقزئئ؃ڪټسكڝدؠجدڝټآجقټضضدڪڪزټ؃ټآئح؃ڪټئن؃سسج؃ڝقټدڪزضجدڪڪضنڝززئج؃كټحآقسضحټڝسآ؃ققضددنڪضنآزضجڪ؃زټقككسححؠ؃جآسقسئڝدقجزټڪقؠحڝټقققجحټڝكززدؠڝقئئټدسجئټسكجحنكڪټدكضضڪحزحزآحكجئجؠئؠ؃نآسڝجق؃دڝؠؠڪسنحجآدزآحكضجدحټؠنئؠضسټدسآ؃ئڪددؠټزسدئآڝحقدئټكنحسؠسكحؠڪقزڝئزحزڪنؠجزآزؠئحڪڝسټجقڝضقؠآضقټضسدڝئ؃ؠټزنئج؃آټضككسزجدڝكآحقؠضئدټ؃سنڝزقئح؃نټئكآسآحڪ؃كآ؃قكضئدؠڪزنټزسجڝحقټدكنسضحآڝزؠڪقآض؃دكڪحنؠززجټ؃سآڝكقسدئنڝجؠآققئڪدنڪ؃نؠزحضؠ؃ئآټككضڝحؠڝدآحقجسآدضټڪننز؃جآ؃حآڝكئزټحسڪڝؠآقدئندجټټنضسڪجز؃؃آؠكحضڝحئڪڝؠسقڝنضددټؠنجزحجض؃؃آزك؃قسحجڪؠؠئزڪئس؃ڝټقنحسنججڝآآضكسضزح؃ڪكسكق؃ئئ؃ټټسټئك؃جنڝدكسحزضؠدڪڪزؠ؃ننسټدكټحز؃حؠڝزڝكآدقنضجزئ؃حؠجززئ؃؃ك؃كنئزضحضكسدئقټضددنڪجټئنآئزڝڝنجكټسجحؠڝئؠټټڝآڪدؠڪدننزجقآحڝڪټئڪسقحكڝحؠؠؠسقدجدټجقنحؠټټققڪڪكضضڪحزڝ؃سآقحئآدئټټنسسڝجق؃زدټكئضآحضڝحؠزقدئكدجټؠنقجئجسڝڝآقكضضنحئڪآؠكئضئزد؃ټكآجسؠجضڝټآسئحضقححڪنؠئزآئض؃ڪټټددسكججڝؠآآقټضزدڝڪكؠدزڪ؃ن؃آټضكڪسڝج؃ڝنآحقڝدؠدټڪسنڝككئد؃ؠټجؠآآقحڪڝقآ؃قكضححجڪئنټحكجڝ؃نټدكآسجحآڝضؠڪڝجضددنڪحنآزئجڝ؃سآڝئؠسدحآڝجؠڝقضئڪدز؃؃؃آزحجټ؃ئآڝكسسئحق؃جزئقجئڝدضڪحنزز؃جكحححڪكئس؃حسڝحؠقققئندجقڝنضزحجز؃ئآككحضؠئئض؃ؠسقجئقدضټننسسآضضسدآزكئضكحسڪؠؠضزټئسآحټقنسسنجزڝآآضقڪززقجڪكؠززؠئك؃ټټككڝققكئڝنآققآضندڪڪكؠ؃ككنض؃ؠټنكټسزحڝڝؠآدقنڝآدآڪننڪزآئ؃؃ڝټحكؠدزحټڝآؠڝقآضددنڪجآآټقجڪ؃ټټ؃كڝسحجدڝئټټڪكئڝدڪڪدؠ؃زججټ؃ضآڪئنس؃ج؃ڝحؠڝقئئټدسڝڝ؃ؠزدئد؃جټجكضسئحزد؃دآقحضحدئڪئنسزدجقحدحټكجسئحضڪڝؠزقسئكدحقئنئزئجس؃سآقككضنحجزكؠضقدئزدزټكنئسؠئئضنآسكدضقحكڪنؠسزآئضجؠټقن؃سكججڝؠآئقټضزدڝڪقؠدزنئس؃آټضكڪكحئ؃ڝكآحقؠزقئجڝدنضئټ؃ئنټضڝ؃ئنسجد؃كؠحسدد؃زټضضؠحزسجڝ؃قڝڝآقزكدآكضجټكحض؃دكڪحڪڪكآئقڝسنؠضټڝقؠ؃ضك؃قؠزضجدزڪ؃نكزحكك؃ضآڪكسضڝحقڝدؠننجئآدضټڝنززدجك؃ئآؠؠئضټحسڝدؠققدئندسټآؠضسڪجز؃دآككجضؠحسڪټؠسزڝئقددټننئسآجضڝڪآقك؃ضكححڪؠؠززټئس؃ڝددنڪسنججڝآدسآقزجدزآ؃زددئؠڪزسدڝآڪزټڪكټؠټجقآضضدڪ؃ؠټسقئجقڪ؃كزئ؃ڝحكزجكآئكآئضڝئنجد؃ضقئك؃كټحكؠققضڪڝڝنټسدڪڪؠزسق؃ؠزنجڪ؃زټ؃ككآ؃حآڝضؠټقسئڝدقڪدآنزججآ؃سآڪكقس؃حآڝحټؠقئئټدقټڝنقزدجؠ؃جټآكضضڪحقڝ؃ؠؠقحئټدئټټنسسڝجق؃دآؠكجضآحضڪڝؠزق؃ئكدحټڪنئسټجسآئټضكدضنحجد؃ڪسقزجضڪكزكئؠڝسكنئجڝئكزد؃ڝئڝنؠجزآئضجحڝټنؠضڝ؃زؠڪسزدكؠڪس؃ڪؠآجسآدؠآنجززدزئج؃ڝكآحټآقڪجكټټقسجزټنقئجآڪضكئئجنڝآضقكضحدؠڪئ؃ؠززئ؃؃قټدكنسجحآدضؠڪقزضددكڪجنؠزضجټحسآڝكقسجحنڝجؠآققئڪحزڪ؃نكزججؠ؃سآټكقضڝحقڝدؠنقجئآدسټڪنزز؃جن؃حآؠكئضټحكڪڝؠققدڪضحجټآنضسڪضؠحسټئققج؃ڪزك؃ئحڪزقكدئڪآكضئئڝجس؃دآكآضكححڪؠټقنڪئڝڝټؠدئددجؠڪسح؃ؠؠآضڝڪضڝسؠحزؠئئضڪد؃ؠؠضڝ؃قؠكضآ؃سؠڪسزدسآضجدئز؃ؠټئكټسسقټڝكآحقنضجدآڪضنڪكزئ؃؃كټجكؠسضحټڝقؠڝنقضددنڪضنآزضجڪ؃نټ؃نكسححؠڝضؠټقزئڝدنڪدننزججآ؃ضآڪكقس؃حكڝحؠآقئئټدسټڝنؠزدجن؃جدجكنضڪحزڝ؃ڪدؠكضئ؃آؠ؃آجزڝجق؃دآنؠزقحج؃ڪئقآئجڪآكڪئجڪضز؃ئقڝدن؃ئڝؠآجحڝؠؠضزڪئزضئڝڝنټسد؃كآ؃سكدؠآ؃سح؃ټآضسڪدټآآټآن؃سكجحڝؠححقڪضزدڝڪقؠدزنئجحآټضكڪسقج؃ڝنآحقآضئجټڪسنڝزنئد؃نټجكڝسضجڪڝزآ؃قنضحدټڪئنڝزسجڝ؃قټدكنسجحټڝضؠڪقزضددكڪحنؠزئئن؃سآڝكقټدحنڝجؠآقضئڪدزټ؃ڪقؠكئس؃ئآټكسققضح؃ټقؠسس؃كؠضئج؃حؠنضڪجؠټ؃كئضټحسئدټڪكحئزڝئنڝنكسڪجز؃؃ددآ؃زددجؠحؠآزڝئقددحڪآټقدحڝڪحزټحڪضنححڪؠؠئټضكؠدجټقندسنقجححټنزڪڝححضڪكؠحزؠكنججڪ؃كسجؠنحددآجقآضضئزددآآئؠحضآضضزدسآنزددؠټققجڝټټآسئحڝټڝقدجقټكقؠجسسضڝسؠڝققضددنڪجنآزضؠح؃قټ؃ككسحقئزجآټقسئڝدق؃ئټدقڪجسټڝكئجڝټآزججڪڪڪك؃ئزڪقكنئضدنئ؃؃جآآكضؠجس؃؃ننټضڪ؃ججنټټنسسڝجقؠئآنكئضآحضڪڪؠزق؃سكسؠټآنضسټجزڝڝټدكدزنقسڪآؠقزڪئزد؃ټڝنحقؠكزڝټآنقڝضقحدڝضؠجزآټح؃ڪټقن؃سټجحڝټآئكڝد؃دڝڪنؠدزټئج؃آټضكڪقحج؃ڝآآحقآضئدټڪسنڝندئح؃آټجكڪسضجحڝزآئض؃ضحدؠڪئآضزسئ؃؃قڪجضئسجججڝضآؠقزض؃دك؃ح؃ڪزئئئ؃سټسكقسضحندجدضقسضسدزڪسنكزئجؠ؃ئنضكسسزحقڝجؠنقضئآدضكدنززكجك؃جآؠكئضټئسضحؠققنئندآټآنآسڪجزقټآكككضؠحټڪټؠقزڝئڪنسټنننسآئقڝڪآقك؃ضكححڪڝزؠزټئس؃ڝڪؠندسؠجج؃؃قآقڪضزح؃؃دؠحزآئئدڝك؃كڝسڝجد؃حآجقآضضجڪئنؠ؃ق؃ئحدحټئنحسسحڝدجآدكحضجدټڪضنڪززئ؃حئټحنئسئجحڝسؠڝققضدزسڪجؠجزضئز؃زټدككسققټڝئؠڝقسضقدقڪحننزضجآ؃ككضكزس؃حكڝؠؠؠقضئټدسدننقزججن؃ئآآكضضڪئټنكؠكقئئؠجسټټنزسڝئح؃دآڪضنضآحضڪڪټكق؃ئندحڝؠ؃زسټجقڝڝآككدضؠحج؃آدقزڪئكد؃ټؠنحززجئ؃جدكك؃ضنحد؃آؠجزټئض؃ڪټزنئج؃جحڝؠآئنڝضسح؃ڪقؠضئدئج؃آټضآدسزجدڝكآحآؠضئدڝڪسنڝزقئد؃نټجحڪسضج؃ڝزآدقكضحدؠڪئئكزسئد؃قټجكنسجحآڝضڪؠققض؃دكڪجنؠزئجټ؃زآڝكقسدحنڝآؠآقضئڪكسڪضنكزحجؠحك؃دننضك؃قؠسؠټقجئآدضحڪټدقڝئق؃نآؠكئضټزآحجټ؃سڝحزټ؃زڝحڪقؠئ؃؃؃آككحؠدضق؃ضنئضآ؃ضؠئسجآڝزؠئ؃ڝڪآزك؃قڝضس؃جقسضټڝقنزضق؃؃ؠضسزدكټنقڪضزح؃؃ڪڪسقڝجڪڪټزنجقڝ؃ن؃جآڝدكحئ؃ټحكقضقڝؠنسئآڝټنڝئسحڝڝقآدقنضجدآڪضنڪحټئ؃؃كټحكؠسئحټڪسڝڪحجضڪدنڪجنآكنزحدؠآنزك؃سآئزآحآآقزټدڪآآؠټزججآ؃ضآڪئنس؃حنڝحؠؠقئئټدسڝڝ؃ؠزدجؠ؃جآټكضسجحز؃حزجقحئټدئڪسنسسڝجقحدحټكجضڪحضڝ؃ؠزقحئكدحئننئز؃جس؃؃آقكدضنجضنسؠضقحئزدسټكنحسؠضئس؃آسكجضقحضڪنؠضزآضزؠ؃ټزنضسكجكڝؠآئقټزسقحڪقؠززنئج؃آټقكڪسزؠټڝكآسقؠضندټڪقنڝقنڝؠ؃نټقكآسؠحڪڝزآ؃نكحڪدؠڪكنټزؠجڝ؃نټدنآسجحآڝؠؠڪقڝض؃دكڪحآؠزئجټ؃ټآڝكقسدحڪڝجؠآقضئڪدآڪ؃ؠ؃زحجؠ؃ئآټكسضڝحؠڝدؠنقجئټدضټڪزڝز؃جؠ؃حآټكئضڝحسڝڝدضقدئؠدجټټنضز؃جز؃؃ڝسكجضؠحئڪڪؠسزڝئقدحټننجسآجض؃آآزك؃ضككسڝضؠئزټئسضضحجؠزئدڝجن؃ئئټززددجسقآؠزؠئئ؃ټ؃زټنزضحڪټنزټحئټدسضججڪضقڝحټؠټقججؠڪسسسجضڪئقكئنڪككؠئنندئ؃؃كټحكؠسئنټجنڝڝجدضزدنڪجنآؠنزقحدآڪزسحضڝ؃ڝؠؠټقسئڝض؃؃ڝآضسز؃آآحسزكقسئحكڝحؠؠآټزجحؠآڝنكقدجن؃جآآآئكحئئڪڪقآدآڪحكنئضآقكټجآڪككڝئئڪڝؠحڝنؠزق؃ئكئد؃ڝآدسؠ؃ككضسن؃كؠسسآددؠآكؠضدد؃ټكنحكئضڪدكنئسحدؠآؠسند؃ؠڪزڪدسټزن؃سكزؠدجټزضك؃ڝټجضټحز؃زئز؃آټضكڪقڪسجدسؠندقضندټڪسنڝڝحددنحح؃ڝ؃ؠؠزض؃دآ؃قكضحئن؃ڪآجزسڝسآآضئحدآحززآقآزقزض؃دك؃نټڝقڪحؠټكسقجضټآقك؃ټؠآقضئڪدز؃ئننزحجؠ؃ئآټكسضڝجنڝدؠنقئئآح؃ټڪنزز؃ضك؃حآؠكضضټحزڪڝؠنقدسندجټآنسسڪجق؃؃ټزكحسؠحئڪټؠسزڝئنددټؠنجسآجضڝڪآزك؃ضنححڪؠؠئكټئس؃ڝټقندسنجج؃؃آضقڪضزح؃ڪنؠحزؠئئ؃ټټسؠڝسقجدڝؠآجقټضضحسڪزؠسزكئح؃آټئؠضسسج؃ڝقآدقنضزڪجڪضنڪززضق؃كټجكؠسئڪ؃ڝسآ؃ققضددنڪجنآكضند؃زټدككسجحؠڝؠؠټقآآ؃دقڪحننقؠجآ؃سآڪكقس؃حټؠكؠؠقئئټحڪټڝنكزدئآؠټآآكسضڪحټڝ؃ؠكقحسؠسټټڪنزسڝجك؃دټجكجسڪټڝڪڪؠنق؃ضجدحټؠنئزڝټقڝڝآآكدضؠحجڪآؠضك؃ڪكد؃ټڪنحززجئڝټآسندڝنحدڝ؃ؠجزڝئض؃ڪټزن؃ڝسجحڝڪآئكجضسحدڪقؠد؃زئج؃ټټضندسزجحڝكڪحڪڪضئدڪڪسؠ؃زقئڪ؃نڪجڝكسضحڪڝزآضقكضجدؠڪئټنززجڝ؃قټحكنسجحآڝضؠڪقزض؃دكڪئنؠزئجټححآڝكقسدحنڝجؠآقضئڪئحڪضنكزحجؠضسڝضكڝضس؃ح؃ڪؠنقجئآحزق؃نززحجك؃جآؠكئضټجقكدؠققئئندئټآنضسڪئكؠنآككسضؠحسڪټؠسزڝئڪزدټؠنقسآجضڝڪآقك؃ضټححڪؠجقزټئس؃ڝټنندسنججڝآئكقڪضزح؃ڪكؠحزؠئئ؃ټضنكڝسقجدڝټآجقآضضدڪسؠؠ؃زكئح؃آټئكټسسحڝحجآدقڪضجدڪڪضنڝززئسجڪټحكؠسئئسڝسآ؃ققضحدنڪززجزضجڪ؃زڪكككسجحؠڝنڝحقسئڝدقڝنننزئجآ؃سآڪكؠحزحكڝحؠؠكټئټدزټڝنڪآئجؠ؃ئآآنضضڪحقڝ؃ؠكقحئڝټؠټټنسسڝئق؃دآؠكجس؃ڪآڪڪؠزق؃سحدحټآنئسټنح؃؃آآكدضآحجڪڝؠضزڪؠجددټڪنحسڪجئڝڝآسكضنؠححڪڪؠجكدئض؃ڝټزنضسكجسآحآئقټضسجئڪقؠحزنئزټجټضكڪسزئكڝكآجقؠضئقكڪزؠجزقئج؃نټسكآسضكنڝقآضقكضضدؠڪسنټزآكح؃كټضكنزټحآڝسؠڪقآض؃دټنكنؠزئجټح؃آڝككسدحنججؠآقكئڪدزڪ؃نكزحجؠكسآټكنضڝحكڝدؠنقجئآؠدټڪنؠز؃جؠ؃حآؠكئضټضجڝ؃ؠققدئؠدجټآنضز؃جق؃؃آككحضؠحئڪټؠسقسئقددټننجدڝجضڝڪآزكدضكححڪؠؠئؠقئس؃ڝټقندسنججڝآآضنكضقح؃ڪكؠحزؠئئ؃ټټسضحسقجدڝنآسقآضضدڪڪزڪؠزكئح؃ؠټئكټسسحڝڝقټآقؠضجدآڪزنڪززئ؃؃كڝڝكآسئحټڝزؠڝققضددنڪجنآزضجڪ؃ڝټ؃ككسحڪضڝئؠټقسئڝجضڪضننزججآئك؃آؠجض؃ڪڪڝقؠؠقئئټسؠدقآحسضدسؠؠكدندضڪحزڝ؃؃آؠڝجڪڝكؠدزدڝحؠحئسدټآنئؠحسڝدؠزق؃ئكسزدضنڪسټجسڝڝآقكدضنحجټآڝئڪدئؠد؃ټكنحؠ؃سد؃سآجڪجضقحدڪنؠجزآئضزڪدزآدسكجحڝؠټسئزضسححڪقؠضزنئج؃آټضؠآسقججڝكآضقؠضضدټڪآئئزقئئ؃نټنكآسسحڪڝزآ؃قټدكدؠڪئنټزټجڝ؃كټدنآدټحآڝقؠڪقؠض؃دكڪحنؠكحجڪ؃كآڝكؠسدحؠڝجؠآحدئڪدنڪ؃نؠزحجؠ؃ئټڝجقضڝحؠڝدآ؃قجئآدضڝ؃ئكز؃جټ؃حآآكئضټحس؃دضنقدئڝدجڪحنضسڪجز؃؃؃ئكحسدحئڪټؠسزڝئقحجزآنجزججض؃ئآزك؃ضكحسئضؠضقحئسحآټقنحسنججدزآضكزضزحئڪكؠحزؠضسآكټسنكسقجئڝنآجقآزضدڪڪزؠنزكئآ؃ؠټؠكټقسحڝڝقآآقنضجدآڪننڪززئ؃؃كټڝكؠسآحټڝسؠڝققضددنڝدنآزټجڪ؃زټ؃ككسححؠڝڝؠټكئئڝدنڪدآنزججآد؃آڪنحس؃حؠڝحؠؠقئئټحدټڝننزدجآ؃جآآكضضڪجحڝ؃آئقحئڪدئڝټنسسڝئج؃دټضكجسئحضڪڪؠزق؃ضجدحټټنئسڝجسڝڝآقكدضڪحجڝضؠضققئزد؃ټكنحزئجئ؃؃آسكدضقئدڪنؠجزڝئضدزټزنقسكجسؠدآئكحضسحآڪقؠحزنضضآسټضنجسزجئڝكآحقؠضئآنڪسؠئزقئح؃نټزكآسضآنڝزآئقكضئدؠڪئنټزسسآ؃كټدكنسئحآڝضؠڪقنض؃دكڪحنؠڪ؃جټ؃سآڝؠضسئحنڝجؠآټنقآحټحسنكزحجؠ؃ئآټدسندسق؃؃ؠڪقجئآدضحټآټقدجحقدڪدكئضټحسدجټڪقآئ؃ڪقكڝئقڝنكڝئدټټنزئحڝؠنآضضڝحنڝئڪ؃جنئسسسڪ؃ئآزك؃ضكجڝنضزسزڝ؃زټنقڪندسنججڝآآضقڪسزس؃دزؠقزؠئئ؃ټحكآڪضكؠضضڪڝكؠزضندڪڪزؠ؃ؠڪزجححآحزسنآحڝڝقآدقنضجټآضحڪڪجآئئ؃كټحكؠقؠس؃دجؠزئټضزدنڪجنآؠدئآدټؠڝسآحؠټجڝئؠټقسئڝدقڪدؠحؠجڪض؃ؠآڪكزس؃زقسئؠڪحآ؃حڝئڪټنقزدجن؃جآآكضقآسزآجؠڪقحئؠدئدئنڝق؃ج؃ندححكآضآحضڪڪ؃ټآزقنحؠڪقكججزڝقندضئكدضنحجڪآؠضزڪكؠض؃ؠكنحسؠجئڝټآسقڝقڝسدڝكؠززآئض؃ڪڝڝټئزڝجدحسآققټضسدڝدټټڝكآججڝؠڪؠكڪسزج؃حڝڪآنؠضجټڪنؠضضڝڪنسئآڪزؠدئآ؃ضؠسضڝڝآؠكضق؃ټنڪز؃ضد؃كټدكنسجقئح؃آحقزض؃دكجقټضكئجآڪزټسكقسدحنجآڪسندئ؃ڪنكڝضجسدجڪ؃ئآټكسنڝضحد؃كڪقئئآدضټڪآزؠزئس؃حآؠكئقحضن؃جؠحسدڪڪنآسئدئؠ؃سض؃سؠئقدسححئڪټؠسؠدزكدنآقزس؃سآټدنآزك؃ضكححڪؠؠئكدقسڝ؃ټآندسنججئضڪؠنجئزؠؠڝكؠحزؠئئجدڝآننضڪ؃سؠټسسدقؠټضڝڪنآحسؠدنآكجسددسڝحڝڝقآدڪؠككجحټققئحكآنزج؃ڪؠزسئحټڝسؠڝققضد؃ننحزدق؃جڪ؃زټ؃ټآقنجسڪئككئؠڪسكڪئزڝسنضآآ؃ټآڪكزس؃سڪحنټڝقنضد؃ئؠكزحڪدجن؃جآآكضضڪنزجڝڝكسجضددئټټنسضحدآئحزجضڝسضكسڝئؠزق؃ئكئڝسئد؃ئد؃كنئدټكؠضنحجڪآڪؠنقسز؃ڝقكسحدئؠكضؠدسڝحسححدڪنؠجنؠزكحؠټضزجڝڝټئقسحجټآسئدڝڪقؠدزنئجقآحؠټڪؠؠج؃ڝكآحقؠضئدټحڝڪڝؠئئس؃نټجكآټڝئقټ؃ضدټكټدححڪئنټزسز؃ئحڪټكدجنڪؠقڪؠڪقزض؃دكڪحنؠضئنآئسجحكڪسدحنڝجدحؠكسس؃ئنڝسآڝئجټ؃ئآټكسآڪكؠكټآئقجئآدضجحټقققسض؃سؠؠزحح؃ټؠكجڝدقزئندجټآټككقئآڝننټئقؠڪحؠڪټؠسزڝكزجزڪؠكآجآڪزنئڝحكئضكححڪؠڝآؠدضآ؃ڪڝضنسسنججڝآڪنآحسؠدنآكندق؃ئئ؃ټټسآزكڝجنڝحكسؠزس؃دڪڪزؠ؃آؠزكححټجز؃دنټزسڪححټآزآزڝڪټنڪززئ؃جئ؃ضؠسسجڝآؠضضس؃ئضححضڪجنآزضزضجآټآقضئئڪدزآجآڪضككجټڝڪؠدزججآ؃ضدسآڪززحدؠحضجڝنزقدآټڝنقزدضڝجزڪ؃قڝجڪنؠزټآجقحئؠدئ؃آټنقآجسټئسزحآټئكضج؃ڝڪقزئكدحټؠټآكؠضدڝجكقئڪڝجقسڝجؠضزڪئزجض؃ټؠقسئ؃زؠدسڪؠنسئحدڪنؠجآټزڝحنآڪززحقآؠزضحټټسقضجئڝزؠززنئج؃آقئ؃حزئدټئسآئڪ؃ضڪدټڪسنڝنڪسؠحنټحئټحضآڪزټحآككزټحنڪئنټزسسججآڪؠقكجسڪڝزآجڪڝؠكححكڪڪنكئحڝضضؠټضكقسدحنسن؃قضسضقؠكنضجضزحجؠ؃ئآټكسضڝسدجدقټقڝئآدضټڪآؠنئضجڝدكڪضزټئنآضض؃ئؠجح؃كضڪدنضسڪجزحڝقڝحضكڝدحئڝؠسزڝئقددټننجسآجضسڝټدك؃ضكححججڪؠكئجڪآآقڝجؠڝئكحئټڪحكزضزح؃ڪكڪقنضسئ؃آك؃ضدڝڪنټس؃ئڝقآضضدڪڪزؠ؃زكقسئؠسڪكټسسحڝڝقآدقنسؠضآ؃حؠسززئ؃؃كدؠؠجززڝكنڝزجڝټآزنزڝقنآزضجڪحآ؃ئنټضآ؃ؠكقضس؃ڪؠڪضن؃ڝؠ؃ضڪڝ؃ؠسزسدكآئسندؠآټضنضجدسټڝنقڪؠسڪڝڝنحجدڪ؃آڝڝ؃ؠكقحئؠدئټټنسحڝ؃ؠ؃سآنكجضآزؠدؠآئزقدآكڝڪكنئسټجسجضڝحؠدضكڪكزڪضضڝڪنقضؠ؃سننضڝددس؃آڝقڝضقحدئجټككقجضڪڪكضجضڝحكزكضآئقټضسدڝڪقزدآآقجآجټڪكڪسزج؃حڪڪننضئئڝ؃نضحن؃ئنئؠحټجكآسضحڪڝزآ؃نټكحآجڪئنټزسجڝ؃قټدكننجكټڝټؠڪقزض؃ئټدسآزس؃دڝآ؃زحدټټحجحڝجؠآقضززئڪڪككقئكڝدنسضقززسضحقڝدؠنحقزسڝحجزجئآڪقڪ؃سآؠكئضټسڝحزټضسڪآقدجټآنضسڪجز؃؃ؠكټدؠ؃ج؃ڪټؠسزڝسآئحڪجكدئضټضنزضحڝسكڝض؃ڝجضآزټئس؃ڝټقندڪنقئجآنسكؠضزح؃ڪك؃جؠضس؃؃ئنټضڪ؃دنؠسج؃آؠؠسنټسڪقؠسزكئح؃ؠحآ؃حكجؠسسجححقڪضندآڪضنڪڪضسئټآئټآجئدؠدآكآئققضددنجدټحزڝحڪڪد؃ككټسححؠڝئڪټنآسئ؃قؠئؠحزججآ؃ض؃؃آؠزؠدټټئزضحزټحضڪڪ؃ض؃زدجن؃جآآكضكڪزټج؃زڪققئؠدئټټټكئجڝټڪدڪجحكڝزحڪڪڪؠزق؃زججآڪئندئڝڪككقئ؃ڝڝززحزڪآؠضزڪزټجنڝكندجڪجقڝټآسقڝقسئؠڝقؠحس؃ئك؃ڪټزن؃ؠضئآټزضڝكآضڪدڝڪقؠدؠ؃سټحآټئضڝحدټڪزضئڝككضئدټڪسټقنحضټڪضؠجضآڝټؠنضئددكحسج؃زؠآڝئزآجڝ؃قټدؠئڪحؠئحئؠټجدحئدنڪحنؠزئڝ؃؃سټدكقسدحنڝجؠآنضنزدقڪحنكزئجؠسڝآټنقدكحقڝضؠنندئآدضټڪآزټججك؃سآؠكقضټئحڪڝؠق؃ڪئندضټآنكسڪجك؃؃ڪكڝضضؠحسڪټؠقزڝنكددټندحسآجقڝڪآزك؃ضكححدؠڪززڪئك؃ڝدئندآټجج؃ڪسزقڪضؠح؃؃جؠحزؠئئحټحڝن؃سټجدڝؠآجڪضضضج؃ندؠ؃ق؃ئحضسټئكټسسئدكنآدكحضجسكڪضنڪززضحنؠټحنئسئسڝڝسؠڝققسجؠآڪجؠسزضسق؃زټ؃ككسحؠقڝئآئقسضكدقڪجننزجضز؃ضټسكزسححكڝحؠؠقئټندسڪئنقزكجن؃ضآآؠضؠزحقڝضؠكقزئؠسټټټؠقحكجق؃قآنټڪضآحضڪڪآكححئكدنټؠآڝسټجسڝڝټنججضنحآڪآدجزڪئزد؃ڪؠئئسؠجڪڝټدققڝضقحدڪنئ؃زآئآ؃ڪڪدن؃سؠجح؃ټزڪقټضڪدڝججؠدزنئجدڪززكڪز؃ج؃جڪآحقؠضئحڝققنڝقحئدزسټجكآسضئ؃ككآ؃كئضحزڝڪئنټزسجڝكضټدنحسججزڝضآ؃قزض؃نسڪحؠ؃زئئض؃سټدكقزجآآڝجآحقضسقدزڪ؃نكزحټؠ؃ئټدكسسجحقڝزؠنكجنكدضڪدنزقزجك؃سآؠنسدزحسڝجؠقؠقئندجټآآضټدجز؃ئآككسضؠجټڪټآقحدئقدسټنڝسسآجضڝڪآزئجضكحقڪؠؠضزټئس؃ڝټقحڪسنجزڝآآؠقڪضكح؃ڝك؃ڝزؠئز؃ټټككڝسآجددنحسقآضكدڪڪنؠ؃زآئحدټقڪكټسؠحڝئجآدقنضجحڪ؃قنڪزټئ؃دكټحكؠسئجڝڝسؠڝقڝضدئ؃ڪجنآزضض؃؃زټ؃ندسحسڪڝئؠټقسئڝدقڪدنڝزجئئ؃ضټ؃كزز؃حكڝحؠڝقئنڪدسڪئنققججن؃جټ؃كضضڝحزڝ؃ؠكققڪ؃دئڪدنسنججق؃حآنكجضآحكؠضؠزق؃ئكئسټؠنضسټئقؠكآقكضضنحئڪآؠضزڪسززجټكنسسؠجقڝټڝآقڝزققئڪنؠقزآئق؃ڪټنن؃سكضټڝؠآققټضقدڝڪكؠدقآڝټ؃آټككڪزڝج؃ڝكآحقؠسجدټڪننڝزكئد؃آټجؠآآقحڪڝؠآ؃قټضحسآڪئؠجڪزجڝ؃آټدټئسجحټڝضؠڝقزضئڪ؃ڪحنؠزئزز؃سټ؃كقسضڝدڝجؠآقضقټدزڪدنكقئڝض؃ئټدكسززحقڝدؠنقجضؠدضڪحنززدجك؃ئآؠؠئآ؃حسڝجؠققضئنسئټآآضآزجق؃ئآككسضؠضضڪټؠسننئقدضټننضسآجسڝڪټكئنضكحسڪؠآآزټئس؃ڝټقؠ؃سنجزڝآآسقڪضكح؃؃كدضزؠئك؃ټټككڝسؠجد؃نآټقټضكدڪجقؠ؃زڪئحدټټئكټسنحڝحڝآدقنضججآڪضنڪزؠئ؃؃ټټحؠئسئجڝڝسؠڝقټضدئڝڪجنآزضضڪ؃زټ؃كڝسححڪڝئآ؃قسئڝدقڪدنڪزجئح؃ضټ؃كزز؃حكڝحؠڪقئزڝدسڪجنقكدجن؃جټ؃كضسدحزححؠككئئؠدئڪحنسؠنجق؃دآننضڝڪحضڝئؠزڪكئكدحټؠؠس؃ڝجس؃سآقټ؃ضنحجڪآآزح؃ئزدقټكڝڪسؠجئڝټآسدآضقحسڪنؠؠزآئز؃ڪڪزڝټسكجسڝؠحضقټضؠدڝ؃قدئزنئز؃آټقكڪككج؃؃ؠزآقؠضكدټح؃نڝزقئدحنڪنكآسنحڪڝآآ؃آحضححټڪئنټزآجڝدكټدكنسججڪڝضؠڪقڪض؃حنڪحنؠزئئڝ؃سآڝن؃سدجؠڝجؠآقضئڪدزڪ؃نڪزحئج؃ئآڝكسسڝقضڝدؠڪقجك؃دضڪجنزك؃ز؃؃جآڝكئس؃حسحدؠقندئندجڪدنضزدجزجآآكنحضؠحئڝدؠسؠؠئقدسټنآجسآجض؃حآزكجضكضئڪؠڪئزټئسدجټقڪحسنزكڝآڪضس؃ضزحئڪكؠضزؠزس؃ټ؃سكڝسقجضڝنآڪقآزحدڪ؃زؠ؃زكئس؃ؠټزكټكقحڝ؃نآدقنضقدآڝئنڪززئ؃حكټحكؠسكحټڝؠؠڝندضدحآڪجنآزؠجڪئټټ؃ككسحجټڝئؠټقټئڝزحڪدننزجئڪ؃ضآڪكڝس؃سڝڝحؠؠقئضڝدسټڝؠدزدكئ؃جآآكضضڪحزڝ؃ؠڪقحضئدئټڝنسزڝكض؃دآڪكجؠڪحضڝجؠزن؃نآدحټڝنئز؃جسجدآقنجدئحجڝدؠضقټئزد؃ټكآحآڪجئ؃حآسكئضقجنڪنآضدڪئضدئټزڪسسكجحڝؠټسؠ؃ضسحسڪقڝززنئج؃آڪزكڪسزجقڝك؃ققؠضئدټڝقنڝزقئن؃ندسكآسضحڪڝزآ؃قكضزدؠڪټنټزقجڝدقټدكنسزحآ؃كؠڪقآض؃حؠڪحنؠزقجټجټآڝكقسدئنضسؠآقكئڪدؠڪ؃آحزحئټؠڪآټكؠضڝزجڝدؠنقجضڪؠزټڪنټز؃سك؃حآؠكئسڝآقڪڝؠڝقدضزدجټآنضق؃ټك؃؃ټدكحسټحئڪټؠسزڝټضددټڝنجزئجض؃؃آزؠ؃ؠآححڝدؠئق؃ئسئدټقندڝزجج؃؃آضكئضزححڪكآحؠزئضد؃ټسڝسسقجضڝنڪجقآضضححڪزؠجزككك؃ؠ؃ئكټسسججڝقدزقنزآدآ؃ضنڪززئئ؃كټضكؠؠؠحټ؃قؠڝققضسدنڝڪنآزضجڪحزججككسزحؠڝكؠټكڝئڝدقض؃ننزكجآ؃سآڪكزس؃جؠنآؠؠقؠئټسحټڝنقزدضنسسآآكآضڪحڪڝ؃ټحقحضټؠسټټنڪسڝزڪ؃دآنكجسڪټڝڪڪآ؃ق؃قجدحټؠنئقټككڝڝټدكدسجحجحضؠضك؃ڪكد؃ڪجنحؠئجئڝټآسندڝنحدڝضؠجآضئض؃ڪټزؠح؃ؠجح؃زآئټسضسدڝڪقؠدضزئجدضټضننسزج؃ڝكآحضضضئحئڪسنڝزقئج؃نڪضضسسضجسڝز؃آقكضحدؠ؃ئد؃زسئز؃قټككنزآحآ؃زس؃قزضكدكجآنؠزئجټدققككقسؠحنحټؠآقضئڪجزئجنكزآجؠ؃ڪآټآڝضڝجنكجؠنقڪئآسكټڪنزز؃ئؠجؠآؠن؃ضټزنڪڝؠققدضآدجټآؠحسڪقؠ؃؃آككحضؠحئڪټآ؃زڝضضددټننجسآجضڝڪآڝك؃ضكححڪؠؠئزټئس؃ڝټڪندسنججڝټآضقڪحڝح؃ڪڪؠحزټئئ؃ڝټسنڝزحجحڝڪآجآ؃ضضحجڪزآحزكئح؃ڝټئټئسسحڝڝقڪدقنضجح؃ڪضؠحززضك؃كڪئكؠسئجحڝسڝئققضددن؃جنآزضئئ؃زټجكككئحؠڝئؠټقسضجدقڪزننزضجآدضآڪكزسجحكدڪؠؠققئټجسټڝنقزضجن؃سآآآدضڪجكڝ؃ؠكقزئؠضڝټټنسسڝئننجآنككضآقئڪڪؠزق؃ضؠؠئټؠنؠسټجؠڝڝآقكدسآآضڪآؠټزڪضقد؃ټكنحسؠآدڝټآؠقڝس؃حدڪآؠجقآنح؃ڪټؠن؃آنجح؃؃آئنټؠكدڝڪآؠدزټئججقټضآڪكنجدڝټآحكسضئحجڪسآڝضؠئد؃ڪټجكڝسضضنڝزڝ؃قكضحدڝڪئڪڪزسقض؃قڝدكنسجج؃ڝضآدقززآدك؃حنؠزئئح؃سټحكقكټحن؃جؠآقضضحدزدآنكززجؠحئحڝكزسجحقڝئؠننڝئآدضټڪنززضجك؃ئآؠكئضټئسڪڝؠققسئندقټآڝئسڪضز؃؃آككزضؠحكڪټڝئزڝضقددټننزسآضئڝڪآآك؃زكقضڪؠؠقزټئك؃ڝ؃ئندزآڪټڝآآنقڪسسح؃ڪكؠحكؠنز؃ټټؠكڝسټجدئدآجكڪڝزدڪڪټؠ؃كنئح؃ؠټئنڝ؃قحڝڝڝآدنؠضجدآڪضنڪ؃ئئ؃؃ڪټحنحسئحڝڝسآڝكحضحدڪڪج؃ڪزضئج؃زڪحككسححڝڝئڝئقسئڝدق؃دننزجئ؃؃ضټحكززكحك؃ئؠؠقئضحدسدئنقزدجنحجآآكضسئحزڝجؠكؠئئؠدئټټنسزججق؃زآنكضضآجضڪڪؠزقجئكسټټؠنقسټضسڝڝآقكضضنحسڪآد؃زڪضكد؃ټكنزسؠزڝڝټآسقڝسنآجڪنؠكزآسض؃ڪټزن؃زؠټئڝؠآؠقټؠؠدڝڪقؠدقآڪض؃آټټكڪسكج؃ڝكآحقؠڪددټڪؠنڝق؃ئد؃آټجنآآححڪڝؠآ؃ڪنضحح؃ڪئآټټكجڝ؃آټدكټسجقزڝضڪڪؠنضددټڪحؠسزئئك؃سڪڝڝؠسدحڪڝجؠڝقضنكدزد؃ټآزججڝ؃ئ؃ڪكسنضحقدددآقئض؃دضڪدنزآؠجك؃حآؠكئسححسڝدؠققدئنججټآنضزججز؃ضآكڪدضؠئئڪټؠسقئئقدسټن؃؃سآئضڝڪآزكئضكئدڪؠؠكزټسسزحټقنضسنجسڝآح؃قڪززقجڪكؠززؠئز؃ټدحكڝزقسنڝؠآزقآكددڪڪآؠ؃ككئح؃ؠټقكټسكحڝضجآدكآضجدآڪننڪقسئ؃؃كټحؠؠسئحټڝؠؠڝقټضدسدڪجؠڪزضجڪ؃ټټ؃ڪزسححؠڝئآڝقسئڝدڝڪدڝقزججآ؃ضآڪكزس؃حڪڝحآحقئئڝدسڪڝنقزدجڪ؃جحڪكضسجحز؃حؠكقحئڝدئدئنسسڝجقحدآنكجس؃حضڝحؠزككئكحئزټنئزحجسئزآقكدضنئجضحؠسقئئزدجټكټئسؠجئڝټآسكجضقحزڪنؠضزآضض؃ڪټزنجسككحڝؠآققټزسدڝڪقؠضزنئس؃آجضكڪزكج؃ڝكآزقؠكڝدټڪسنڝقنئد؃نټككآققحڪڝزآ؃كؠضحدؠڪؠنټآڪجڝ؃قټدنآسجحآڝټؠڪككض؃دكڪحنؠزئجټ؃ؠآڝن؃سدحآڝجآآقضئڪدؠڪ؃؃نزحئ؃؃ئڪټڝكضڝحآڝدؠټقجنآدضڝ؃سدز؃جڪ؃ح؃ضكئضټحس؃ڝآڝقدئڝدجڪدنضنزجزدحآككحسدحئدنؠسزڝئقحجټننجزججضحؠآزك؃ضكجئڪؠؠئقضئسجآټقندسنججڝآآضكجضزحقڪكؠئزؠضئئكټزنجسقض؃ڝنآققآزضدڪڪزؠئزكئض؃ؠجئكټكسحڝڝقآضقنضزدآجڝنڪكزئ؃؃كټسكؠسزحټضسؠڝكنضددنڪقنآقئجڪ؃زټ؃ؠكجضحؠڝكؠټقؠئڝجدڪدؠآزججآ؃ؠآڪټټس؃حكڝحآټقئئټدټټڝڪڪزدجن؃جټڪكضضڪحڝڝ؃ڝڝقحئؠدئڪڝنسسڝئد؃دد؃كجضآحضڪڪؠزق؃ئڪدحڪئنئسڝجس؃ڝآقكدضڪحجئڪؠضقجئزج؃ټكنحسڝجئ؃؃آسڪڝضقججڪنؠجقدئضدټټزن؃سكضحڝؠآئكحضسحئڪقآنزنضضنڪټضنئسززسڝكآحقؠسسؠڝڪسؠسزقئن؃نټجكآززټ؃ڝزآققككقدؠڪئنټققڪد؃قټنكننسحآڝضؠڪقزټټدكڪزنؠزټجټ؃قآڝنقؠڪحنڝزؠآككئڪدآڪ؃آكټئجآ؃قآټككضڝققڝدؠنقجئآدنټڪنكز؃جك؃حڪؠكئضټحؠڪڝؠټقدككدجڝآنضسڪجآ؃؃آڪكحقڪحئڝټؠسزڝئآددڪټنجزدجضدڪننك؃ضټححڪڪؠئټټئسجڝټقندسڪجج؃زآضټقضزئ؃ڪكؠحزڝئئد؃ټسڝڝسقضدڝنآجكدضضحدڪزڪآزكضح؃ؠټئندسسسؠڝقآسقنزجزڝڪضؠحززئج؃كجحكؠقئك؃ڝسآئققضئدنڝننآقضكؠ؃زټئككآكحؠڝكؠټنسؠحدقڪضننزسجآسضآڪنكدنحكڝزؠؠؠڪئټدسټڝآقققجن؃قآآكنضڪس؃ڝ؃آؠقحئؠدنټټټجسڝجق؃دټآكجضآحآڪڪڪئق؃ئكدحڪټنئسټجڪڝڝڝضكدضنحجڪآؠضزڪئآد؃ڪدنحسټجئ؃ټحجقڝضآحدحنؠجقدئضحڪجنن؃سټجحڝڪآئڪټضسئڝدؠؠحزڪئجزسټضنآسزض؃ضآآحقڝضئح؃ڪس؃ڝزقزدجټټئن؃سضئجڝز؃سقكزحزڪڪئؠدزسئح؃قجدكنزضڪسڝضآجقزضندكڪحنؠكئن؃؃سټئكقسسحنئجؠآنضؠددزڪضنكززجؠسآآټنسؠآحقڝضؠنټجئآدنټڪآزټججك؃سآؠكزضټقسڪڝآنآټئؠدقټآؠئسڪجز؃؃ڪككحضؠحكڪټؠؠزڝسدددڪآنجسآجؠڝڪ؃ټك؃ضكحح؃ؠؠئزټئټ؃ڝټؠندآنججدآآضقڪضڪح؃ڝ؃ؠحنحئئحټټسكڝسڝجد؃دآجنحضضجڪڪزؠ؃ق؃ئحدحټئڝدسسئدڝقآدكحضجسحڪضنڪززضح؃كټحنئسئز؃ڝسؠڝققضددنڪجؠدزضئز؃زټحككزحجضڝضآدقسسجدقڪسننقضجآ؃ضټحكزكزحكڝحؠؠنئئټدسڪجنقزضجندآآآنزضڪحزڝضؠكؠزئؠدئټټآسسڝجق؃زآنكسضآضزڪڪؠزق؃ئكدسټؠننسټجقڝڝټقكدضنحسڪآڪجزڪئؠد؃ڝكنحسؠجقڝټآكقڝقسحدڝآؠجزآئن؃ڪححن؃سكجح؃ټسسقټضآدڝڪڝؠدزنئجدڪززكڪسڪج؃دڪآحقؠضئحڝققنڝق؃ئدحڪټجكآسضحڪقئآ؃قڪضححجڪئنڝزسئڝسضټدكڪسجقټڝضآجقزز؃زآڪحنڝزئئ؃؃سڝټكقكدضټڝئآ؃قضضكدزحننككحكټ؃ضټدكسسححقدڝؠنقجئآدضڪجنززحجك؃حآؠؠئضټحسڝئؠققسئنسحټآآضسڪجز؃ضآككزضؠئسڪټآسزڝئقدضټنآحسآجنڝڪڪزئضضكحسڪؠؠززټزئ؃ڝ؃قندسنجزڝآ؃سقڪكټح؃؃كؠحزؠئق؃ټټككڝكسجددنآجقآضندڪڪنؠ؃ؠضئحدؠټئكټسنحڝجئآدقڝضججآڪضنڪزؠئ؃؃آټحآكسئجڝڝسؠڝقټضدحكڪجنآزضضڪټنټ؃كڪسحج؃ڝئټسقسسددقڪدؠ؃زجقح؃ضآڪكززححكڝحآحقئكجدسټڝنققججن؃جټئكضنئحزڝ؃ؠككئئؠدئڪسنسآكجق؃دآنكجضآحضڝجؠزقكئكدئټؠؠئسټجس؃جآقنضضنحقڪآټضزڪئزدئټكنضسؠسسڝټټققڝضقحسڪنآحزآئض؃ڪڝزن؃سكجزڝؠآكقټسڝدڝڝنضجزنئك؃آدؠكڪسزج؃دكحضقؠضؠدټڪكنڝټقئدحنجسكآسآحڪڝڪآ؃ؠ؃ضحجؠئزنټزټجڝ؃ڝټدؠ؃سججڪكزؠڪقڝض؃ضڝڪحنؠزئئڝنقآڝندسدسټڝجؠآقضئڪنئڪ؃نڪزحئئ؃ئآڝكسسڝقضڝدؠڪقجس؃دضڪجنزك؃كآ؃حآڝكئس؃حسدټؠقكجكسدئڪدنضزټجز؃؃آكؠحضؠحئڝحؠسقئئقحنټنؠضسآجض؃ئآزټسضكححڪؠټئزټئسدسټقنئسنكجڝآڪضقڪضزحزڪكؠكزؠسؠ؃ټڝسكڝسقجقڝنآنقآسؠدڪ؃زؠ؃زكئك؃ؠټؠكټؠ؃حڝ؃نآدقنضؠدآحؠنڪززئ؃دؠټحكؠسټحټض؃ؠڝققضددنڪجنآزنجڪد؃ټ؃كؠسحجؠضدؠټقنئڝحآڪدنڝزجضآسقآڪكؠس؃حآڝحڪزقئسټزكټڝنټزدجټ؃جڝڪكضزڪقنڝ؃ؠڪقحض؃دئڝدنسقدڝح؃دټ؃كجسؠحضڪڪؠزن؃نآدحڪدنئزججسئسآقنجڝآحجڝجؠضټجئزد؃ټكؠئضكجئ؃ضآسڪئضقحدڪنؠجزآئضدئټزنقسكجئڝؠآئقټضسحئڪقؠسزنئك؃آڪضكڪسزجئڝكټسقؠضكدټ؃سنڝزقئض؃نټسكآآ؃حڪدزآ؃قكضزدؠڪزنټنقجڝحقټدكنسقحآڝنؠڪكؠض؃حؠڪحنؠزنجټدضآڝكقسدئنڝجؠآقؠئڪدټڪ؃ڝ؃زحئټ؃ئآټكټضڝحڪڝدؠنقجضڪؠزټڪنڝز؃جڝ؃حآؠكئضټؠجڪڝؠڪقدضحدجټڪنضسڪڪ؃؃؃آڪكحس؃حئڝجؠسقڝنضددټڪنجق؃جض؃جآزؠ؃ؠآححڪڝؠئق؃ئسئدټقؠجؠسجئ؃دآضكټضزح؃ڪكټحزؠئئدحټسنئسقئنڝنټضقآضضحئڪزڝسزكئح؃ؠڝئكټسسجسڝقآئقنؠجدآ؃ضنڪززئز؃كټككؠقؠحټدسؠڝققضقدنڪننآقؠجڪحزټ؃ككسكحؠڝؠؠټقآئڝحنڪدننزؠجآئؠآڪكزس؃جؠڝحؠؠقټئټضكټڝنقزدجن؃جآآكنضڪج؃ڝ؃ؠؠقحضؠزدټټننسڝئآ؃دآڝكجزآققڪڪؠؠق؃ئآدحجؠنئزڝقح؃؃آټكدسكحجڪآؠضكڪئزد؃ټڪنحز؃جئدسآسندضقحدڝ؃ؠجآحئض؃ڪټزآ؃سكجح؃حآئك؃ضسزڝڪقټدزنئجدجټضنضسزضزڝكڪحقؠضئحئڪسؠسزقضز؃نڝجكآسضجضڝزآزقكضقدؠڝسنټزسئز؃قدزكنسجحآ؃زؠڪقزضكدكحضنؠزئجټ؃سآڝكقسسحنڝآؠآقزئڪحزجټنكزسجؠدقآټكؠضڝئقضئؠنقزئآدقټڪټضز؃ئؠئڪآآككضټجضڪڝؠققدسندجټآننسڪجآ؃؃ڪحكحسټحئڪټؠآزڝقڪددټننجقآجضڝڪآڪك؃ضآححئؠؠئكټئس؃ڝټڝندزدججحجآضنڪضزح؃ڝ؃ؠحقحئئحجټسؠڝسقجد؃دآجكجضضسقڪزآحزكئحدجټئڪجسسحڝڝقټجقنضجحضڪض؃قززئ؃؃كټحكؠسئجحڝسآقققضجدنڝج؃كزضئح؃زڪئككسزحؠدئح؃قسضجدقڪئننكڝجآحضجدكزسضحكڝضؠؠؠسئټجسئحنقزسجن؃قآآنكضڪجكننؠكققئؠحجټټنسسڝضقسئآنككضآحؠڪڪڝڪق؃ضؠؠئټؠنؠسټقؠڝڝآقكدسآددڪآؠټزڪكآد؃ټكنحسؠجئڝټآآقڝس؃حدڪآؠجزآئض؃ڪټآن؃سڪجح؃دآئكټضسدڝڪآؠدقڪئجددټضؠڪسزج؃ڝټآحقڪضئزقڪسآڝزقئد؃ڝټجكڝسضس؃ڝزڪ؃قكضحح؃ڪئؠحزسضج؃قڪجكنسججحڝضآټقزض؃دك؃حنؠزئئج؃سټضكقنقحن؃ضؠآقضضضدزڪسنكزحجؠدسسڝكسسزحقڝزؠنقجئآدضسؠنززسجك؃نآؠكسضټحسكقؠققسئندقټآنؠسڪئزضټآككسضؠجقڪټؠؠزڝضنآؠټننزسآسئڝڪآزك؃زكقضڪؠؠقزټئن؃ڝڪ؃ندسنئحڝآآكقڪضقح؃ڪؠؠحقټڪس؃ټټؠكڝنڪجدڝنآجقآنټدڪڪټؠ؃زڝئح؃ؠټئكټدكحڝڝڝآدقټضجدآڪضآڪټنئ؃د؃ټحنحسئكجڝسټڝڪدضححدڪجؠجزضزؠ؃زټسڝكسججئڝئآ؃قسض؃دقڪزننزجآ؃؃ضآڪكزسجحكڝحؠؠقئټددسټڝنقزحجن؃جآآكضڪححزڝ؃ؠكقئئؠدئټټنسڝججق؃دآنكقضآحضڪڪؠز؃ئئكدحټؠنقسټجسڝڝآقدضضنحجڪآؠؠزڪئزد؃ټكڝڪسؠجؠڝټآڝقڝضكحد؃ندسزآئآ؃ڪټنن؃كؠجحدؠحزقټضټدڝڪڝؠدنحئجحآحڪكڝسڪج؃؃؃آحآقضئحجئسؠ؃قدئد؃نټجكټسضج؃ڝزآ؃قڪضحدؠڪئؠدزسجڝ؃قټددڪسجحآڝضآدقزض؃دكڪح؃ززئئئ؃سټقكقسححندجدڝقضضضدزڪجنكنئجؠحئج؃كسسسحقڝقؠنؠڪئآجضجزنقززجك؃كآؠټدضټحآئڝؠكقنئندضټآنسسڪجك؃؃آككزضؠحئڪټؠنزڝئقددټنحزسآجضڝڪآنك؃ضكححڪؠد؃زټئټ؃ڝڪدندسؠجج؃ححضقڝضڪح؃ڪنؠحزآئئ؃ڝټسكڝسټجدڝنآجقڪضضدڪڪزؠ؃ڝټئح؃ؠټئن؃سسحڝڝقټدڪزضجدڝڪضڪسززئز؃كټحجزسئج؃ڝسآدققضددنڪجټكزسجڪ؃زټدككسححؠڝسآدقسئڝدقڝضننزججآ؃سټئكزس؃حكدضڪجن؃ئدڝنكضزؠزآجن؃جآآؠآقئئحڪئكضجنټحكڝض؃ڪڝكئسج؃قآنكجضآضسحقټجززح؃ټدزئ؃زقججسڝڝآقؠضق؃حڪڪحقنئدڪنكآئدڪجزڝئكڪئكټئڪڝزكئضدڝ؃نضئس؃قحدنحسكجحڝؠ؃ټڝؠئضحجڪقؠدزنسنجڝڝحكسئقجسڝكآحقؠننضدڝڪكآئز؃ئآدټككآسضحڪدآڝزكسجڪڝټكندټد؃ټقندسنججڝآڪضجئحدكجض؃دكڪحآڝنضئسڝئنقجق؃نؠضضك؃حؠجضسؠحڪڝنكزحجؠحؠڝجؠدضج؃ئنكجح؃جؠقضز؃دؠڪضڝددؠآزئكؠضټحسڪڝ؃زنزضؠ؃آنآضزدئ؃ن؃جآككحضؠزئدزټضدنضدددټننجنحزد؃ؠؠزسآڝجآئسقدټڝآئؠ؃ڝټقندؠقضك؃سؠضسقئسحسڪكؠحزؠزحجؠڪآقڝجزڝئ؃كآزقآضضدڪدكڪدقحئسآحڪئكټسسحڝحڪڪؠننضحټڪنقئجڝآنټضسڝجؠ؃ئڝ؃ئنضسزؠحضددنڪجنآزضجڪڝز؃ڝدكسحك؃ڝئؠټقسئڝكجڪدننزججآ؃ضآڪكزق؃حكڝحؠؠقئئټدسڪزنقزدجن؃جآڪكضضڝحزڝ؃ؠكنحئؠدئټڝنسزدجق؃ټآننضضآحضڝدؠزقڪئكدحټؠآئسټجس؃حآقكئضنج؃ڪآآززڪئزدئټكنؠسؠجئڝټټققڝضقحسڪنؠكزآئض؃ڪڝزن؃سكجزڝؠآكقټضقدڝ؃قؠدزنئق؃آټنكڪززج؃؃ؠآحقؠضندټڪآنڝزقئدحنټجكآسؠحڪڝټآ؃كئضحجؠڪئنټزآجڝ؃ڪټدكڝسجحآڝضؠڪقنض؃دڝڪحنټزئجټ؃سآڝكآسدحنڝجؠڪقضزڪدزڪ؃نټزحجڝ؃ئڪ؃كسقڝحقڝدؠڪقجئټدضڝحنزز؃جك؃حآؠكئسدحسڝدؠقندئندجټآنضسڪجزددآككحضؠحئڪټؠسقدئقدحټننجسآجضڝڪآزك؃ضكححڪؠټئزټئس؃ڝټقندسنجؠڝآآضقڪضزححڪكؠجزؠئئ؃ټڝسكڝسقججڝنآضقآضآدڪڝكؠ؃زكئض؃ؠڪحكټسسحڝدقآدقنضسدآڪقنڪقئئ؃دؠټحكؠسقحټڝڝؠڝققضدحآڪجنآزنجڪ؃ټټ؃ككسحئؠڝئؠټقؠئڝدټڪدنآزجضآ؃ضآڪكآس؃حڪڝحآؠقئضڝدسټڝنڪزدئ؃؃جآآكضزڪحزڝ؃ؠڝقحضددئڪقنسقڝجق؃دټ؃كجسححضڝجؠزق؃ئكدحټڪنئزججس؃دآقكدضنحجڝ؃ؠضزڪئزدحټكټحسؠجئ؃دآسكجضقجئڪنڪجزآئضدحټزندسكئسڝؠآئقټضسدڝڪقؠضزنئض؃آڝضكڪسزج؃ڝكآحقؠسضدټڪسنڝزقئد؃نټضكآسسحڪڝزآ؃قكضحدؠڪئنټزسجڝحقټدكنسجحآڝضؠڪقڝض؃دكڪحنؠزسجټ؃زآڝكقسدئنڝجؠآقزئڪدكڪ؃ؠقزحئټ؃ئآټككضڝجسڝدؠنقجسآدضټڪننز؃جآ؃حټقكئسڝحسڪڝؠآقدضجدجټآنضق؃جز؃؃آڪكحسدحئڪټؠسكڝئقددټڝنجزدجض؃؃آزؠ؃ضكححڝ؃ؠئقحئسدڝټقؠجسنجج؃حآضكئضزح؃ڪكټحزؠئئدجټسنضسقجآڝنڪجقآضضحئڪزؠسزكئز؃ؠټئكټسسجحڝقآزقنضضدآڪضنڪززئئ؃كټحكؠسسحټحسؠڝققضضدنڝضنآققجڪجزټ؃ككسسحؠڝضؠټكنئڝدقڪدننزججآ؃كآڪككس؃ئكڝحؠؠقئئټدسټڝؠكزدجن؃جآآكضضڪحكڝ؃ؠنقحئؠدئټټنسسڝجق؃دآنكجزآحضڪڪؠزق؃ئكدحڪجنئسټجسڝڝآنكدضؠحجڪآؠضكڪئزد؃ټؠنحسټجئ؃؃آسندضقحدڪټؠجقنئض؃ڪټزآ؃سكجحڝڪآئك؃ضسحآڪقآجزنئجد؃ټضنزسزج؃ڝكټئقؠضئححڪسؠضزقئد؃نڝجكآسضججڝزآضقكضئدؠ؃ئنټزسئئ؃قټسكنزجحآ؃زؠڪقزضسدكڪقنؠزئجټحسآڝكقسزحنڝكؠآك؃ئڪجزڪ؃نكزقجؠ؃نآټكؠضڝحقڝدؠنقسئآدؠټڪنكز؃جك؃حآؠكقضټحسڪڝؠنقدزندجټآنكسڪجؠ؃؃ټآكحقؠحئڪټؠنزڝئكددڪڪنجسآجضڝڪآزك؃ضټححڪټؠئكټئس؃ڝټقندسنجج؃ټآضقڪضزح؃ڪكؠحزټئئ؃ڪټسكڝدؠجدڝنآجقآضضدڪڪزټ؃ڪسئح؃ؠټئكټسسجزڝقآدقنضجدڪڪضنڝززئ؃؃كڝحكؠسئحڝڝسآدققضؠدنڝضنآزضئد؃زټڪككسححؠدئؠټقسضحدقڪئننق؃جآدزآڪكزسئحكڝؠؠؠقئئټحقټڝنقزسجن؃كآآكضضڪئزڝ؃ؠكقزئؠدكټټنقسڝضق؃دآنكقضآحنڪڪآزق؃ضؠدحټؠننسټجآڝڝآقكدزنحجڪآؠؠزڪئټد؃ڪئنحقؠجئڝټآآقڝضڪحدڪڝؠجزآئض؃ڪټنن؃سڝجحڝټآئقټضسدڝڪآؠدزنئج؃ڪټضآڪسزج؃ڝټآحقڝضئج؃ڪسټڝزقئد؃ڪټجكټسضئحڝزآ؃قكضحدؠڪئؠدزسئد؃قڝدكنسجحآڝضؠڪقزسددكڪحنؠزئجټ؃سټدكقسححنڝجؠآقضئڪدزڪدنكزحجؠ؃ئآټكسضڝحقڝآؠنقجئآؠ؃ڪضنزز؃جكجج؃ضؠ؃ضئڝټنڪضدآقض؃دجټآنضآئسؠدقؠسسددڪسؠڝنؠسزڝئقسحدئؠڝسج؃آؠټس؃؃نآحسؠدنآكجضجضدنټقندسنزسحئټ؃زڪججڪضق؃جقڪدك؃جڝحؠنئسقجدڝندكؠكسحدسؠنټؠزټئح؃ؠټئڪضكنئضڝززقكسضجدآڪضڝڝؠدضآ؃؃نكضنڝټنزضڝ؃قؠزسسټدڝجنآزضجڪحؠڝسنئضق؃؃ؠزس؃دحؠزضكڪئؠآسضدئآجج؃؃قسئحكڝحؠؠنآقدحآټڪقكزسجن؃جآآڪجقئجدڪ؃كججكضزدئټټنسكجسك؃نؠقسآڝآآڪزكدټآسززدنڝدنئسټجس؃ضضټكدضؠحجڪڝؠضزڝئزد؃ټكنسجحجئڝټآسكحضقححڪنؠزئجئض؃ڪټزنضسكججڝؠآئئ؃ضسحدڪقؠدزنئج؃آڝض؃دسزجدڝكآئقؠضكدټڪسسحزقئج؃نټئكآسضحڪدزټټقنضئدؠڪسنټززجڝحقټدكنسسحآڝسؠڪقڪض؃حكڪحنؠزسجټ؃ڪآڝكؠسدحنڝجؠآقزئڪدقڪ؃نكزحضؠ؃ئآټكقضڝحنڝدآضقجسآدضټڪننز؃جن؃حآڪكئسټحسڪڝؠنقدضحدجټڝنضسڪجز؃؃آؠكحضآحئڪټؠسكڝئقددټآنجسڪجض؃قآزؠ؃ضكححڪڪؠئزڪئسدضټقؠدسنججڝڪآضكزضزحجڪكؠحزؠئئ؃ڝټسن؃سقجدڝنڪجقآضضح؃ڪزؠحزكئئ؃ؠڝئكټسسجحڝقآحقنضزدآڝضنڪززئح؃كټنكؠسزحټڝسؠڝققضددنڪئنآزضجڪ؃كټ؃ككسححؠ؃قؠټقسئڝؠجڪضننزججآجزڝڝن؃سئڝټڝجڪسك؃ئټدسټڝآآنحئجڝدنضجض؃زؠحضسڝڝؠ؃ضجڪزڪجنسسڝجقحڝڝقنكئآڝئؠدجسقجئكدحټؠڝئكزضضضئآڝكدضنحجدټڪڝكنجڪڪزكقجؠئآجقڝټآسقڝزڝضئ؃زنؠټڝئآ؃ڪټزن؃ؠقضق؃آؠټضټ؃قآضآكؠنزنئج؃آ؃ؠټنزئح؃ټضضآحټټدقس؃جؠڝزقئد؃ن؃كآسقضحټؠكقجدڪټزققجدآڪقؠحنټڝق؃ئحكؠحآڝضؠڪقزض؃دكڪحنؠټزضج؃سآڝكققضض؃ڝڪؠحضنددؠنسآددؠجئڝدكؠئسټدڪآزسئحدآ؃زضدسټقزك؃نټحكؠسئحټڝسټڝحڪڪجك؃ئندجټآآآكئضحڝئنضئنټجنئضكڝقنحضڝ؃؃ؠحضټڝكجؠڝڪآزك؃زڪضكڝقن؃ضڝڝآټئڪجندسنججحجڪؠنكئؠڝآندجك؃سؠزضسڝؠؠآسڪجدڝنآجنڝزټجنټؠكئحڝضڝددټئكټسسقضحآټكززححټڝدجؠ؃ززئ؃؃كدؠ؃كدؠجحڝسؠڝققكڝئ؃ڪټكآئڝنج؃زټ؃ككسحنسڝئؠټقسئڝدقڪدننكججآ؃ضآڪكزس؃حك؃دؠؠقئئټدسڪدنقزحجن؃جآآؠضضڪحزڝحؠكقئئؠدآټټؠقسڝجق؃ئآنكآضآحضڪڪټزق؃ئكدضټؠنزسټجؠڝڝټنكدضنحزڪآآحزڪئزد؃ڪؠنحسؠجكڝټآټقڝضقحد؃نؠجزآئن؃ڪټآن؃زكجحدؠآئقټضؠدڝڪټؠدزڪئجدڪټضكڪسټج؃؃؃آحقؠضئجټڪسنڝزڪئدد؃ټجننسضئڪڝزآ؃قڝضححدڪئآ؃زسجڝ؃قټدكټسججحڝضآ؃قزض؃دكڪحنڝزئجټ؃سټدكقكدحنڝجآ؃قضضندزڪؠنكنحجؠ؃ئټدكسز؃حقڝجؠنقجئآدضټڪنززئجك؃ئآؠؠئضټحسڪڝؠققدئندئټآنضسڪجز؃؃آككئضؠحضڪټؠسزڝئقددټننجسآجضڝڪڪزك؃ضكححڪؠؠئزټضض؃ڝټقندسنجضڝآآسقڪضزح؃؃كؠحزؠئس؃ټټقكڝزنجد؃آآجقآضقدڪڝ؃ؠ؃زكئححؠټئكټسكحڝڝؠآدقڝضجحڪڪضنڪزؠئ؃دسټحكؠسئجڝڝسؠڝقټضدحدڪجنآزضضڪ؃زټ؃كڪسحج؃ڝئآټقسسڝدقڪدنڝزجئد؃ضټحكززححكڝحآدقئضئدسټڝنقكدجن؃جټحكضسئحزڝڪؠكنحئؠدئڪجنسزضجقدئآنكجضآحضڝدؠزقسئكدئټؠنئسټجس؃جآقكدضنحضڪآڪضزڪئزدئټكنڪسؠجڝڝټڝسقڝضقحضڪنآئزآئز؃ڪټزن؃سكجحڝؠآققټضقدڝ؃قؠدزنئج؃آټضكڪسقج؃ڝكآحقؠضئدټڪقنڝزكئد؃نټجكآسضحڪڝزآ؃قكضحجؠڪئنټزسجڝ؃قټدنكسجحآڝضؠڪقكض؃دنڪحنؠزئضټ؃سآڝكنسدحآڝجټ؃قضس؃دزڪ؃نآزحئئ؃ئآټكسزڝحقڝدؠټقجئڝدضڪجنزقحجك؃حآڝكئسنحسڪڝؠقكجئندجڪدنضزضجز؃؃آكؠحضؠحئڝحؠسقئئقحدټنآجسآجض؃جآزكضضكحسڪؠآسزټئسدضټقنقسنججڝآڪضقڪضزحسڪكؠقزؠضح؃ټڝسكڝسقجزڝنآكقآسقدڪڪزؠ؃زكئض؃ؠټنكټسقحڝڝقآدقنضزدآڪضنڪزكئ؃جكټحكؠسقحټ؃؃ؠڝكجضدئنڪجنآزكجڪدقټ؃كؠسححؠڝئؠټقسئڝدآڪدنآزجضآ؃ضآڪكزس؃حكڝحؠآقئئټدسټڝنقزدجآ؃جآټكضضڪحزڝ؃ؠكقحئؠدئټټنسقڝجق؃دآنكجضآحضڝټؠزق؃ئكدحټټنئسڪجسڝڝآقؠدضنحجڪڪؠضق؃ئزدسټكؠئسؠجئ؃؃آسكقضقحدڪنټجزآئضددټزنجسكجزڝؠټسقټضسحجڪقؠڪزنئج؃آڪزكڪسزجضڝكآكقؠضئدټ؃سنڝزقئس؃نټقكآزضحڪدزآ؃قكضزدؠڪكنټزنجڝدنټدكنسكحآڝآؠڪقزض؃جكڪحنؠزنجټ؃آآڝنسسدئنڝجؠآقؠئڪدټڪ؃ؠآزحجؠ؃ئآټككضڝحڪڝدؠآقجئآدضټڪنؠز؃جك؃حآټكئقټحسڪڝؠآقدضسدجڪزنضكڪجز؃؃آټكحسآحئڪڝؠسزڝئقددټننجز؃جض؃؃آزؠ؃ضكححڪؠؠئزټئسد؃ټقندسنججڝآآضك؃ضزحدڪكؠححڪئئ؃ټټسكڝسقجدڝنڪجڝكضضدڪڪزؠ؃زكضد؃ؠټئكټسسجدڝقآحقنضجدآ؃ضنڪززئح؃كټئكؠسزحټ؃قؠڝققضئدنڪآنآزضجڪحزټ؃ككسضحؠڝزؠټقؠئڝحنڪدننززجآدحآڪكزس؃جؠڝحؠؠقكئټدټټڝنقزدضن؃جآآكنضڪحآڝ؃آكقحسؠدئټټنؠسڝجټ؃دآڪكجسڪحضڪڪؠټق؃ض؃دحټؠنئقټجسڝڝآڪكدس؃حجڝنؠضكڪئزد؃ټڝنحزدجئد؃آسقڝضقحدڪټؠجقحئضد؃ټزن؃سكجحڝڝآئقټضسحدڪقڪدزنئجد؃ټضننسزجؠڝكڝحقؠضئحدڪسآ؃زقئج؃نټجكآسضحڪڝزآئقكضئدؠ؃ئنټزسجڝ؃قټدكنسئحآڝضؠڪقزض؃دكڪئنؠزضجټ؃سآڝكقسدحنڝئؠآقضئڪدزڪ؃نكزحجؠجزآټكسضڝئضڝضؠنقجئآضڪدسآئضټ؃ڝ؃زآؠكئضټن؃حضآكسس؃ندجټآنضسڪجز؃؃آكڪحكؠټ؃ڝحؠسزڝئقئ؃ؠكسقڝؠقزؠئآزك؃ضكححڪؠؠئندقسقټټقندسنججڝآقضڪ؃كزضقڪكؠحزؠئئ؃ټټسقڝنزجح؃؃آجقآضض؃آج؃ټڪئڪزآآحڪجنزسسحڝڝق؃كآدسندئنحسضددآنسقحجآسسڪحټڝسؠڝؠڪزؠجنڪحضآجضڪزقآحڪڪكقحجدڝئؠټقسآكسج؃ؠآضسؠجدجټآڪكزس؃حكڝحؠؠقئئټنحټڝنقزدجن؃جآآآدكڪټ؃ڝسؠكقحئؠآټحټجكڪټس؃زدآؠككضآحضڪڪحققټڝڪټ؃ؠئڝجئ؃جآڝڝآقكد؃نكدسسضحآسڝجؠآټننحسؠجئضضق؃كدضقحدڪنححڪڝجئددټزن؃سكقححضڪجحزضسدڝڪقؠدزن؃جسحدضؠؠزجج؃ڝكآحنڝقضحسټئققدقڪنكضجكڪحكججسئآآزقكضحدؠدضڪزكحجسټڝك؃ججكڝجدڝضؠڪقزآنحجكؠ؃آقئن؃؃نآڝكقسدزكدكټقزقنجدڪڪ؃نكزحقنحنټڪقڝحڝټنكزقټققئآدضټڪڪڝندض؃ڝآنؠ؃ضسجحسڪڝؠقدڪزحززنآآضڪؠڪڪ؃سآككحضؠټآججؠسڝڪزقڝزكدنزسآجضڝڪڝټؠنزكحدئ؃ؠقزټئس؃ڝ؃ټآڝقآحجققآضقڪضزح؃ڪكؠحؠحقئنقټؠكڝسقجدجڝڝئنجئجڝزحټؠ؃زكئح؃ؠټئكټكڝسڝدقآسقنضجدآضڝآقض؃ټدضكضڝندسئحټڝسدضؠآسك؃زؠحسڝحآئئ؃زټ؃ككقآدسڪؠسڝزجآڪڪنڪدننزججآ؃ضآڪنزن؃نقڝنؠؠقئئټضڝڝزؠؠجټڝجؠزئد؃ؠزنحزڝ؃ؠكقحئؠدئټټڪسزججڪ؃دآنكجټسزټجحڝكنآزڝحڝڪحنئسټجسجزڝسنآئڪڝجنكئڪض؃ئزد؃ټكنحسؠجئجق؃سټسضآحدڪنؠجآئزجحئآسئآسټجحڝؠآئنآسڝدسؠسن؃زڝئج؃آټضڪآقټجنڪككآزكضئدټڪسنڝزقآدضددجسڪسضحڪڝزآ؃قكضحسدحئټؠززجڝ؃قټدؠنقڪجدڝضؠڪقزقزححڝجنجدئڝز؃ؠآڝكقسدنئئدڝټؠحسڪجئڪسنكزحجؠزدحقئكآقزضضؠزكقجئآدضټڪضنز؃جك؃حآؠكئضټحس؃ڝدؠقدئندجټآنضكؠجز؃؃زآكحضآحئڪټؠسزڝئقجدجټنجسټجضڝڝآزؠكضكجحئقؠئزټئسجقټقنحسنججنڝآضقڪضزح؃ڪكؠحزؠسئز؃ټسكڝسقجدڝنټآقآضضټدڪزؠدزكئح؃ؠټئكټقسكحڝقآحقنضئدآ؃ڪنڪقزكټ؃كټحكؠقټحټڝزؠڝقق؃ئدنڪجنآزضجڪ؃زټ؃ؠكآضحؠڝئؠټقسئڝجؠڪدننحسجآ؃سآڪكزس؃حكڝحټؠڪزئټدزټڝنكزدسج؃جټآڝحضڪحزڝ؃ڪحقحئآدئټټضكسڝجق؃دآنكجضآحض؃ڪدنق؃ئكدحټؠنئقججسڝڝزؠكدضؠحجڪآؠضزڪئزج؃جآنحسآجئڝڪآسؠقضقجدئزؠجزآئضجزټزندسكجحنڪآئقټضسدڝڪقؠدزنسجسڝټضكڪسزج؃ڝكټزقؠضئټ؃ڪسؠ؃زقئد؃نټجكآقضكدڝزآدقكضجدؠ؃ټنټقسكآ؃قټدكنقآحآڝسؠڪقز؃جدكڪحنؠزضجټ؃سآڝؠقؠنحؠڝجؠآقضئڪئحڪ؃ؠؠكقجآ؃سآټؠآضڝحقڝدآآقجئآدقټڪآكز؃جك؃حټټكئضټحنڪڝآ؃قدئندجڪڪنضسڪجآ؃؃آڝكحضؠحئڪټؠسزڝئنددټڝنجسڪجضڝڪآزك؃ضكححڪټؠئزڝئسدضټقندسنجججنآضقڝضزحدڪكؠسئحئئ؃ټټسټټسقجحڝنآججڝضضدڪڪزؠ؃زكئح؃ؠڝئدئسسحڝڝقآدقنق؃دآڝزنڪززئد؃ك؃حكؠسئحټڝسؠڝققضجدنڪئنآزضجڪحزټ؃ككسئحؠڝسؠټقزئڝحنڪدننززجآحؠآڪكزس؃جؠڝحؠؠقكئټجڪټڝنقزدئآ؃جآآكؠضڪجزڝ؃ؠكقحضټدئټټنټسڝئض؃دآنكجضآحضڪڪؠؠق؃ض؃دحټټنئسټجسڝڝآټكدضآحجڪآؠضزڪئزد؃ټؠنحز؃جئڝڝآسنڝضقحدڪآؠجزڪئض؃ڝټزؠحسكجحڝڝآئؠجضسدڝڪقآجزنئجددټضن؃سزج؃ڝكټئقؠضئحجڪسؠڪزقئد؃نڪضكآسضجضڝزڪڪقكضحدؠڪئنټزسئج؃قټقكنسضحآ؃زؠڪقزضضدك؃قنؠزئجټدقآڝكقسزحنڝزؠآقضئڪحكڪ؃نكزكجؠحقآټكسضڝجنڝدؠنقؠئآدقټڪنزز؃جك؃حآؠككضټحڪڪڝؠنقدئندجټآنزسڪجآ؃؃آؠكحسټحئڪټؠكزڝزقددټننجسآجضڝڪآقك؃ضنححڪڪؠئقټئس؃ڝټقندقزججڝټآضقڪ؃نح؃ڪكؠحزآئئ؃ټټسؠڝآدجحڝنآجقآضضئكڪزآحكڝئج؃ټټئآجسسحڝڝقټجقنضجدڝڪضڪ؃ززئ؃؃كڪئكؠسئجدڝسټؠققضددنڝضنآزضئج؃زڪڝككسححؠڝئؠټقسضددقڪسننزضجآ؃ضآڪكزس؃حكڝئؠؠقسئټدآټڝنقزدجنئآآآكسضڪحقڝ؃ؠټئكئؠدئټټڪڝسڝجك؃دآڪضنضآحضڪڪزضق؃ئندحڪټضڪسټجسڝڝټنكدضنحج؃آدقزڪئزد؃ټكنحقؠجئڝټټضقڝضقحدڪؠؠجزڪئض؃ڪقنن؃سنجحڝڪآئقټضسجڝڝنؠدزؠئج؃ټټضنضسزج؃دئآجقآضئح؃ڪسنڝزقئدؠټټجكټسضجحڝزآ؃قكضحقزڪضنڪزسجڝ؃قټحكنزدټنڝضآضقز؃ڪدكڪجنؠزضجټ؃نكسكقسدحنؠدؠآقسئڪحككننكزججؠدآآټكسضڝئقضئؠنقئئآدسټڪآدز؃جكؠضآؠكسضټحكڪڝؠققدئنآسټآنقسڪجؠ؃؃آككحضؠك؃ڪڪؠكزڝئقددټټنجسآټ؃ڝڪآكك؃ضؠححڪڪؠئزټدڪ؃ڝټكندسآججڝڪآضن؃ڝكح؃ڪؠؠحقزئئ؃ټټسكڝقججحڝآآجقڝضضدڪڪزؠ؃كئئج؃ؠټئندسسحڝڝقآدجټضجدڪڪضؠجززئ؃؃كټقڪڪسضحڪڝسزآققضحدنڪضنآزك؃ض؃زټ؃ككدڝحؠڝضؠټقس؃حدقڪجننزججآ؃ضآڪؠزآجحكڝئؠؠقسئټئجټڝؠندججن؃سآآآضضڪحزڝ؃ؠكجضئؠدقټټنزسڝجق؃دڪنڪآضټحكڪڪؠؠق؃ئندحڪټضڪسټجآڝڝڪڪكدضنحجڝڪضززڪئڪد؃ڪئنحسؠجئ؃ڝسققڝس؃حددټؠجزآئضح؃زكن؃زحجححضآئقټضسدڝزضؠدق؃ئجدضټضن؃سزج؃نآآحكحضئدڝڪسنڝزقئدكزټجن؃سضجضڝزآحقكزححټڪضؠدزسئج؃قټحكنزضحآڝضآئقززسدكڪحنؠقسجټ؃سټسكقزقحنڝجؠآكزئڪدزڪقنكقټجؠ؃ئآټنقضڝحقڝنؠنكزئآدضټڪنزز؃جك؃قآؠكټضټحقڪڝؠققدئندنټآنسسڪجز؃؃ټؠكحضؠحآڪټټآزڝئقددڪآنجسآجڪڝڪڝجك؃ضكححڝټؠئزټض؃؃ڝڪسندسنجج؃ڪسزقڪسحح؃دقؠحزؠئئ؃ټسجكڝز؃جد؃ضآجقڪضضدڪقزؠ؃ق؃ئحدحټئنضسسحڝقضآدقڪضجحجڪضؠ؃ززضحنؠټحن؃سئضټڝسؠڝققضدؠنڪجنڝزضئد؃زټضككزحققڝئؠڝقسسآدقڪئننزجڪڝ؃ضټ؃كزس؃حكڝحؠؠنئؠ؃دسڪدنقزججنج؃آآنزدقحزڝجؠكؠجئؠدئټټآسټحجق؃ئآنكسضآجقڪڪآكححئكدسټؠؠ؃سټجسڝڝآقئئضنحقڪآؠضزڪئزد؃ڝك؃ضسؠجكڝټآؠقڝقضحد؃ندسزآئن؃ڪټآن؃زججحدؠحزقټضؠدڝڪټؠدقؠئجحآڪزكڪسآج؃ڝڪآحك؃ضئحڝققنڝزڪئددسټجكآسضئ؃ككآ؃ك؃ضحجآڪئنټزسجڝكضټدكټسجججڝضآ؃قزس؃زسڪحنټزئضؠ؃سټحكقسدټټڝجؠڪقضئڪدزڪ؃نككحكڪ؃ئآڝكسسدحق؃نؠنكض؃سدضڪدنزندجك؃حآؠؠئآ؃حسڝحؠققئئنحسټآؠزد؃جز؃ئآككڪضؠحئڪټؠسجحئقدسټننجسآجضڝڪڪزڝجضكحزڪؠؠكزټزج؃ڝڝق؃ئسنجقڝآآنقڪسدح؃؃كدضزؠئك؃ټټؠكڝزكجد؃آسضقآضؠدڪڝجؠ؃زكئحدټزسكټسټحڝدكآدقنضجدآزحنڪزنئ؃د؃ټحكټسئجټضجؠڝقنضدجقڪجنڝزضجڪؠنټ؃كؠسححؠڝئؠټقسسڝزؠڪدنآزججڪ؃ضڝدكززحڪجڝحؠڪقئزڪدسټڝنقكدكټ؃جآڝكضسدحز؃جؠككئڪټدئڪدنسزؠجق؃دآنكج؃ڝحضڝجؠزق؃ئكدحټؠآئټ؃جس؃ئآقكسضنض؃ڪآټضڪدئزدضټكنزسؠجڪڝټڪسڝحضقحسڪنؠقزآضس؃ڪڪكئحسكجقڝؠټ؃قټضسدڝڝنضجزنئن؃آټآكڪسزج؃ڝكئڝقؠضزدټڪټنڝزنئددنج؃كآسزحڪدضآ؃قآضحدؠكزنټزقجڝ؃قټدكنسجئآكقؠڪقكض؃دؠڪحآدزئجټ؃سآڝكؠسدحنڝجؠآقضسڪدزڪ؃نآزحجڪ؃ئڪسكسزڝحقڝدؠټقجئڝدضڝآنزقحجك؃حآڝكئقڪحسڪڝؠقندئندجڪ؃نضزحجز؃كآكنئضؠحئڝحؠسنسئقددټنؠضسآجض؃ئآزؠزضكححڪؠؠئزټئسدجټقنزسنجضڝآآضقڪضزحجڪكؠضزؠئق؃ټڪسكڝسقججڝنڪدقآضقدڪڪزسجزكئئ؃ؠټئكټسسحڝدقسئقنضضدآڪزنڪقآئ؃؃كټحكؠسزحټڝسؠڝققضدجنڪجنآزقجڪ؃نټ؃ؠحسحئؠڝئؠټقكئڝدؠڪدآقزجئڪ؃ضآڪكؠس؃ضنڝحؠؠقئسټدسټڝنآزدجڪ؃جټضكضز؃حزڝ؃ؠڪقحز؃دئټټنسقدجق؃دټ؃كجقدحضڪڪؠزق؃ئكدحټڝنئزججس؃دآقكدضنحجڪڝؠضقدئزدئټكؠحسؠجئڝڝآسنټضقحئڪنؠجكزئس؃ڝټزنضسكجحڝؠآئؠنضزدڝڪقؠحزنئج؃آټضكڪسزج؃ڝكآحقؠضئدټڪزنڝزقئد؃ن؃؃كټسضحڪڝقآ؃قكضحدؠڪئنټزسجڝح؃ټدكنسجكحڝسؠڪقزض؃زدڝڪنؠزئجټ؃سآڝكقندسنزحآ؃قضئڪدزحكآڝقزحؠكڝټضكسضڝحقحجڪڪكڪئ؃ڝزكقئنڝضڝڪ؃نآؠكئضټسڝ؃زآؠئټ؃جآزضددؠڝنجز؃؃آككحضؠحئجټڝسدنئڝددټننجكحسآ؃زآكسزدقؠټجضؠكزټئس؃ڝح؃ڝزكڪضز؃قكقكزضزح؃ڪكڝزؠضضڪ؃ؠؠجسح؃ضؠضضؠآئكجضضدڪڪزڪقنزضټڝڝنئضنڝڝن؃ڝآآدقنضجئح؃ؠآنسجقز؃آټحكؠسئزټح؃ټڪجدضزدنڪجنآحئڝققسجسضكسڝآسڝنؠټقسئڝضټدؠآئزددكآقجڝنجس؃حكڝحڪنؠقسندئؠحجڪدجؠحضڝدضؠنسضدسڝزؠكقحئؠئآ؃زؠدسڪدضآئج؃ڝضضآحضڪڪؠزق؃ئكدحټؠؠحسټجسڝڝآقكدضنضكحآڝڝزڝئزد؃ټكڝؠضنجكڝټآسقڝنڪئڪڝزنؠئڝسحدحټزن؃سكسزحكڪسزټڝ؃دڝڪقؠدزنئج؃آڪټټڪضسجزڝكآحقؠزڪضس؃حننحټڝزؠحضحنئسضحڪڝزڝئؠټسڝدئؠسسزدقؠټجقټدكنسجحآضضؠڪقزض؃دكڪحنؠزئئڝ؃سآڝككسدجدڝجؠآقضسڪدزڪ؃ننزحجآ؃ئټككسزدحقڝدؠآقجضددضټڪنزقحجك؃حآڪكئسضحسڪڝؠقكجئندجڪ؃نضزؠجز؃؃آكنئضؠحئڝحؠسكدئقددټننجسآجض؃؃آزكضضكحئڪؠؠئزټئسد؃ټقنجسنجضڝآټضقڪضزح؃ڪكآ؃زؠئض؃ټټسضحسقجدڝنآجقآضضدڪ؃زنڝزكئح؃ؠټئكټزئحڝ؃نآدقنضئدآڪقنڪززئ؃حكټحكؠسضحټڝزؠڝكڝضددنڪجنآزقجڪ؃زټ؃ككسحئؠڝئؠټقكئڝدؠڪدؠڪزجضآ؃ضآڪكنس؃حآڝحآئقئئټدسټڝنكزدجټ؃جآڪكضسڪحزڝ؃ؠكقحضسدئټڪنسسڝجق؃دآنكجضآحضڪڪؠزن؃ئكدحټؠنئسټجس؃ټآقنجدئحجڪټؠضقڪئزد؃ټكآحآڪجئڝڪآسك؃ضقحټڪنآضدڪئضد؃ټزنسسكجحڝؠټسحڝضسححڪقؠززنئج؃آټضحؠسزجدڝكآضقؠضسدټڝس؃آزقئد؃نڪقكآسسحڪڝززجقكضحدؠڪئنټزسجڝحقجئكنسجحآڝضؠڪكضض؃دككضنؠزضجټ؃زآڝكقسدئنضسؠآقسئڪدقڪ؃ؠقزحئؠسدآټكسضڝجحڝدؠؠقجئآآقټڪنزز؃جك؃حآؠكئزټقكڪڝؠققدئندجڪننضكڪسن؃دآككحزجحئڝڪؠسزڝڝؠددټننجسآجضڝڪآزؠ؃ؠآححڪؠؠئزټئسدټټقؠجحئججڝټآضكڪضزح؃ڪكټحټڪئئ؃ڪټسن؃سقجټڝنآججڝضضح؃ڪزؠحزكئح؃ؠڝئ؃؃سسجدڝقآجقنضئدآ؃ضټحززئح؃كټئكؠسسحټڝسزحققضئدنڪضنآزضجڪحزججككسضحؠڝزؠټككئڝجقڝجننزسجآ؃قآڪنټس؃حكزڝؠؠقضئټدكټڝننزدئنس؃آآكضضڪحؠڝ؃ؠنقحئؠئدټڪنسسڝجك؃دآنكجضآحضڪڪؠزق؃ئندحټؠنئؠئجؠڝڝآقكدنآضنڝټنڪس؃ئؠد؃ټكنحزټڪڪڝټآسقڝضكحدڪنؠجزآڝق؃ڪټقن؃سكجحڝؠآئقټقددڝڪقؠدزآئج؃ټټضكڪكئجدڝكآحقآضئدټڪسنڝزقئد؃نټجكټسضحڪڝزآدقڪضحدؠڪئڝڝكڪئقڝڝنؠنحسجحآڝضؠڪدكض؃دنڪحنؠزئجټ؃سڪدضحسدحآڝجؠټقضئڪدزڪس؃كزججڪ؃ئآټكسس؃حقڝجؠنقجټ؃دضټڪنززدجك؃حآؠكئڪدحسڪڝؠققدئندجټآنضككجز؃حآككئضؠحضڪټؠسدؠئقدحټننضسآجضڝڪآزؠټضنححڪؠؠضزټئس؃ڝټكنحسنججڝآآنقڪضزح؃زسؠقزؠئئ؃ټكدكؠحدڪكنضسقڝحضكدڪڪزؠ؃ټآقندڝؠڝڝدسسحڝڝقآدقنضجسححضنڝزټئ؃؃كټحڝ؃كټئزڪنكؠئ؃كقححڪجنآزضقزدڝڪجسضدؠټڝسكججكدئڝدقڪدؠآحټجآ؃ضآڪكؠس؃حكڝحآټجڪئټدزټڝنټزدجن؃جټڪجزضڪحكڝ؃ؠؠقحئؠدئڪڝئقسڝجؠ؃دآؠكجضآحض؃؃ضكق؃ئټدحټڪنئسټجسڝڝضضكدضؠحجڝ؃ؠضق؃ئزد؃ڝزنجسؠجئڝټآسك؃ضقحدكټؠجزټئض؃ڝټزن؃سكجحټجآئقټضسحدڪقؠجزنئجحزټسكڪسزج؃ڝكآحقؠضئئنڪزنڝزقئح؃نټجكآسضحڪڝزآ؃قكضڪدؠڪئنټ؃جئؠ؃قټدكنكحس؃دحؠآضنڪسؠؠضن؃زؠټسح؃ټؠټكقسدحنڝجؠآقضسنضزدآننزحجؠ؃ئحضآدسضحقڝدؠنآققسحڝټآقئججنن؃كآؠكئضټضڪدكآجق؃حزټسئحضآزدجز؃؃آكڪحقضئجسآؠنزڝئقدد؃دټسقكحټؠضټئك؃ضكححدنڪقكنئئڪحزسئئڝزكحئسڪنكڝضدجآڪكؠحزؠئئ؃ټټسټڝنقسن؃حآجقآضضض؃دؠآؠسټحئآضززححكئج؃ڝقآدقننآضضڝحنڪززئ؃ئ؃؃ننقسدڪئؠضسجدئؠڝئؠدآؠڝس؃ضس؃زټ؃ككسحټڪڝئؠڪقسئڝدقڪدننكجكڝ؃ضآڝكزسدحكڝجؠؠقنؠڪدسڪ؃نقزسجن؃ئآآكسضڪحؠؠزؠكقحئؠدكټټنزسڝجآآقآنكجضآجآڪڪؠقق؃سكزضټؠنضسټجسڝڝټئكدسآټټڪآؠززڪئڪد؃ټكنحقؠكزڝټآققڝضنحدڝسؠجكآنق؃ڪټكن؃سؠجح؃جآئكجقؠدڝڪكؠدكدئج؃ټټضن؃سزجئآ؃آحقؠضئجئڪسؠ؃زقئدؠټټجكټسضحڝڝزآ؃قكزحزڪڪئنڪزسئ؃؃قټضكنزضڪسڝضآ؃قزضضدكڪحنؠكئن؃؃سټدكقسجحنڝكؠآنضؠددزڪجنكزحجؠ؃ڪآټؠسآححقڝئؠنقسئآدقټڪآزكئجك؃ضآؠكزضټحڝڪڝټقڪئئندزټآنضسڪئد؃؃ڪكڝضضؠحقڪټؠنزڝضجددڝنؠضسآجكڝڪآؠك؃ضؠححڪؠئدزټئق؃ڝټآندسآجج؃آححقڪضقح؃ڝجؠحزټئئ؃ټ؃جن؃سقجدڝؠآجقآضضدڝڪزؠ؃زكئح");local j=(0x1167/81)local d=106 local l=o;local e={}e={[((5880/0x93)/40)]=function()local r,o,n,e=J(P,l,l+M);l=l+m;d=(d+(j*m))%a;return(((e+d-(j)+v*(m*S))%v)*((S*Q)^S))+(((n+d-(j*S)+v*(S^M))%a)*(v*a))+(((o+d-(j*M)+Q)%a)*v)+((r+d-(j*m)+Q)%a);end,[(0xa/5)]=function(e,e,e)local e=J(P,l,l);l=l+F;d=(d+(j))%a;return((e+d-(j)+Q)%v);end,[(0x7e/(-30+0x48))]=function()local o,e=J(P,l,l+S);d=(d+(j*S))%a;l=l+S;return(((e+d-(j)+v*(S*m))%v)*a)+((o+d-(j*S)+a*(S^M))%v);end,[(-0x30+52)]=function(l,e,d)if d then local e=(l/S^(e-o))%S^((d-F)-(e-o)+F);return e-e%o;else local e=S^(e-F);return(l%(e+e)>=e)and o or Y;end;end,[(0x2a-37)]=function()local d=e[((0x24-70)+0x23)]();local l=e[(155/0x9b)]();local r=o;local n=(e[(107-0x67)](l,F,G+m)*(S^(G*S)))+d;local d=e[(0x38-52)](l,21,31);local e=((-o)^e[(272/0x44)](l,32));if(d==Y)then if(n==B)then return e*Y;else d=F;r=B;end;elseif(d==(v*(S^M))-F)then return(n==Y)and(e*(F/B))or(e*(Y/B));end;return z(e,d-((a*(m))-o))*(r+(n/(S^q)));end,[(-0x26+44)]=function(n,r,r)local r;if(not n)then n=e[(48/0x30)]();if(n==Y)then return'';end;end;r=R(P,l,l+n-o);l=l+n;local e=''for l=F,#r do e=L(e,K((J(R(r,l,l))+d)%a))d=(d+j)%v end return e;end}local function Y(...)return{...},X('#',...)end local function P()local x={};local n={};local d={};local h={x,n,nil,d};local l={}local w=(1160/0x28)local a={[(0x76/59)]=(function(d)return not(#d==e[(-69+0x47)]())end),[(90-0x5a)]=(function(d)return e[(0x29-36)]()end),[(0x5c-88)]=(function(d)return e[(94+-0x58)]()end),[(0x1e/30)]=(function(d)local o=e[(990/0xa5)]()local d=''local e=1 for l=1,#o do e=(e+w)%a d=L(d,K((J(o:sub(l,l))+e)%v))end return d end)};local d=e[(39+-0x26)]()for d=1,d do local e=e[(93-0x5b)]();local o;local e=a[e%((6400-0xcb2)/0xe1)];l[d]=e and e({});end;for h=1,e[((-0x4a+160)-0x55)]()do local d=e[(-0x6d+111)]();if(e[(0x3f+(-13098/0xde))](d,o,F)==B)then local n=e[((0x71a-918)/225)](d,S,M);local a=e[(-0x2f+(0x1ce3/145))](d,m,S+m);local d={e[((0x31e0/224)-54)](),e[(46-0x2b)](),nil,nil};local i={[(0x6a+(-65+-0x29))]=function()d[u]=e[(109+-0x6a)]();d[E]=e[((129786/0xc2)/223)]();end,[(63+-0x3e)]=function()d[i]=e[(231/0xe7)]();end,[(394/0xc5)]=function()d[i]=e[(37-0x24)]()-(S^G)end,[(0x78-117)]=function()d[c]=e[(-83+0x54)]()-(S^G)d[p]=e[(111+-0x6c)]();end};i[n]();if(e[(852/0xd5)](a,F,o)==F)then d[r]=l[d[k]]end if(e[(-113+0x75)](a,S,S)==o)then d[t]=l[d[b]]end if(e[(0x78-116)](a,M,M)==F)then d[N]=l[d[g]]end x[h]=d;end end;h[3]=e[(0x2c-42)]();for e=F,e[(0x67-102)]()do n[e-F]=P();end;return h;end;local function G(e,m,v)local d=e[S];local j=e[M];local e=e[o];return(function(...)local J=d;local a=e;local P=X('#',...)-F;local K={};local M=-F;local Y=Y local d=o;local Q={...};local l={};local j=j;local B={};for e=0,P do if(e>=j)then K[e-j]=Q[e+F];else l[e]=Q[e+o];end;end;local e=P-j+o local e;local j;while true do e=a[d];j=e[(-127+0x80)];n=(2374857)while j<=(0xfc+-68)do n=-n n=(3094470)while(0x103-168)>=j do n=-n n=(414788)while j<=(206-0xa1)do n=-n n=(7995)while(0x39+-35)>=j do n=-n n=(14041820)while j<=(0x46+-60)do n=-n n=(2816736)while(-85+0x59)>=j do n=-n n=(1089521)while j<=(-87+(0xd3-123))do n=-n n=(9458198)while(-0x40+(0xfd-189))<j do n=-n d=e[u];break end while(n)/((0x6ff65/(0x3ae0/96)))==3238 do l[e[x]]=l[e[s]]%e[E];break end;break;end while 3233==(n)/((0x6950/80))do n=(2396592)while j<=(-0x1c+30)do n=-n local n;l[e[w]][l[e[i]]]=l[e[N]];d=d+o;e=a[d];l[e[h]]=v[e[c]];d=d+o;e=a[d];l[e[k]]=e[c];d=d+o;e=a[d];l[e[w]]=e[i];d=d+o;e=a[d];l[e[f]]=e[b];d=d+o;e=a[d];n=e[r]l[n]=l[n](_(l,n+o,e[s]))d=d+o;e=a[d];l[e[w]]=v[e[t]];d=d+o;e=a[d];l[e[f]]=e[t];d=d+o;e=a[d];l[e[r]]=e[b];d=d+o;e=a[d];l[e[r]]=e[i];break;end while(n)/(((-0x4076/223)+3278))==748 do n=(90852)while j>(-125+0x80)do n=-n local b;local n;n=e[x];b=l[e[s]];l[n+1]=b;l[n]=b[e[V]];d=d+o;e=a[d];l[e[h]]=m[e[i]];d=d+o;e=a[d];l[e[r]]=l[e[t]][e[y]];d=d+o;e=a[d];n=e[x]l[n](_(l,n+F,e[s]))d=d+o;e=a[d];d=e[u];break end while 134==(n)/(((0x19a9b+-25)/155))do local j;local B;local J,G;local W;local n;n=e[x]l[n](_(l,n+F,e[t]))d=d+o;e=a[d];l[e[w]]=m[e[c]];d=d+o;e=a[d];n=e[r];W=l[e[u]];l[n+1]=W;l[n]=W[e[N]];d=d+o;e=a[d];l[e[k]]=l[e[s]][e[p]];d=d+o;e=a[d];l[e[k]]=l[e[c]][e[E]];d=d+o;e=a[d];l[e[f]]=l[e[t]][e[g]];d=d+o;e=a[d];l[e[h]]=l[e[i]][e[V]];d=d+o;e=a[d];l[e[w]]=l[e[b]][e[V]];d=d+o;e=a[d];l[e[x]]=l[e[t]][e[p]];d=d+o;e=a[d];l[e[x]]=v[e[c]];d=d+o;e=a[d];l[e[w]]=l[e[i]][e[y]];d=d+o;e=a[d];l[e[r]]=e[u];d=d+o;e=a[d];l[e[r]]=e[c];d=d+o;e=a[d];n=e[f]J,G=Y(l[n](_(l,n+1,e[i])))M=G+n-1 B=0;for e=n,M do B=B+o;l[e]=J[B];end;d=d+o;e=a[d];n=e[h]l[n]=l[n](_(l,n+o,M))d=d+o;e=a[d];l[e[f]]=v[e[i]];d=d+o;e=a[d];l[e[x]]=l[e[t]][e[N]];d=d+o;e=a[d];l[e[r]]=v[e[i]];d=d+o;e=a[d];l[e[f]]=e[c];d=d+o;e=a[d];l[e[k]]=e[c];d=d+o;e=a[d];l[e[f]]=e[t];d=d+o;e=a[d];n=e[h]l[n]=l[n](_(l,n+o,e[u]))d=d+o;e=a[d];l[e[r]]=l[e[i]][e[y]];d=d+o;e=a[d];n=e[h]l[n]=l[n](_(l,n+o,e[t]))d=d+o;e=a[d];l[e[h]][e[i]]=l[e[p]];d=d+o;e=a[d];l[e[k]]=l[e[s]][e[N]];d=d+o;e=a[d];l[e[x]][e[c]]=e[y];d=d+o;e=a[d];l[e[f]]=l[e[t]][e[p]];d=d+o;e=a[d];l[e[f]][e[b]]=e[V];d=d+o;e=a[d];l[e[k]]=l[e[t]][e[g]];d=d+o;e=a[d];l[e[f]]=v[e[s]];d=d+o;e=a[d];l[e[r]]=l[e[i]][e[N]];d=d+o;e=a[d];l[e[x]]=m[e[u]];d=d+o;e=a[d];l[e[r]]=l[e[b]][e[p]];d=d+o;e=a[d];l[e[x]]=l[e[i]][e[g]];d=d+o;e=a[d];l[e[r]]=l[e[s]][e[V]];d=d+o;e=a[d];l[e[w]]=l[e[s]][e[E]];d=d+o;e=a[d];l[e[w]]=l[e[s]][e[N]];d=d+o;e=a[d];l[e[w]]=l[e[b]]-l[e[y]];d=d+o;e=a[d];l[e[h]]=l[e[u]]-e[p];d=d+o;e=a[d];l[e[h]]=e[b];d=d+o;e=a[d];n=e[h]l[n]=l[n](_(l,n+o,e[c]))d=d+o;e=a[d];l[e[r]][e[s]]=l[e[p]];d=d+o;e=a[d];l[e[w]]=l[e[u]][e[g]];d=d+o;e=a[d];l[e[h]]=m[e[s]];d=d+o;e=a[d];l[e[w]]=l[e[s]][e[V]];d=d+o;e=a[d];l[e[k]]=l[e[c]][e[p]];d=d+o;e=a[d];l[e[x]][e[c]]=l[e[V]];d=d+o;e=a[d];l[e[f]]=l[e[u]][e[E]];d=d+o;e=a[d];l[e[h]][e[s]]=e[E];d=d+o;e=a[d];l[e[w]]=l[e[c]][e[p]];d=d+o;e=a[d];l[e[x]]=m[e[t]];d=d+o;e=a[d];l[e[k]]=l[e[b]][e[p]];d=d+o;e=a[d];l[e[w]]=l[e[s]][e[V]];d=d+o;e=a[d];l[e[w]][e[i]]=l[e[p]];d=d+o;e=a[d];l[e[k]]=l[e[t]][e[g]];d=d+o;e=a[d];l[e[w]]=v[e[u]];d=d+o;e=a[d];l[e[r]]=l[e[c]][e[V]];d=d+o;e=a[d];l[e[f]]=l[e[u]][e[p]];d=d+o;e=a[d];j={e,l};j[S][j[F][h]]=j[S][j[o][u]]+j[F][p];d=d+o;e=a[d];l[e[h]]=e[b];d=d+o;e=a[d];n=e[w]l[n]=l[n](_(l,n+o,e[t]))d=d+o;e=a[d];l[e[r]][e[c]]=l[e[E]];d=d+o;e=a[d];l[e[w]]=l[e[b]][e[V]];d=d+o;e=a[d];l[e[r]][e[u]]=e[V];d=d+o;e=a[d];l[e[f]]=l[e[s]][e[g]];d=d+o;e=a[d];l[e[k]][e[c]]=e[N];d=d+o;e=a[d];l[e[h]]=l[e[u]][e[N]];d=d+o;e=a[d];l[e[w]][e[i]]=e[y];d=d+o;e=a[d];l[e[w]]=l[e[t]][e[E]];d=d+o;e=a[d];l[e[x]]=v[e[t]];d=d+o;e=a[d];l[e[r]]=l[e[b]][e[p]];d=d+o;e=a[d];l[e[k]]=l[e[u]][e[N]];d=d+o;e=a[d];l[e[k]][e[u]]=l[e[p]];d=d+o;e=a[d];l[e[r]]=m[e[i]];d=d+o;e=a[d];l[e[w]]=l[e[c]][e[V]];d=d+o;e=a[d];n=e[r];W=l[e[c]];l[n+1]=W;l[n]=W[e[E]];break end;break;end break;end break;end while(n)/((-0x11+2945))==962 do n=(221824)while(0xd9/31)>=j do n=-n n=(2059848)while j<=(-0x55+90)do n=-n l[e[w]]=m[e[i]];break;end while 1407==(n)/((-0x20+1496))do n=(6430528)while j>(-0x6f+117)do n=-n l[e[x]]=l[e[i]]/e[y];break end while 1888==(n)/((-102+0xdb4))do l[e[r]]=l[e[c]][e[p]];d=d+o;e=a[d];l[e[x]]=v[e[u]];d=d+o;e=a[d];l[e[f]]=l[e[i]][e[y]];d=d+o;e=a[d];l[e[h]]=m[e[s]];d=d+o;e=a[d];l[e[w]]=l[e[u]][e[g]];d=d+o;e=a[d];l[e[k]]=l[e[c]][e[E]];d=d+o;e=a[d];l[e[x]]=l[e[t]][e[V]];d=d+o;e=a[d];l[e[w]]=m[e[s]];d=d+o;e=a[d];l[e[h]]=l[e[u]][e[p]];d=d+o;e=a[d];l[e[h]]=#l[e[c]];break end;break;end break;end while 128==(n)/((0xda5-1760))do n=(7987895)while j<=((3145/0x55)-29)do n=-n l[e[w]]=m[e[c]];d=d+o;e=a[d];l[e[f]]=l[e[u]][e[E]];d=d+o;e=a[d];l[e[f]]=l[e[b]][e[E]];d=d+o;e=a[d];l[e[w]][e[i]]=l[e[E]];d=d+o;e=a[d];do return end;break;end while(n)/(((0x41f111c/148)/205))==3505 do n=(4644306)while(112+-0x67)<j do n=-n local c;local n;l[e[f]]=l[e[u]][e[p]];d=d+o;e=a[d];n=e[x];c=l[e[s]];l[n+1]=c;l[n]=c[e[g]];d=d+o;e=a[d];l[e[h]]=v[e[u]];d=d+o;e=a[d];l[e[f]]=l[e[t]][e[N]];d=d+o;e=a[d];l[e[x]]=m[e[b]];d=d+o;e=a[d];l[e[w]]=l[e[i]][e[E]];d=d+o;e=a[d];l[e[k]]=l[e[i]][e[E]];d=d+o;e=a[d];l[e[x]]=l[e[i]][e[g]];d=d+o;e=a[d];l[e[r]]=l[e[t]]*l[e[V]];d=d+o;e=a[d];l[e[k]]=m[e[t]];break end while(n)/((-0x21+1239))==3851 do local i;local n;l[e[x]]=l[e[s]][e[E]];d=d+o;e=a[d];l[e[f]]=v[e[u]];d=d+o;e=a[d];l[e[f]]=l[e[b]][e[N]];d=d+o;e=a[d];l[e[h]]=e[c];d=d+o;e=a[d];l[e[w]]=e[u];d=d+o;e=a[d];n=e[r]l[n]=l[n](_(l,n+o,e[s]))d=d+o;e=a[d];l[e[r]][e[s]]=l[e[g]];d=d+o;e=a[d];l[e[f]]=m[e[s]];d=d+o;e=a[d];l[e[r]]=l[e[s]][e[V]];d=d+o;e=a[d];n=e[f];i=l[e[s]];l[n+1]=i;l[n]=i[e[y]];break end;break;end break;end break;end break;end while(n)/((366840/0x5a))==3445 do n=(2122758)while j<=((0xe2-149)+-0x3d)do n=-n n=(483430)while(0x1a/2)>=j do n=-n n=(357576)while(87+-0x4c)>=j do n=-n local f;local n;l[e[x]]=l[e[i]][e[E]];d=d+o;e=a[d];l[e[w]]=l[e[i]][e[V]];d=d+o;e=a[d];n=e[w];f=l[e[b]];l[n+1]=f;l[n]=f[e[E]];d=d+o;e=a[d];l[e[k]]=l[e[c]];d=d+o;e=a[d];n=e[r]l[n](_(l,n+F,e[s]))d=d+o;e=a[d];l[e[r]]=l[e[u]][e[N]];d=d+o;e=a[d];l[e[w]]=l[e[b]][e[E]];d=d+o;e=a[d];n=e[x];f=l[e[c]];l[n+1]=f;l[n]=f[e[p]];d=d+o;e=a[d];l[e[x]]=l[e[t]];d=d+o;e=a[d];n=e[x]l[n](_(l,n+F,e[u]))d=d+o;e=a[d];l[e[r]]=l[e[s]][e[V]];d=d+o;e=a[d];l[e[h]]=l[e[u]][e[p]];d=d+o;e=a[d];n=e[w];f=l[e[i]];l[n+1]=f;l[n]=f[e[y]];break;end while(n)/((2285-0x485))==317 do n=(12254112)while(-0x30+(0x21c0/144))<j do n=-n local n;l[e[k]]=l[e[u]][e[p]];d=d+o;e=a[d];l[e[r]][e[u]]=e[g];d=d+o;e=a[d];l[e[r]]=l[e[c]][e[E]];d=d+o;e=a[d];l[e[f]]=v[e[t]];d=d+o;e=a[d];l[e[w]]=e[s];d=d+o;e=a[d];l[e[f]]=e[t];d=d+o;e=a[d];l[e[h]]=e[s];d=d+o;e=a[d];n=e[w]l[n]=l[n](_(l,n+o,e[c]))d=d+o;e=a[d];l[e[x]][e[s]]=l[e[N]];d=d+o;e=a[d];l[e[x]]=l[e[c]][e[g]];break end while(n)/((0x67149/129))==3744 do local n;l[e[x]][e[t]]=l[e[E]];d=d+o;e=a[d];l[e[k]]=v[e[u]];d=d+o;e=a[d];l[e[h]]=l[e[t]][e[V]];d=d+o;e=a[d];l[e[x]]=v[e[b]];d=d+o;e=a[d];l[e[k]]=e[i];d=d+o;e=a[d];l[e[f]]=e[i];d=d+o;e=a[d];l[e[x]]=e[b];d=d+o;e=a[d];n=e[f]l[n]=l[n](_(l,n+o,e[c]))d=d+o;e=a[d];l[e[w]]=l[e[b]][e[N]];d=d+o;e=a[d];n=e[h]l[n]=l[n](_(l,n+o,e[b]))break end;break;end break;end while(n)/((6725-0xd3f))==145 do n=(11774542)while j<=(518/0x25)do n=-n l[e[r]]=m[e[s]];d=d+o;e=a[d];l[e[k]]=l[e[b]][e[p]];d=d+o;e=a[d];l[e[h]]=l[e[i]][e[E]];d=d+o;e=a[d];l[e[f]][e[u]]=l[e[E]];d=d+o;e=a[d];do return end;break;end while(n)/((0x1ad4-3462))==3457 do n=(297021)while j>(-75+0x5a)do n=-n l[e[w]]=l[e[t]][e[V]];d=d+o;e=a[d];l[e[r]]=m[e[i]];d=d+o;e=a[d];l[e[r]]=l[e[u]][e[V]];d=d+o;e=a[d];l[e[h]]=m[e[t]];d=d+o;e=a[d];l[e[x]]=l[e[b]][e[p]];d=d+o;e=a[d];l[e[h]][l[e[t]]]=l[e[N]];break end while(n)/(((0x4c1+-17)-0x291))==547 do local e=e[f]l[e]=l[e]()break end;break;end break;end break;end while 1661==(n)/((1390+(-0x10a0/38)))do n=(13730304)while(43+-0x18)>=j do n=-n n=(1323956)while j<=(0x3a-41)do n=-n local x;local n;l[e[r]]=l[e[b]][e[y]];d=d+o;e=a[d];l[e[k]]=v[e[t]];d=d+o;e=a[d];l[e[r]]=l[e[t]][e[p]];d=d+o;e=a[d];l[e[r]]=e[b];d=d+o;e=a[d];l[e[f]]=e[s];d=d+o;e=a[d];n=e[w]l[n]=l[n](_(l,n+o,e[c]))d=d+o;e=a[d];l[e[w]][e[i]]=l[e[y]];d=d+o;e=a[d];l[e[f]]=l[e[i]][e[g]];d=d+o;e=a[d];n=e[w];x=l[e[u]];l[n+1]=x;l[n]=x[e[V]];break;end while 1382==(n)/((0x3be/1))do n=(4865280)while j>(46+-0x1c)do n=-n local n;l[e[x]][e[c]]=l[e[E]];d=d+o;e=a[d];l[e[r]]=l[e[i]][e[E]];d=d+o;e=a[d];l[e[w]]=v[e[t]];d=d+o;e=a[d];l[e[f]]=l[e[i]][e[V]];d=d+o;e=a[d];l[e[r]]=e[b];d=d+o;e=a[d];l[e[h]]=e[b];d=d+o;e=a[d];n=e[w]l[n]=l[n](_(l,n+o,e[t]))d=d+o;e=a[d];l[e[k]][e[b]]=l[e[E]];d=d+o;e=a[d];l[e[k]]=l[e[u]][e[g]];d=d+o;e=a[d];l[e[x]]=v[e[t]];break end while 3360==(n)/((222992/0x9a))do local e={e,l};e[S][e[F][k]]=e[S][e[o][s]]+e[F][E];break end;break;end break;end while 3584==(n)/((11493/0x3))do n=(3588201)while(0xa50/132)>=j do n=-n l[e[k]]=m[e[i]];d=d+o;e=a[d];l[e[f]]=l[e[c]][e[N]];d=d+o;e=a[d];l[e[k]]=l[e[u]][e[p]];d=d+o;e=a[d];l[e[f]][e[s]]=l[e[p]];d=d+o;e=a[d];do return end;break;end while 2061==(n)/((-0x5c+1833))do n=(3308256)while(0x98-131)<j do n=-n local f;local n;n=e[h];f=l[e[b]];l[n+1]=f;l[n]=f[e[p]];d=d+o;e=a[d];l[e[x]]=v[e[c]];d=d+o;e=a[d];l[e[x]]=e[i];d=d+o;e=a[d];l[e[k]]=e[t];d=d+o;e=a[d];l[e[r]]=e[u];d=d+o;e=a[d];n=e[w]l[n]=l[n](_(l,n+o,e[u]))d=d+o;e=a[d];f=l[e[y]];if not f then d=d+F;else l[e[h]]=f;d=e[b];end;break end while 2016==(n)/((1695+(-0x20b2/155)))do l[e[k]]=l[e[i]][e[y]];d=d+o;e=a[d];l[e[h]]=m[e[b]];d=d+o;e=a[d];l[e[k]]=l[e[b]][e[y]];d=d+o;e=a[d];l[e[x]][e[b]]=l[e[V]];d=d+o;e=a[d];l[e[x]]=l[e[i]][e[N]];d=d+o;e=a[d];l[e[k]][e[c]]=e[y];d=d+o;e=a[d];l[e[f]]=l[e[s]][e[y]];d=d+o;e=a[d];l[e[w]]=v[e[c]];break end;break;end break;end break;end break;end break;end while(n)/((0x273d/49))==39 do n=(2987769)while j<=(4488/0x88)do n=-n n=(4961100)while(0x92d/87)>=j do n=-n n=(741223)while j<=(0x7d-101)do n=-n n=(5775692)while(2001/0x57)<j do n=-n local r;local n;n=e[k];r=l[e[c]];l[n+1]=r;l[n]=r[e[N]];d=d+o;e=a[d];l[e[w]]=m[e[t]];d=d+o;e=a[d];l[e[f]]=l[e[t]][e[V]];d=d+o;e=a[d];l[e[f]]=v[e[b]];d=d+o;e=a[d];l[e[x]]=l[e[s]][e[g]];d=d+o;e=a[d];l[e[k]]=e[u];d=d+o;e=a[d];l[e[f]]=v[e[i]];d=d+o;e=a[d];l[e[k]]=l[e[t]][e[g]];d=d+o;e=a[d];l[e[f]]=l[e[u]][e[g]];d=d+o;e=a[d];l[e[w]]=v[e[t]];break end while(n)/((714168/0xfc))==2038 do local n;l[e[x]]=l[e[t]][e[p]];d=d+o;e=a[d];l[e[f]]=e[s];d=d+o;e=a[d];l[e[x]]=e[s];d=d+o;e=a[d];l[e[r]]=e[b];d=d+o;e=a[d];n=e[h]l[n]=l[n](_(l,n+o,e[u]))break end;break;end while(n)/((0x32b-468))==2161 do n=(2509669)while(142-0x75)>=j do n=-n local n;l[e[f]]=l[e[c]][e[V]];d=d+o;e=a[d];l[e[f]]=m[e[b]];d=d+o;e=a[d];l[e[w]]=l[e[s]][e[p]];d=d+o;e=a[d];l[e[f]]=l[e[c]];d=d+o;e=a[d];n=e[x]l[n](_(l,n+F,e[i]))break;end while 907==(n)/((0x15bb-2796))do n=(4987574)while j>(0x93-121)do n=-n l[e[f]]=l[e[c]];break end while(n)/((0x48b91/207))==3466 do local S;local j;local F,V;local n;l[e[r]]=l[e[s]][e[N]];d=d+o;e=a[d];l[e[f]]=v[e[u]];d=d+o;e=a[d];l[e[r]]=l[e[i]][e[N]];d=d+o;e=a[d];l[e[x]]=l[e[b]][e[p]];d=d+o;e=a[d];l[e[r]]=l[e[i]]/e[E];d=d+o;e=a[d];l[e[h]]=e[b];d=d+o;e=a[d];l[e[w]]=e[c];d=d+o;e=a[d];n=e[r]l[n]=l[n](_(l,n+o,e[s]))d=d+o;e=a[d];l[e[h]]=v[e[i]];d=d+o;e=a[d];l[e[r]]=l[e[c]][e[g]];d=d+o;e=a[d];l[e[h]]=l[e[s]][e[E]];d=d+o;e=a[d];l[e[r]]=l[e[i]]/e[N];d=d+o;e=a[d];l[e[w]]=e[t];d=d+o;e=a[d];l[e[k]]=e[u];d=d+o;e=a[d];n=e[w]l[n]=l[n](_(l,n+o,e[t]))d=d+o;e=a[d];l[e[f]]=v[e[c]];d=d+o;e=a[d];l[e[x]]=l[e[t]][e[g]];d=d+o;e=a[d];l[e[f]]=l[e[c]][e[y]];d=d+o;e=a[d];l[e[f]]=l[e[t]]/e[y];d=d+o;e=a[d];l[e[r]]=e[b];d=d+o;e=a[d];l[e[k]]=e[u];d=d+o;e=a[d];n=e[w]F,V=Y(l[n](_(l,n+1,e[s])))M=V+n-1 j=0;for e=n,M do j=j+o;l[e]=F[j];end;d=d+o;e=a[d];n=e[k]l[n]=l[n](_(l,n+o,M))d=d+o;e=a[d];l[e[k]]=m[e[b]];d=d+o;e=a[d];l[e[w]]=l[e[b]][e[g]];d=d+o;e=a[d];l[e[f]]=v[e[b]];d=d+o;e=a[d];l[e[k]]=l[e[i]][e[p]];d=d+o;e=a[d];l[e[w]]={};d=d+o;e=a[d];l[e[h]]=v[e[b]];d=d+o;e=a[d];l[e[h]]=l[e[t]][e[p]];d=d+o;e=a[d];l[e[r]]=e[i];d=d+o;e=a[d];l[e[h]]=l[e[s]];d=d+o;e=a[d];n=e[w]l[n]=l[n](_(l,n+o,e[b]))d=d+o;e=a[d];l[e[w]]=v[e[u]];d=d+o;e=a[d];l[e[f]]=l[e[u]][e[g]];d=d+o;e=a[d];l[e[r]]=e[s];d=d+o;e=a[d];l[e[x]]=l[e[b]];d=d+o;e=a[d];n=e[h]F,V=Y(l[n](_(l,n+1,e[b])))M=V+n-1 j=0;for e=n,M do j=j+o;l[e]=F[j];end;d=d+o;e=a[d];n=e[r];S=l[n];for e=n+1,M do W(S,l[e])end;break end;break;end break;end break;end while(n)/((7215-0xe24))==1380 do n=(3418020)while j<=((128+-0x15)+-0x4d)do n=-n n=(8247824)while j<=((0x10cb+-71)/0x97)do n=-n l[e[x]]=m[e[c]];d=d+o;e=a[d];l[e[f]]=l[e[b]][e[E]];d=d+o;e=a[d];l[e[k]]=m[e[b]];d=d+o;e=a[d];l[e[f]]=l[e[u]][e[g]];d=d+o;e=a[d];l[e[f]]=l[e[c]][e[V]];d=d+o;e=a[d];if(l[e[x]]==e[y])then d=d+F;else d=e[c];end;break;end while(n)/((4219-0x854))==3952 do n=(323268)while j>(0x16e2/202)do n=-n local i;local h;local n;l[e[f]]=e[u];d=d+o;e=a[d];l[e[r]]=e[t];d=d+o;e=a[d];n=e[r]l[n]=l[n](_(l,n+o,e[b]))d=d+o;e=a[d];l[e[x]]=e[b];d=d+o;e=a[d];h=e[t];i=l[h]for e=h+1,e[E]do i=i..l[e];end;l[e[f]]=i;break end while 2449==(n)/((6204/0x2f))do l[e[r]]=l[e[b]][e[N]];break end;break;end break;end while(n)/((110583/0x63))==3060 do n=(3320762)while(0x50+-49)>=j do n=-n local j;local n;n=e[f]l[n](_(l,n+F,e[c]))d=d+o;e=a[d];l[e[f]]=v[e[s]];d=d+o;e=a[d];l[e[w]]=l[e[u]][e[V]];d=d+o;e=a[d];l[e[h]]=e[b];d=d+o;e=a[d];l[e[k]]=l[e[t]][e[y]];d=d+o;e=a[d];n=e[x]l[n]=l[n](_(l,n+o,e[s]))d=d+o;e=a[d];l[e[k]][e[u]]=l[e[V]];d=d+o;e=a[d];l[e[h]]=l[e[u]][e[y]];d=d+o;e=a[d];l[e[r]]=l[e[c]][e[N]];d=d+o;e=a[d];l[e[x]]=l[e[t]][e[y]];d=d+o;e=a[d];l[e[x]][e[u]]=l[e[E]];d=d+o;e=a[d];l[e[h]]=l[e[t]][e[g]];d=d+o;e=a[d];l[e[w]]=l[e[i]][e[N]];d=d+o;e=a[d];l[e[x]][e[c]]=l[e[p]];d=d+o;e=a[d];l[e[h]]=l[e[u]][e[N]];d=d+o;e=a[d];l[e[k]]=v[e[b]];d=d+o;e=a[d];l[e[h]]=l[e[t]][e[V]];d=d+o;e=a[d];l[e[h]]=l[e[c]][e[N]];d=d+o;e=a[d];l[e[w]][e[u]]=l[e[V]];d=d+o;e=a[d];l[e[r]]=l[e[c]][e[y]];d=d+o;e=a[d];l[e[f]]=l[e[s]][e[y]];d=d+o;e=a[d];l[e[w]]=l[e[c]][e[V]];d=d+o;e=a[d];l[e[f]][e[c]]=l[e[y]];d=d+o;e=a[d];l[e[h]]=l[e[c]][e[y]];d=d+o;e=a[d];l[e[f]]=v[e[s]];d=d+o;e=a[d];l[e[f]]=e[u];d=d+o;e=a[d];l[e[r]]=e[c];d=d+o;e=a[d];l[e[x]]=e[t];d=d+o;e=a[d];n=e[x]l[n]=l[n](_(l,n+o,e[s]))d=d+o;e=a[d];l[e[k]][e[t]]=l[e[y]];d=d+o;e=a[d];l[e[h]]=l[e[c]][e[g]];d=d+o;e=a[d];l[e[x]]=v[e[t]];d=d+o;e=a[d];l[e[r]]=l[e[s]][e[V]];d=d+o;e=a[d];l[e[r]]=e[i];d=d+o;e=a[d];l[e[x]]=e[b];d=d+o;e=a[d];n=e[x]l[n]=l[n](_(l,n+o,e[b]))d=d+o;e=a[d];l[e[r]][e[i]]=l[e[p]];d=d+o;e=a[d];l[e[x]]=l[e[u]][e[g]];d=d+o;e=a[d];l[e[f]][e[t]]=e[E];d=d+o;e=a[d];l[e[r]]=l[e[s]][e[p]];d=d+o;e=a[d];l[e[h]]=v[e[i]];d=d+o;e=a[d];l[e[h]]=l[e[b]][e[g]];d=d+o;e=a[d];l[e[h]]=e[b];d=d+o;e=a[d];l[e[w]]=l[e[b]][e[p]];d=d+o;e=a[d];l[e[r]]=l[e[i]][e[g]];d=d+o;e=a[d];l[e[x]]=l[e[i]][e[N]];d=d+o;e=a[d];l[e[x]]=l[e[i]]/e[E];d=d+o;e=a[d];l[e[w]]=l[e[u]]-e[g];d=d+o;e=a[d];n=e[k]l[n]=l[n](_(l,n+o,e[u]))d=d+o;e=a[d];l[e[f]][e[b]]=l[e[E]];d=d+o;e=a[d];l[e[w]]=l[e[b]][e[N]];d=d+o;e=a[d];l[e[w]]=l[e[t]][e[p]];d=d+o;e=a[d];l[e[r]]=l[e[c]][e[E]];d=d+o;e=a[d];l[e[r]][e[c]]=l[e[p]];d=d+o;e=a[d];l[e[f]]=l[e[t]][e[p]];d=d+o;e=a[d];n=e[k];j=l[e[c]];l[n+1]=j;l[n]=j[e[p]];break;end while 3958==(n)/((0x2de20/(0xbd00/216)))do n=(1911876)while(105-0x49)<j do n=-n local n;l[e[w]]=l[e[b]][e[p]];d=d+o;e=a[d];l[e[w]]=l[e[s]][e[N]];d=d+o;e=a[d];l[e[r]]=l[e[t]][e[E]];d=d+o;e=a[d];l[e[f]]=l[e[i]]-l[e[V]];d=d+o;e=a[d];l[e[r]]=e[i];d=d+o;e=a[d];n=e[r]l[n]=l[n](_(l,n+o,e[u]))d=d+o;e=a[d];l[e[x]][e[s]]=l[e[N]];d=d+o;e=a[d];l[e[r]]=m[e[i]];d=d+o;e=a[d];l[e[x]]=l[e[s]][e[V]];d=d+o;e=a[d];if l[e[r]]then d=d+o;else d=e[c];end;break end while(n)/((0x14886/131))==2978 do local n;l[e[r]]=e[t];d=d+o;e=a[d];l[e[h]]=m[e[c]];d=d+o;e=a[d];l[e[w]]=l[e[t]][e[N]];d=d+o;e=a[d];l[e[r]]=l[e[i]][e[E]];d=d+o;e=a[d];n=e[f]l[n]=l[n](_(l,n+o,e[s]))d=d+o;e=a[d];l[e[k]]=v[e[c]];d=d+o;e=a[d];l[e[h]]=l[e[t]][e[V]];d=d+o;e=a[d];l[e[x]]=e[t];d=d+o;e=a[d];l[e[x]]=m[e[c]];d=d+o;e=a[d];l[e[r]]=l[e[t]][e[N]];break end;break;end break;end break;end break;end while 3021==(n)/((176042/(-0x76+296)))do n=(1392580)while(0xa35/67)>=j do n=-n n=(11767822)while j<=(0x4c8/34)do n=-n n=(9414030)while j<=(176-0x8e)do n=-n local M;local j;local n;n=e[w]l[n](_(l,n+F,e[u]))d=d+o;e=a[d];l[e[f]]=v[e[t]];d=d+o;e=a[d];l[e[k]]=l[e[c]][e[y]];d=d+o;e=a[d];l[e[f]]=e[t];d=d+o;e=a[d];l[e[w]]=l[e[i]][e[g]];d=d+o;e=a[d];n=e[w]l[n]=l[n](_(l,n+o,e[u]))d=d+o;e=a[d];l[e[f]][e[u]]=l[e[g]];d=d+o;e=a[d];l[e[f]]=l[e[s]][e[g]];d=d+o;e=a[d];l[e[w]]=v[e[b]];d=d+o;e=a[d];l[e[w]]=e[c];d=d+o;e=a[d];l[e[h]]=e[i];d=d+o;e=a[d];l[e[f]]=e[u];d=d+o;e=a[d];n=e[x]l[n]=l[n](_(l,n+o,e[i]))d=d+o;e=a[d];l[e[h]][e[i]]=l[e[E]];d=d+o;e=a[d];l[e[h]]=l[e[u]][e[E]];d=d+o;e=a[d];l[e[x]][e[u]]=e[N];d=d+o;e=a[d];l[e[h]]=l[e[s]][e[V]];d=d+o;e=a[d];l[e[r]]=l[e[b]][e[V]];d=d+o;e=a[d];l[e[f]]=l[e[i]][e[y]];d=d+o;e=a[d];l[e[r]]=v[e[s]];d=d+o;e=a[d];l[e[f]]=l[e[u]][e[p]];d=d+o;e=a[d];l[e[r]]=e[u];d=d+o;e=a[d];l[e[h]]=e[u];d=d+o;e=a[d];n=e[k]l[n]=l[n](_(l,n+o,e[t]))d=d+o;e=a[d];j={l,e};j[F][j[S][x]]=j[o][j[S][g]]+j[F][j[S][u]];d=d+o;e=a[d];l[e[w]][e[u]]=l[e[N]];d=d+o;e=a[d];l[e[r]]=l[e[t]][e[N]];d=d+o;e=a[d];l[e[w]][e[c]]=e[N];d=d+o;e=a[d];l[e[w]]=l[e[i]][e[V]];d=d+o;e=a[d];l[e[k]]=m[e[u]];d=d+o;e=a[d];l[e[w]]=l[e[i]][e[y]];d=d+o;e=a[d];l[e[w]]=l[e[c]][e[V]];d=d+o;e=a[d];l[e[f]][e[b]]=l[e[N]];d=d+o;e=a[d];l[e[x]]=l[e[c]][e[E]];d=d+o;e=a[d];l[e[x]]=l[e[u]][e[p]];d=d+o;e=a[d];l[e[x]]=l[e[t]][e[y]];d=d+o;e=a[d];l[e[w]]=v[e[b]];d=d+o;e=a[d];l[e[r]]=l[e[u]][e[p]];d=d+o;e=a[d];l[e[r]]=e[i];d=d+o;e=a[d];l[e[f]]=e[u];d=d+o;e=a[d];n=e[f]l[n]=l[n](_(l,n+o,e[u]))d=d+o;e=a[d];j={l,e};j[F][j[S][f]]=j[o][j[S][V]]+j[F][j[S][u]];d=d+o;e=a[d];l[e[x]][e[s]]=l[e[V]];d=d+o;e=a[d];l[e[f]]=l[e[t]][e[g]];d=d+o;e=a[d];l[e[r]][e[c]]=e[V];d=d+o;e=a[d];l[e[w]]=m[e[b]];d=d+o;e=a[d];l[e[r]]=l[e[u]][e[g]];d=d+o;e=a[d];n=e[x];M=l[e[b]];l[n+1]=M;l[n]=M[e[y]];break;end while 3390==(n)/((0x15f6-(5801-0xb8c)))do n=(453803)while j>(0xa1e/74)do n=-n l[e[r]]=l[e[u]]-e[g];break end while(n)/((0xf07-1964))==241 do local n;l[e[k]]=e[u];d=d+o;e=a[d];l[e[k]]=e[s];d=d+o;e=a[d];l[e[k]]=e[i];d=d+o;e=a[d];n=e[x]l[n]=l[n](_(l,n+o,e[s]))d=d+o;e=a[d];l[e[h]][e[t]]=l[e[g]];d=d+o;e=a[d];l[e[x]]=v[e[u]];break end;break;end break;end while 3674==(n)/((317097/0x63))do n=(99814)while j<=(110-0x49)do n=-n l[e[k]]=m[e[c]];d=d+o;e=a[d];l[e[k]]=l[e[c]][e[y]];d=d+o;e=a[d];l[e[x]]=l[e[b]][e[p]];d=d+o;e=a[d];l[e[r]][e[t]]=l[e[E]];d=d+o;e=a[d];do return end;break;end while(n)/((0xb968/136))==286 do n=(7587230)while(0xd82/91)<j do n=-n local M;local j;local n;l[e[k]]=e[b];d=d+o;e=a[d];n=e[r]l[n]=l[n](_(l,n+o,e[c]))d=d+o;e=a[d];j={l,e};j[F][j[S][x]]=j[o][j[S][p]]+j[F][j[S][b]];d=d+o;e=a[d];l[e[f]][e[b]]=l[e[V]];d=d+o;e=a[d];l[e[w]]=l[e[u]][e[y]];d=d+o;e=a[d];l[e[w]][e[u]]=e[V];d=d+o;e=a[d];l[e[x]]=l[e[s]][e[y]];d=d+o;e=a[d];l[e[k]]=m[e[b]];d=d+o;e=a[d];l[e[x]]=l[e[u]][e[y]];d=d+o;e=a[d];l[e[h]]=l[e[c]][e[p]];d=d+o;e=a[d];l[e[r]][e[s]]=l[e[N]];d=d+o;e=a[d];l[e[k]]=l[e[c]][e[y]];d=d+o;e=a[d];l[e[k]]=v[e[u]];d=d+o;e=a[d];l[e[x]]=l[e[i]][e[g]];d=d+o;e=a[d];l[e[x]]=e[u];d=d+o;e=a[d];l[e[k]]=e[b];d=d+o;e=a[d];n=e[r]l[n]=l[n](_(l,n+o,e[t]))d=d+o;e=a[d];l[e[x]][e[b]]=l[e[E]];d=d+o;e=a[d];l[e[h]]=m[e[i]];d=d+o;e=a[d];l[e[f]]=l[e[c]][e[p]];d=d+o;e=a[d];n=e[x];M=l[e[c]];l[n+1]=M;l[n]=M[e[E]];break end while 3830==(n)/((0xfb9-2044))do local n;l[e[h]][e[c]]=l[e[E]];d=d+o;e=a[d];l[e[r]]=v[e[i]];d=d+o;e=a[d];l[e[w]]=l[e[s]][e[y]];d=d+o;e=a[d];l[e[f]]=e[u];d=d+o;e=a[d];l[e[k]]=l[e[c]][e[y]];d=d+o;e=a[d];n=e[w]l[n]=l[n](_(l,n+o,e[s]))d=d+o;e=a[d];l[e[h]][e[b]]=l[e[g]];d=d+o;e=a[d];l[e[r]]=l[e[u]][e[E]];d=d+o;e=a[d];l[e[h]]=v[e[b]];d=d+o;e=a[d];l[e[r]]=e[t];break end;break;end break;end break;end while 343==(n)/((304500/0x4b))do n=(1506350)while(150-0x6c)>=j do n=-n n=(9257820)while j<=(-0x70+152)do n=-n l[e[r]]=m[e[u]];d=d+o;e=a[d];l[e[x]]=l[e[b]][e[g]];d=d+o;e=a[d];l[e[f]]=m[e[c]];d=d+o;e=a[d];l[e[x]]=l[e[i]][e[V]];d=d+o;e=a[d];l[e[x]]=l[e[c]][e[N]];d=d+o;e=a[d];l[e[f]][e[s]]=l[e[y]];d=d+o;e=a[d];do return end;break;end while(n)/((97240/0x22))==3237 do n=(1934880)while j>(-0x50+121)do n=-n l[e[x]]=l[e[c]][e[p]];d=d+o;e=a[d];l[e[h]]=v[e[s]];d=d+o;e=a[d];l[e[f]]=l[e[c]][e[y]];d=d+o;e=a[d];l[e[x]]=l[e[i]][e[g]];d=d+o;e=a[d];if(l[e[r]]==l[e[g]])then d=d+F;else d=e[u];end;break end while(n)/((-116+0x1033))==480 do local e=e[w]l[e](l[e+F])break end;break;end break;end while 1175==(n)/(((0xf6c+-102)/3))do n=(62478)while(0x1d0f/173)>=j do n=-n local e=e[x]l[e](l[e+F])break;end while 1602==(n)/((159-0x78))do n=(8575968)while j>(0xc8-156)do n=-n local n=e[f];local a={};for e=1,#B do local e=B[e];for d=0,#e do local e=e[d];local o=e[1];local d=e[2];if o==l and d>=n then a[d]=o[d];e[1]=a;end;end;end;break end while(n)/((-106+(2509+-0x7f)))==3768 do l[e[h]]=m[e[b]];d=d+o;e=a[d];l[e[r]]=l[e[u]][e[p]];d=d+o;e=a[d];l[e[f]]=m[e[b]];d=d+o;e=a[d];l[e[h]]=l[e[i]][e[y]];d=d+o;e=a[d];l[e[w]]=l[e[s]][l[e[V]]];d=d+o;e=a[d];if not l[e[w]]then d=d+F;else d=e[s];end;break end;break;end break;end break;end break;end break;end break;end while 3428==(n)/(((-17+0xc6)+-0x3c))do n=(439351)while(0x23dc/135)>=j do n=-n n=(372826)while j<=(148-0x5c)do n=-n n=(6747754)while j<=((23693-0x2e75)/0xec)do n=-n n=(1862250)while(11750/0xfa)>=j do n=-n n=(3504778)while(7912/0xac)<j do n=-n l[e[x]]=l[e[i]][l[e[V]]];break end while 2831==(n)/((2548-0x51e))do l[e[r]]=m[e[s]];d=d+o;e=a[d];l[e[f]]=l[e[u]][e[g]];d=d+o;e=a[d];l[e[x]]=l[e[c]][e[N]];d=d+o;e=a[d];l[e[r]][e[u]]=l[e[N]];d=d+o;e=a[d];do return end;break end;break;end while(n)/((1325-0x2a3))==2865 do n=(10690785)while(87+(-32-0x7))>=j do n=-n local s;local n;l[e[x]]=v[e[b]];d=d+o;e=a[d];l[e[k]]=l[e[b]][e[E]];d=d+o;e=a[d];l[e[x]]=l[e[b]][e[p]];d=d+o;e=a[d];n={e,l};n[S][n[F][f]]=n[S][n[o][i]]+n[F][E];d=d+o;e=a[d];l[e[r]]=l[e[u]][e[g]];d=d+o;e=a[d];l[e[h]]=l[e[c]]-e[y];d=d+o;e=a[d];s=e[w]l[s]=l[s](_(l,s+o,e[t]))d=d+o;e=a[d];l[e[k]][e[t]]=l[e[N]];d=d+o;e=a[d];l[e[f]]=l[e[t]][e[N]];d=d+o;e=a[d];l[e[f]][e[c]]=l[e[N]];break;end while(n)/((-42+0xb9f))==3645 do n=(5047436)while j>(0x85+-84)do n=-n local j;local n;l[e[h]]=l[e[b]][e[E]];d=d+o;e=a[d];l[e[w]]=l[e[c]][e[N]];d=d+o;e=a[d];n=e[k];j=l[e[t]];l[n+1]=j;l[n]=j[e[p]];d=d+o;e=a[d];l[e[h]]=l[e[t]];d=d+o;e=a[d];n=e[x]l[n](_(l,n+F,e[i]))d=d+o;e=a[d];l[e[f]]=l[e[u]][e[N]];d=d+o;e=a[d];l[e[k]]=l[e[c]][e[y]];d=d+o;e=a[d];n=e[r];j=l[e[c]];l[n+1]=j;l[n]=j[e[g]];d=d+o;e=a[d];l[e[f]]=l[e[u]];d=d+o;e=a[d];n=e[k]l[n](_(l,n+F,e[b]))d=d+o;e=a[d];l[e[f]]=l[e[b]][e[y]];d=d+o;e=a[d];l[e[r]]=l[e[s]][e[N]];d=d+o;e=a[d];n=e[k];j=l[e[t]];l[n+1]=j;l[n]=j[e[E]];d=d+o;e=a[d];l[e[f]]=l[e[c]];d=d+o;e=a[d];n=e[h]l[n](_(l,n+F,e[b]))d=d+o;e=a[d];l[e[k]]=l[e[t]][e[V]];d=d+o;e=a[d];l[e[f]]=l[e[c]][e[g]];d=d+o;e=a[d];n=e[h];j=l[e[t]];l[n+1]=j;l[n]=j[e[N]];d=d+o;e=a[d];l[e[k]]=l[e[b]];d=d+o;e=a[d];n=e[x]l[n](_(l,n+F,e[b]))d=d+o;e=a[d];l[e[x]]=m[e[t]];d=d+o;e=a[d];n=e[x];j=l[e[u]];l[n+1]=j;l[n]=j[e[p]];d=d+o;e=a[d];n=e[r]l[n](l[n+F])d=d+o;e=a[d];l[e[k]]=v[e[t]];d=d+o;e=a[d];l[e[x]]=l[e[t]][e[V]];d=d+o;e=a[d];l[e[f]]=m[e[s]];d=d+o;e=a[d];l[e[w]]=l[e[s]][e[p]];d=d+o;e=a[d];l[e[f]]=l[e[c]];d=d+o;e=a[d];n=e[h]l[n](_(l,n+F,e[t]))d=d+o;e=a[d];do return l[e[r]]end d=d+o;e=a[d];do return end;break end while 1492==(n)/((0x1aba-3459))do l[e[r]][e[b]]=l[e[g]];d=d+o;e=a[d];l[e[r]]=l[e[c]][e[g]];d=d+o;e=a[d];l[e[w]][e[i]]=e[N];d=d+o;e=a[d];l[e[h]]=l[e[b]][e[V]];d=d+o;e=a[d];l[e[r]]=v[e[s]];d=d+o;e=a[d];l[e[r]]=l[e[i]][e[p]];d=d+o;e=a[d];l[e[x]]=l[e[c]][e[N]];d=d+o;e=a[d];l[e[f]]=l[e[i]][e[y]];d=d+o;e=a[d];l[e[w]]=l[e[u]][e[E]];d=d+o;e=a[d];l[e[h]]=-l[e[t]];break end;break;end break;end break;end while 2834==(n)/((-67+0x990))do n=(4497857)while(-48+0x65)>=j do n=-n n=(9412060)while(143+-0x5c)>=j do n=-n l[e[r]][e[b]]=l[e[N]];d=d+o;e=a[d];l[e[w]]=m[e[b]];d=d+o;e=a[d];l[e[w]]=l[e[s]][e[p]];d=d+o;e=a[d];l[e[f]]=e[c];d=d+o;e=a[d];l[e[w]]=m[e[u]];d=d+o;e=a[d];l[e[h]]=l[e[u]][e[V]];d=d+o;e=a[d];if l[e[f]]then d=d+o;else d=e[b];end;break;end while 3404==(n)/((0x15bb-2798))do n=(95175)while j>(0x24f8/182)do n=-n if(l[e[r]]==l[e[E]])then d=d+F;else d=e[u];end;break end while 3525==(n)/((0x48-45))do local n;l[e[r]]=v[e[i]];d=d+o;e=a[d];l[e[h]]=e[t];d=d+o;e=a[d];l[e[w]]=e[b];d=d+o;e=a[d];l[e[w]]=e[u];d=d+o;e=a[d];n=e[k]l[n]=l[n](_(l,n+o,e[s]))d=d+o;e=a[d];l[e[x]][e[u]]=l[e[N]];d=d+o;e=a[d];l[e[r]]=l[e[c]][e[E]];d=d+o;e=a[d];l[e[x]][e[b]]=e[p];d=d+o;e=a[d];l[e[x]]=l[e[c]][e[g]];d=d+o;e=a[d];l[e[k]]=v[e[i]];break end;break;end break;end while(n)/((0x6cd71/213))==2149 do n=(9265495)while(-33+0x57)>=j do n=-n v[e[i]]=l[e[r]];break;end while 3065==(n)/((6145-0xc32))do n=(2223130)while(-70+0x7d)<j do n=-n l[e[w]]=m[e[u]];d=d+o;e=a[d];l[e[f]]=l[e[u]][e[y]];d=d+o;e=a[d];l[e[w]]=l[e[c]][e[E]];d=d+o;e=a[d];l[e[r]][e[s]]=l[e[N]];d=d+o;e=a[d];do return end;break end while 910==(n)/((0x83cff/221))do l[e[h]]=e[u]-l[e[V]];break end;break;end break;end break;end break;end while 262==(n)/(((0x1854678/72)/0xf9))do n=(186960)while(0xb7-121)>=j do n=-n n=(1358331)while j<=((0x83a0/234)-85)do n=-n n=(6640200)while j<=(163+-0x6a)do n=-n local c;local i;local h,b;local n;l[e[f]]=e[t];d=d+o;e=a[d];l[e[x]]=e[s];d=d+o;e=a[d];n=e[x]h,b=Y(l[n](_(l,n+1,e[u])))M=b+n-1 i=0;for e=n,M do i=i+o;l[e]=h[i];end;d=d+o;e=a[d];n=e[k]h,b=Y(l[n](_(l,n+o,M)))M=b+n-F i=0;for e=n,M do i=i+o;l[e]=h[i];end;d=d+o;e=a[d];n=e[r];c=l[n];for e=n+1,M do W(c,l[e])end;break;end while 2325==(n)/((117096/0x29))do n=(1592460)while j>(0x70+-54)do n=-n l[e[r]]=#l[e[s]];break end while 1966==(n)/((0x6cb-929))do l[e[r]]=l[e[t]][e[y]];d=d+o;e=a[d];l[e[w]][e[u]]=e[y];d=d+o;e=a[d];l[e[h]]=m[e[t]];d=d+o;e=a[d];l[e[h]]=l[e[b]][e[N]];d=d+o;e=a[d];l[e[r]]=l[e[c]][e[g]];d=d+o;e=a[d];l[e[r]][e[t]]=e[y];d=d+o;e=a[d];l[e[w]]=m[e[b]];d=d+o;e=a[d];l[e[k]]=l[e[t]][e[y]];d=d+o;e=a[d];l[e[w]][e[s]]=e[g];d=d+o;e=a[d];l[e[x]]=m[e[t]];d=d+o;e=a[d];l[e[f]]=l[e[i]][e[E]];d=d+o;e=a[d];l[e[k]][e[s]]=e[y];d=d+o;e=a[d];l[e[w]]=m[e[t]];d=d+o;e=a[d];l[e[k]]=l[e[i]][e[p]];d=d+o;e=a[d];l[e[w]][e[u]]=e[N];d=d+o;e=a[d];l[e[x]]=m[e[b]];d=d+o;e=a[d];l[e[x]]=l[e[c]][e[g]];d=d+o;e=a[d];l[e[h]][e[c]]=e[g];d=d+o;e=a[d];l[e[k]]=m[e[c]];d=d+o;e=a[d];l[e[r]]=l[e[u]][e[p]];d=d+o;e=a[d];l[e[x]][e[b]]=e[g];d=d+o;e=a[d];l[e[r]]=m[e[u]];d=d+o;e=a[d];l[e[r]]=l[e[s]][e[y]];d=d+o;e=a[d];l[e[h]][e[u]]=e[p];d=d+o;e=a[d];l[e[r]]=m[e[s]];d=d+o;e=a[d];l[e[h]]=l[e[c]][e[V]];d=d+o;e=a[d];l[e[k]][e[t]]=e[V];d=d+o;e=a[d];d=e[b];break end;break;end break;end while(n)/((-0x78+3723))==377 do n=(571710)while(-0x46+130)>=j do n=-n local n;l[e[k]]=v[e[t]];d=d+o;e=a[d];l[e[k]]=l[e[u]][e[y]];d=d+o;e=a[d];l[e[h]]=e[t];d=d+o;e=a[d];l[e[w]]=e[u];d=d+o;e=a[d];n=e[x]l[n]=l[n](_(l,n+o,e[t]))d=d+o;e=a[d];l[e[r]][e[c]]=l[e[N]];d=d+o;e=a[d];l[e[x]]=l[e[c]][e[V]];d=d+o;e=a[d];l[e[r]]=v[e[u]];d=d+o;e=a[d];l[e[x]]=l[e[b]][e[N]];d=d+o;e=a[d];l[e[r]]=e[t];break;end while 2006==(n)/((0x27c-351))do n=(4480740)while(0x1811/101)<j do n=-n local n;l[e[w]]=e[b];d=d+o;e=a[d];n=e[r]l[n]=l[n](_(l,n+o,e[i]))d=d+o;e=a[d];l[e[h]][e[t]]=l[e[g]];d=d+o;e=a[d];l[e[h]]=l[e[u]][e[p]];d=d+o;e=a[d];l[e[k]][e[t]]=e[N];d=d+o;e=a[d];l[e[r]]=l[e[b]][e[p]];d=d+o;e=a[d];l[e[x]][e[u]]=e[y];d=d+o;e=a[d];l[e[k]]=l[e[t]][e[y]];d=d+o;e=a[d];l[e[x]][e[t]]=e[V];d=d+o;e=a[d];l[e[r]]=l[e[c]][e[p]];break end while 1606==(n)/((0x588cc/130))do local n;n=e[h]l[n](_(l,n+F,e[c]))d=d+o;e=a[d];l[e[w]]={};d=d+o;e=a[d];l[e[f]][e[i]]=l[e[p]];d=d+o;e=a[d];l[e[h]]={};d=d+o;e=a[d];l[e[f]][e[s]]=l[e[p]];break end;break;end break;end break;end while 456==(n)/((-0x36+464))do n=(7930722)while j<=(0xb0+-111)do n=-n n=(2058108)while(-89+0x98)>=j do n=-n local e=e[x]local a,d=Y(l[e](l[e+F]))M=d+e-o local d=0;for e=e,M do d=d+o;l[e]=a[d];end;break;end while(n)/((-0x5a+2261))==948 do n=(1363008)while(152+(-115+0x1b))<j do n=-n l[e[w]]();break end while(n)/((139872/0x8d))==1374 do l[e[h]]=(e[c]~=0);d=d+F;break end;break;end break;end while 2323==(n)/(((0x17dc21-781875)/229))do n=(3382488)while(15312/0xe8)>=j do n=-n local n;n=e[x]l[n](_(l,n+F,e[b]))d=d+o;e=a[d];l[e[x]]=v[e[u]];d=d+o;e=a[d];l[e[f]]=l[e[t]][e[E]];d=d+o;e=a[d];l[e[w]]=e[t];d=d+o;e=a[d];l[e[r]]=l[e[u]][e[E]];d=d+o;e=a[d];n=e[w]l[n]=l[n](_(l,n+o,e[s]))d=d+o;e=a[d];l[e[x]][e[t]]=l[e[p]];d=d+o;e=a[d];l[e[x]]=l[e[c]][e[V]];d=d+o;e=a[d];l[e[h]]=v[e[i]];d=d+o;e=a[d];l[e[f]]=e[t];break;end while(n)/((905+-0x21))==3879 do n=(7451140)while(0x3fdc/244)<j do n=-n l[e[k]]=m[e[t]];d=d+o;e=a[d];l[e[x]]=l[e[b]][e[g]];d=d+o;e=a[d];l[e[f]]=l[e[c]][e[p]];d=d+o;e=a[d];l[e[r]][e[t]]=l[e[g]];d=d+o;e=a[d];do return end;break end while(n)/(((0x3c4a-7774)-3870))==1966 do local n;local r;l[e[w]]=e[t];d=d+o;e=a[d];r=e[x]l[r]=l[r](_(l,r+o,e[s]))d=d+o;e=a[d];n={l,e};n[F][n[S][k]]=n[o][n[S][g]]+n[F][n[S][i]];d=d+o;e=a[d];l[e[x]][e[b]]=l[e[p]];d=d+o;e=a[d];l[e[k]]=l[e[i]][e[N]];d=d+o;e=a[d];l[e[w]][e[u]]=e[V];break end;break;end break;end break;end break;end break;end while 121==(n)/((7292-0xe4d))do n=(6171544)while(177+-0x62)>=j do n=-n n=(117392)while(252-0xb3)>=j do n=-n n=(2431390)while j<=(0xd7-145)do n=-n n=(4074806)while(483/0x7)<j do n=-n if(l[e[f]]~=e[E])then d=d+F;else d=e[u];end;break end while(n)/((0x9525a/194))==1294 do local r;local i;local n;l[e[x]][e[b]]=l[e[p]];d=d+o;e=a[d];l[e[w]]=v[e[s]];d=d+o;e=a[d];l[e[w]]=m[e[c]];d=d+o;e=a[d];l[e[h]]=l[e[t]][e[g]];d=d+o;e=a[d];n=e[h]i={l[n](l[n+1])};r=0;for e=n,e[g]do r=r+o;l[e]=i[r];end d=d+o;e=a[d];d=e[t];break end;break;end while(n)/(((3248+-0x28)-0x657))==1534 do n=(9215341)while j<=(216-0x91)do n=-n local e={l,e};e[o][e[S][h]]=e[S][N]+e[S][t];break;end while(n)/((0x38b6c/100))==3967 do n=(15345680)while(-81+(6885/0x2d))<j do n=-n local a=e[h]local n={l[a](_(l,a+1,M))};local d=0;for e=a,e[E]do d=d+o;l[e]=n[d];end break end while(n)/((-0x6b+4197))==3752 do local x;local b;local k,f;local n;l[e[h]]=l[e[i]][e[E]];d=d+o;e=a[d];l[e[h]]=l[e[s]][e[N]];d=d+o;e=a[d];l[e[r]]=v[e[s]];d=d+o;e=a[d];l[e[w]]=l[e[c]][e[p]];d=d+o;e=a[d];l[e[r]]=e[s];d=d+o;e=a[d];l[e[h]]=e[i];d=d+o;e=a[d];n=e[h]k,f=Y(l[n](_(l,n+1,e[t])))M=f+n-1 b=0;for e=n,M do b=b+o;l[e]=k[b];end;d=d+o;e=a[d];n=e[w]l[n]=l[n](_(l,n+o,M))d=d+o;e=a[d];l[e[r]]=l[e[i]][e[y]];d=d+o;e=a[d];x={e,l};x[S][x[F][h]]=x[S][x[o][s]]+x[F][E];break end;break;end break;end break;end while(n)/((0x56f-724))==176 do n=(1021270)while j<=(1900/0x19)do n=-n n=(12998576)while(17390/0xeb)>=j do n=-n local c;local n;l[e[x]][e[i]]=l[e[p]];d=d+o;e=a[d];n=e[r];c=l[e[i]];l[n+1]=c;l[n]=c[e[N]];d=d+o;e=a[d];l[e[w]]=l[e[i]][e[y]];d=d+o;e=a[d];n=e[h]l[n](_(l,n+F,e[t]))d=d+o;e=a[d];l[e[w]]=l[e[b]][e[p]];d=d+o;e=a[d];l[e[f]]=l[e[b]][e[E]];d=d+o;e=a[d];n=e[x];c=l[e[i]];l[n+1]=c;l[n]=c[e[y]];break;end while 3856==(n)/((6833-0xd86))do n=(3717696)while(-0x69+180)<j do n=-n l[e[x]]=m[e[u]];d=d+o;e=a[d];l[e[h]]=l[e[t]][e[y]];d=d+o;e=a[d];l[e[k]]=m[e[i]];d=d+o;e=a[d];l[e[r]]=l[e[i]][e[p]];d=d+o;e=a[d];l[e[r]]=l[e[i]][e[V]];d=d+o;e=a[d];l[e[w]][e[c]]=l[e[g]];d=d+o;e=a[d];do return end;break end while(n)/((0x986-1282))==3216 do l[e[w]]=l[e[t]][e[p]];d=d+o;e=a[d];l[e[x]][e[s]]=e[V];d=d+o;e=a[d];l[e[x]]=l[e[t]][e[g]];d=d+o;e=a[d];l[e[k]][e[u]]=e[V];d=d+o;e=a[d];l[e[x]]=l[e[i]][e[V]];d=d+o;e=a[d];l[e[h]]=v[e[s]];d=d+o;e=a[d];l[e[r]]=l[e[s]][e[E]];d=d+o;e=a[d];l[e[w]]=m[e[s]];d=d+o;e=a[d];l[e[f]]=l[e[t]][e[N]];d=d+o;e=a[d];l[e[w]]=l[e[s]][e[E]];break end;break;end break;end while 365==(n)/((366538/0x83))do n=(809946)while j<=(0xf8-171)do n=-n local n;l[e[k]]=l[e[u]][e[N]];d=d+o;e=a[d];l[e[r]]=v[e[b]];d=d+o;e=a[d];l[e[h]]=l[e[b]][e[N]];d=d+o;e=a[d];l[e[x]]=e[c];d=d+o;e=a[d];l[e[k]]=e[c];d=d+o;e=a[d];l[e[x]]=e[u];d=d+o;e=a[d];n=e[f]l[n]=l[n](_(l,n+o,e[u]))d=d+o;e=a[d];l[e[w]][e[u]]=l[e[E]];d=d+o;e=a[d];l[e[w]]=l[e[c]][e[p]];d=d+o;e=a[d];l[e[k]]=v[e[i]];d=d+o;e=a[d];l[e[h]]=l[e[i]][e[N]];d=d+o;e=a[d];l[e[r]]=l[e[c]][e[V]];d=d+o;e=a[d];if(l[e[r]]==l[e[V]])then d=d+F;else d=e[b];end;break;end while 1698==(n)/((596+-0x77))do n=(6300735)while((-0x7c+33)+169)<j do n=-n local M;local j;local n;n=e[x]l[n](_(l,n+F,e[i]))d=d+o;e=a[d];l[e[x]]=v[e[i]];d=d+o;e=a[d];l[e[h]]=l[e[c]][e[N]];d=d+o;e=a[d];l[e[r]]=e[t];d=d+o;e=a[d];l[e[x]]=l[e[u]][e[p]];d=d+o;e=a[d];n=e[h]l[n]=l[n](_(l,n+o,e[b]))d=d+o;e=a[d];l[e[k]][e[u]]=l[e[y]];d=d+o;e=a[d];l[e[r]]=l[e[s]][e[g]];d=d+o;e=a[d];l[e[x]]=v[e[i]];d=d+o;e=a[d];l[e[x]]=e[i];d=d+o;e=a[d];l[e[r]]=e[b];d=d+o;e=a[d];l[e[r]]=e[s];d=d+o;e=a[d];n=e[r]l[n]=l[n](_(l,n+o,e[u]))d=d+o;e=a[d];l[e[k]][e[u]]=l[e[p]];d=d+o;e=a[d];l[e[k]]=l[e[u]][e[E]];d=d+o;e=a[d];l[e[x]][e[t]]=e[g];d=d+o;e=a[d];l[e[k]]=l[e[c]][e[V]];d=d+o;e=a[d];l[e[h]]=l[e[t]][e[E]];d=d+o;e=a[d];l[e[f]]=l[e[s]][e[g]];d=d+o;e=a[d];l[e[r]]=v[e[u]];d=d+o;e=a[d];l[e[r]]=l[e[i]][e[E]];d=d+o;e=a[d];l[e[f]]=e[b];d=d+o;e=a[d];l[e[f]]=e[s];d=d+o;e=a[d];n=e[x]l[n]=l[n](_(l,n+o,e[u]))d=d+o;e=a[d];j={l,e};j[F][j[S][w]]=j[o][j[S][V]]+j[F][j[S][u]];d=d+o;e=a[d];l[e[k]][e[s]]=l[e[V]];d=d+o;e=a[d];l[e[r]]=l[e[s]][e[V]];d=d+o;e=a[d];l[e[k]][e[b]]=e[V];d=d+o;e=a[d];l[e[f]]=l[e[b]][e[E]];d=d+o;e=a[d];l[e[x]]=m[e[b]];d=d+o;e=a[d];l[e[w]]=l[e[b]][e[g]];d=d+o;e=a[d];l[e[r]]=l[e[t]][e[y]];d=d+o;e=a[d];l[e[f]][e[b]]=l[e[N]];d=d+o;e=a[d];l[e[r]]=l[e[u]][e[V]];d=d+o;e=a[d];l[e[w]]=v[e[b]];d=d+o;e=a[d];l[e[h]]=l[e[s]][e[p]];d=d+o;e=a[d];l[e[f]]=e[i];d=d+o;e=a[d];l[e[k]]=e[i];d=d+o;e=a[d];n=e[r]l[n]=l[n](_(l,n+o,e[s]))d=d+o;e=a[d];l[e[r]][e[b]]=l[e[g]];d=d+o;e=a[d];l[e[x]]=m[e[b]];d=d+o;e=a[d];l[e[h]]=l[e[t]][e[N]];d=d+o;e=a[d];n=e[x];M=l[e[b]];l[n+1]=M;l[n]=M[e[E]];break end while(n)/((210105/0x57))==2609 do local n;l[e[f]]=v[e[u]];d=d+o;e=a[d];l[e[w]]=l[e[c]][e[E]];d=d+o;e=a[d];l[e[k]]=e[u];d=d+o;e=a[d];l[e[f]]=l[e[c]][e[y]];d=d+o;e=a[d];n=e[h]l[n]=l[n](_(l,n+o,e[c]))d=d+o;e=a[d];l[e[h]][e[u]]=l[e[E]];d=d+o;e=a[d];l[e[x]]=l[e[s]][e[p]];d=d+o;e=a[d];l[e[x]]=v[e[s]];d=d+o;e=a[d];l[e[r]]=e[s];d=d+o;e=a[d];l[e[f]]=e[s];break end;break;end break;end break;end break;end while(n)/((111044/0x47))==3946 do n=(5567045)while j<=(-19+(156+-0x34))do n=-n n=(10965940)while(0x39fa/181)>=j do n=-n n=(2979008)while((0x4+-53)+129)>=j do n=-n l[e[f]]=-l[e[i]];break;end while(n)/((4290-0x896))==1424 do n=(4464000)while(0xce+-125)<j do n=-n local d=e[k]local n={l[d](l[d+1])};local a=0;for e=d,e[N]do a=a+o;l[e]=n[a];end break end while(n)/((0x2dc9e/121))==2880 do l[e[r]]=m[e[s]];d=d+o;e=a[d];l[e[w]]=l[e[c]][e[y]];d=d+o;e=a[d];l[e[x]]=m[e[i]];d=d+o;e=a[d];l[e[w]]=l[e[u]][e[V]];d=d+o;e=a[d];l[e[f]]=l[e[t]][e[N]];d=d+o;e=a[d];l[e[w]][e[c]]=l[e[V]];d=d+o;e=a[d];do return end;break end;break;end break;end while(n)/((0x16bf-2971))==3845 do n=(7348950)while(0x14c0/64)>=j do n=-n local G;local j;local B,S;local n;l[e[r]]=v[e[c]];d=d+o;e=a[d];l[e[f]]=l[e[b]][e[g]];d=d+o;e=a[d];l[e[r]]=e[t];d=d+o;e=a[d];l[e[f]]=m[e[i]];d=d+o;e=a[d];l[e[x]]=l[e[t]][e[g]];d=d+o;e=a[d];n=e[w]l[n]=l[n](_(l,n+o,e[b]))d=d+o;e=a[d];l[e[h]][e[b]]=l[e[y]];d=d+o;e=a[d];l[e[w]]=l[e[s]][e[V]];d=d+o;e=a[d];l[e[w]]=v[e[s]];d=d+o;e=a[d];l[e[x]]=e[b];d=d+o;e=a[d];l[e[k]]=e[s];d=d+o;e=a[d];l[e[h]]=e[b];d=d+o;e=a[d];n=e[r]l[n]=l[n](_(l,n+o,e[s]))d=d+o;e=a[d];l[e[k]][e[i]]=l[e[V]];d=d+o;e=a[d];l[e[k]]=l[e[i]][e[E]];d=d+o;e=a[d];l[e[w]][e[c]]=e[E];d=d+o;e=a[d];l[e[x]]=l[e[u]][e[p]];d=d+o;e=a[d];l[e[k]]=v[e[c]];d=d+o;e=a[d];l[e[h]]=l[e[t]][e[V]];d=d+o;e=a[d];l[e[r]]=m[e[s]];d=d+o;e=a[d];l[e[f]]=l[e[i]][e[V]];d=d+o;e=a[d];l[e[r]]=l[e[t]][e[y]];d=d+o;e=a[d];l[e[h]]=l[e[t]][e[E]];d=d+o;e=a[d];l[e[x]]=l[e[c]][e[y]];d=d+o;e=a[d];l[e[h]]=l[e[t]]-e[N];d=d+o;e=a[d];l[e[x]]=e[s];d=d+o;e=a[d];n=e[x]l[n]=l[n](_(l,n+o,e[u]))d=d+o;e=a[d];l[e[w]][e[b]]=l[e[V]];d=d+o;e=a[d];l[e[f]]=l[e[u]][e[V]];d=d+o;e=a[d];l[e[w]][e[u]]=e[y];d=d+o;e=a[d];l[e[k]]=l[e[u]][e[N]];d=d+o;e=a[d];l[e[k]]=v[e[i]];d=d+o;e=a[d];l[e[w]]=l[e[s]][e[g]];d=d+o;e=a[d];l[e[f]]=e[s];d=d+o;e=a[d];l[e[r]]=e[c];d=d+o;e=a[d];l[e[w]]=e[c];d=d+o;e=a[d];n=e[k]l[n]=l[n](_(l,n+o,e[s]))d=d+o;e=a[d];l[e[w]][e[t]]=l[e[y]];d=d+o;e=a[d];l[e[f]]=v[e[s]];d=d+o;e=a[d];l[e[x]]=l[e[b]][e[E]];d=d+o;e=a[d];l[e[k]]=v[e[i]];d=d+o;e=a[d];l[e[f]]=e[b];d=d+o;e=a[d];l[e[f]]=e[c];d=d+o;e=a[d];l[e[w]]=e[s];d=d+o;e=a[d];n=e[h]l[n]=l[n](_(l,n+o,e[i]))d=d+o;e=a[d];l[e[f]]=l[e[t]][e[g]];d=d+o;e=a[d];n=e[k]l[n]=l[n](_(l,n+o,e[u]))d=d+o;e=a[d];l[e[r]][e[i]]=l[e[g]];d=d+o;e=a[d];l[e[r]]=l[e[c]][e[y]];d=d+o;e=a[d];l[e[f]][e[c]]=e[E];d=d+o;e=a[d];l[e[w]]=l[e[s]][e[N]];d=d+o;e=a[d];l[e[f]]=v[e[t]];d=d+o;e=a[d];l[e[r]]=l[e[t]][e[y]];d=d+o;e=a[d];l[e[f]]={};d=d+o;e=a[d];l[e[f]]=v[e[u]];d=d+o;e=a[d];l[e[h]]=l[e[t]][e[E]];d=d+o;e=a[d];l[e[f]]=e[u];d=d+o;e=a[d];l[e[w]]=v[e[t]];d=d+o;e=a[d];l[e[x]]=l[e[s]][e[y]];d=d+o;e=a[d];l[e[r]]=e[u];d=d+o;e=a[d];l[e[w]]=e[c];d=d+o;e=a[d];l[e[k]]=e[u];d=d+o;e=a[d];n=e[h]B,S=Y(l[n](_(l,n+1,e[u])))M=S+n-1 j=0;for e=n,M do j=j+o;l[e]=B[j];end;d=d+o;e=a[d];n=e[x]l[n]=l[n](_(l,n+o,M))d=d+o;e=a[d];l[e[x]]=v[e[c]];d=d+o;e=a[d];l[e[k]]=l[e[u]][e[N]];d=d+o;e=a[d];l[e[w]]=e[s];d=d+o;e=a[d];l[e[w]]=v[e[c]];d=d+o;e=a[d];l[e[r]]=l[e[b]][e[V]];d=d+o;e=a[d];l[e[h]]=e[c];d=d+o;e=a[d];l[e[f]]=e[u];d=d+o;e=a[d];l[e[k]]=e[i];d=d+o;e=a[d];n=e[w]B,S=Y(l[n](_(l,n+1,e[b])))M=S+n-1 j=0;for e=n,M do j=j+o;l[e]=B[j];end;d=d+o;e=a[d];n=e[f]B,S=Y(l[n](_(l,n+o,M)))M=S+n-F j=0;for e=n,M do j=j+o;l[e]=B[j];end;d=d+o;e=a[d];n=e[f];G=l[n];for e=n+1,M do W(G,l[e])end;break;end while(n)/((6424-0xcca))==2333 do n=(879360)while(0x4ec0/(0x257-359))<j do n=-n local o=e[b];local d=l[o]for e=o+1,e[g]do d=d..l[e];end;l[e[h]]=d;break end while 320==(n)/((5596-0xb20))do l[e[h]]=(not l[e[i]]);break end;break;end break;end break;end while(n)/((2818-0x58d))==3985 do n=(1263746)while(0xeb-147)>=j do n=-n n=(3627936)while(-0x79+207)>=j do n=-n l[e[h]]=l[e[b]][e[V]];d=d+o;e=a[d];l[e[r]]=l[e[i]][e[V]];d=d+o;e=a[d];l[e[f]][e[s]]=l[e[g]];d=d+o;e=a[d];l[e[h]]=l[e[b]][e[N]];d=d+o;e=a[d];l[e[r]][e[u]]=e[N];d=d+o;e=a[d];l[e[f]]=l[e[t]][e[p]];d=d+o;e=a[d];l[e[k]]=v[e[b]];break;end while 1026==(n)/((7135-0xe0f))do n=(1261800)while(0x76+-31)<j do n=-n for e=e[r],e[s]do l[e]=nil;end;break end while 360==(n)/((0xe2b+-122))do local x;local j,s;local n;l[e[h]]=e[c];d=d+o;e=a[d];n=e[f]j,s=Y(l[n](_(l,n+1,e[b])))M=s+n-1 x=0;for e=n,M do x=x+o;l[e]=j[x];end;d=d+o;e=a[d];n=e[f]l[n]=l[n](_(l,n+o,M))d=d+o;e=a[d];l[e[r]]=v[e[i]];d=d+o;e=a[d];l[e[k]]=l[e[c]][e[E]];d=d+o;e=a[d];l[e[k]]=e[b];d=d+o;e=a[d];l[e[k]]=v[e[t]];d=d+o;e=a[d];l[e[r]]=l[e[b]][e[p]];d=d+o;e=a[d];l[e[w]]=e[u];d=d+o;e=a[d];l[e[r]]=e[i];break end;break;end break;end while 1199==(n)/((2163-0x455))do n=(642720)while(0x1908/72)>=j do n=-n local p;local W,S;local g;local j;local n;n=e[r];j=l[e[u]];l[n+1]=j;l[n]=j[e[V]];d=d+o;e=a[d];l[e[x]]=v[e[i]];d=d+o;e=a[d];l[e[w]]=l[e[b]];d=d+o;e=a[d];n=e[h]l[n]=l[n](l[n+F])d=d+o;e=a[d];n=e[x];j=l[e[c]];l[n+1]=j;l[n]=j[e[y]];d=d+o;e=a[d];l[e[f]]=m[e[b]];d=d+o;e=a[d];l[e[h]]=l[e[u]][e[N]];d=d+o;e=a[d];l[e[k]]=e[i];d=d+o;e=a[d];j=e[i];g=l[j]for e=j+1,e[N]do g=g..l[e];end;l[e[w]]=g;d=d+o;e=a[d];l[e[r]]=e[s];d=d+o;e=a[d];n=e[k]l[n]=l[n](_(l,n+o,e[i]))d=d+o;e=a[d];n=e[r];j=l[e[t]];l[n+1]=j;l[n]=j[e[E]];d=d+o;e=a[d];l[e[x]]=v[e[t]];d=d+o;e=a[d];l[e[r]]=e[c];d=d+o;e=a[d];l[e[k]]=e[c];d=d+o;e=a[d];l[e[h]]=e[i];d=d+o;e=a[d];n=e[r]l[n]=l[n](_(l,n+o,e[i]))d=d+o;e=a[d];l[e[h]]=e[u];d=d+o;e=a[d];n=e[k]W,S=Y(l[n](_(l,n+1,e[s])))M=S+n-1 p=0;for e=n,M do p=p+o;l[e]=W[p];end;d=d+o;e=a[d];n=e[k]l[n](_(l,n+F,M))break;end while 416==(n)/((228660/0x94))do n=(5471700)while j>(21240/0xec)do n=-n local n;l[e[k]][e[i]]=l[e[V]];d=d+o;e=a[d];l[e[x]]=v[e[c]];d=d+o;e=a[d];l[e[h]]=l[e[b]][e[N]];d=d+o;e=a[d];l[e[h]]=v[e[c]];d=d+o;e=a[d];l[e[x]]=e[i];d=d+o;e=a[d];l[e[k]]=e[b];d=d+o;e=a[d];l[e[w]]=e[i];d=d+o;e=a[d];n=e[f]l[n]=l[n](_(l,n+o,e[u]))d=d+o;e=a[d];n=e[h]l[n]=l[n](l[n+F])d=d+o;e=a[d];l[e[h]][e[t]]=l[e[p]];break end while(n)/(((1622520-0xc6138)/0xd0))==1403 do local M;local j;local n;n=e[f]l[n](_(l,n+F,e[t]))d=d+o;e=a[d];l[e[r]]=v[e[b]];d=d+o;e=a[d];l[e[x]]=l[e[i]][e[E]];d=d+o;e=a[d];l[e[f]]=e[s];d=d+o;e=a[d];l[e[f]]=l[e[t]][e[p]];d=d+o;e=a[d];n=e[k]l[n]=l[n](_(l,n+o,e[c]))d=d+o;e=a[d];l[e[f]][e[b]]=l[e[g]];d=d+o;e=a[d];l[e[r]]=l[e[c]][e[y]];d=d+o;e=a[d];l[e[f]]=v[e[u]];d=d+o;e=a[d];l[e[h]]=e[t];d=d+o;e=a[d];l[e[k]]=e[t];d=d+o;e=a[d];l[e[r]]=e[i];d=d+o;e=a[d];n=e[w]l[n]=l[n](_(l,n+o,e[b]))d=d+o;e=a[d];l[e[k]][e[b]]=l[e[V]];d=d+o;e=a[d];l[e[r]]=l[e[t]][e[E]];d=d+o;e=a[d];l[e[w]][e[b]]=e[y];d=d+o;e=a[d];l[e[h]]=l[e[t]][e[y]];d=d+o;e=a[d];l[e[x]]=l[e[u]][e[N]];d=d+o;e=a[d];l[e[w]]=l[e[i]][e[E]];d=d+o;e=a[d];l[e[h]]=v[e[s]];d=d+o;e=a[d];l[e[f]]=l[e[t]][e[E]];d=d+o;e=a[d];l[e[w]]=e[s];d=d+o;e=a[d];l[e[r]]=e[i];d=d+o;e=a[d];n=e[x]l[n]=l[n](_(l,n+o,e[u]))d=d+o;e=a[d];j={l,e};j[F][j[S][r]]=j[o][j[S][g]]+j[F][j[S][t]];d=d+o;e=a[d];l[e[w]][e[t]]=l[e[N]];d=d+o;e=a[d];l[e[k]]=l[e[b]][e[E]];d=d+o;e=a[d];l[e[x]][e[s]]=e[V];d=d+o;e=a[d];l[e[x]]=l[e[i]][e[p]];d=d+o;e=a[d];l[e[w]]=m[e[u]];d=d+o;e=a[d];l[e[w]]=l[e[b]][e[E]];d=d+o;e=a[d];l[e[r]]=l[e[b]][e[E]];d=d+o;e=a[d];l[e[h]][e[b]]=l[e[p]];d=d+o;e=a[d];l[e[r]]=l[e[c]][e[E]];d=d+o;e=a[d];l[e[x]]=v[e[t]];d=d+o;e=a[d];l[e[r]]=l[e[i]][e[g]];d=d+o;e=a[d];l[e[k]]=e[c];d=d+o;e=a[d];l[e[f]]=e[t];d=d+o;e=a[d];n=e[r]l[n]=l[n](_(l,n+o,e[t]))d=d+o;e=a[d];l[e[f]][e[i]]=l[e[y]];d=d+o;e=a[d];l[e[r]]=m[e[c]];d=d+o;e=a[d];l[e[f]]=l[e[c]][e[y]];d=d+o;e=a[d];n=e[f];M=l[e[i]];l[n+1]=M;l[n]=M[e[N]];break end;break;end break;end break;end break;end break;end break;end break;end while(n)/((6597-0xcf0))==942 do n=(3714640)while j<=(0x104+-123)do n=-n n=(2669760)while j<=(0x156/3)do n=-n n=(12303984)while j<=(122+-0x14)do n=-n n=(242063)while(273-0xb1)>=j do n=-n n=(11650980)while j<=(282-(46494/0xf6))do n=-n n=(4259250)while(-97+0xbd)<j do n=-n l[e[h]][e[s]]=l[e[g]];break end while 2250==(n)/((369135/0xc3))do local d=e[f]l[d](_(l,d+F,e[c]))break end;break;end while 3058==(n)/((0xafcda/189))do n=(3037848)while j<=(258-0xa4)do n=-n l[e[r]]=l[e[i]][e[E]];d=d+o;e=a[d];l[e[h]][e[u]]=e[N];d=d+o;e=a[d];l[e[w]]=l[e[b]][e[V]];d=d+o;e=a[d];l[e[k]][e[u]]=e[y];d=d+o;e=a[d];l[e[f]]=l[e[u]][e[p]];d=d+o;e=a[d];l[e[f]][e[s]]=e[y];d=d+o;e=a[d];l[e[r]]=l[e[t]][e[p]];d=d+o;e=a[d];if l[e[r]]then d=d+o;else d=e[i];end;break;end while(n)/((-27+0xeaf))==814 do n=(4772742)while(0x5b4a/(61008/0xf8))<j do n=-n local n;l[e[w]]=m[e[s]];d=d+o;e=a[d];l[e[h]]=v[e[c]];d=d+o;e=a[d];l[e[f]]=l[e[b]][e[p]];d=d+o;e=a[d];l[e[x]]=v[e[s]];d=d+o;e=a[d];l[e[k]]=e[u];d=d+o;e=a[d];l[e[x]]=e[t];d=d+o;e=a[d];l[e[w]]=e[s];d=d+o;e=a[d];n=e[k]l[n]=l[n](_(l,n+o,e[i]))d=d+o;e=a[d];n=e[f]l[n]=l[n](l[n+F])d=d+o;e=a[d];l[e[x]][e[i]]=l[e[g]];break end while(n)/((0x36dce/134))==2846 do if l[e[r]]then d=d+o;else d=e[i];end;break end;break;end break;end break;end while(n)/((0x160e8/184))==493 do n=(677772)while j<=(121+-0x16)do n=-n n=(6753017)while j<=(-16+0x71)do n=-n if(e[f]<=l[e[E]])then d=e[i];else d=d+F;end;break;end while 1667==(n)/((4095+(-51+0x7)))do n=(9098324)while j>(-0x68+202)do n=-n l[e[w]]=l[e[i]][e[E]];break end while 3118==(n)/((3012+-0x5e))do local n=e[f];local r=e[V];local a=n+2 local n={l[n](l[n+1],l[a])};for e=1,r do l[a+e]=n[e];end;local n=n[1]if n then l[a]=n d=e[i];else d=d+o;end;break end;break;end break;end while(n)/((0x27d-369))==2529 do n=(1071612)while j<=(0x1fa4/81)do n=-n l[e[h]]=l[e[u]][e[p]];d=d+o;e=a[d];l[e[w]]=m[e[c]];d=d+o;e=a[d];l[e[x]]=l[e[c]][e[g]];d=d+o;e=a[d];l[e[h]]=l[e[u]][e[E]];d=d+o;e=a[d];l[e[w]][e[s]]=l[e[N]];break;end while 1854==(n)/(((2561-0x50a)-693))do n=(4559774)while(0x59f4/228)<j do n=-n local n;n=e[h]l[n]=l[n](_(l,n+o,e[s]))d=d+o;e=a[d];l[e[h]][e[c]]=l[e[y]];d=d+o;e=a[d];l[e[r]]=l[e[b]][e[E]];d=d+o;e=a[d];l[e[h]]=v[e[c]];d=d+o;e=a[d];l[e[w]]=l[e[t]][e[p]];d=d+o;e=a[d];l[e[h]]=l[e[b]][e[g]];d=d+o;e=a[d];l[e[x]]=l[e[s]][e[E]];d=d+o;e=a[d];l[e[r]]=l[e[i]][e[g]];d=d+o;e=a[d];l[e[k]]=e[t];d=d+o;e=a[d];n=e[h]l[n]=l[n](_(l,n+o,e[t]))break end while 1394==(n)/((6584-0xcf1))do local n;l[e[w]]=l[e[u]];d=d+o;e=a[d];n=e[k]l[n]=l[n](l[n+F])d=d+o;e=a[d];l[e[h]]=v[e[c]];d=d+o;e=a[d];l[e[k]]=e[u];d=d+o;e=a[d];l[e[h]]=e[i];d=d+o;e=a[d];l[e[r]]=e[c];d=d+o;e=a[d];n=e[k]l[n]=l[n](_(l,n+o,e[s]))d=d+o;e=a[d];if(l[e[f]]==l[e[E]])then d=d+F;else d=e[i];end;break end;break;end break;end break;end break;end while(n)/((6722-0xd41))==3696 do n=(2051628)while j<=(209+-0x65)do n=-n n=(3187266)while j<=(0x142-217)do n=-n n=(184569)while j<=(312-0xd1)do n=-n l[e[r]]=l[e[i]][e[p]];d=d+o;e=a[d];l[e[x]]=v[e[c]];d=d+o;e=a[d];l[e[f]]=l[e[c]][e[N]];d=d+o;e=a[d];l[e[x]]=l[e[u]][e[y]];d=d+o;e=a[d];if(l[e[h]]==l[e[E]])then d=d+F;else d=e[i];end;break;end while 1309==(n)/((0x16b-222))do n=(7969005)while j>((-123+0x12f)+-0x4c)do n=-n local e=e[x]local a,d=Y(l[e](_(l,e+o,M)))M=d+e-F local d=0;for e=e,M do d=d+o;l[e]=a[d];end;break end while(n)/((471606/0xa6))==2805 do l[e[h]]=l[e[i]]/e[y];break end;break;end break;end while 958==(n)/((0x1a1b-3356))do n=(2640822)while(1060/0xa)>=j do n=-n l[e[h]]=m[e[i]];d=d+o;e=a[d];l[e[f]]=l[e[t]][e[E]];d=d+o;e=a[d];l[e[f]]=l[e[t]][e[y]];d=d+o;e=a[d];l[e[f]][e[b]]=l[e[N]];d=d+o;e=a[d];do return end;break;end while 1398==(n)/((0x7a2+-65))do n=(98560)while j>(0x4ce8/184)do n=-n local n;l[e[x]]=e[c];d=d+o;e=a[d];l[e[r]]=e[t];d=d+o;e=a[d];n=e[k]l[n]=l[n](_(l,n+o,e[c]))d=d+o;e=a[d];l[e[f]][e[t]]=l[e[E]];d=d+o;e=a[d];l[e[x]]=v[e[b]];d=d+o;e=a[d];l[e[x]]=l[e[i]][e[N]];d=d+o;e=a[d];l[e[f]]=v[e[i]];d=d+o;e=a[d];l[e[x]]=e[t];d=d+o;e=a[d];l[e[x]]=e[u];d=d+o;e=a[d];l[e[x]]=e[s];break end while(n)/((0x54b-739))==160 do local j;local n;l[e[f]]=l[e[u]];d=d+o;e=a[d];n=e[r]l[n]=l[n](l[n+F])d=d+o;e=a[d];n=e[r];j=l[e[s]];l[n+1]=j;l[n]=j[e[y]];d=d+o;e=a[d];l[e[k]]=v[e[s]];d=d+o;e=a[d];l[e[x]]=e[c];d=d+o;e=a[d];l[e[k]]=e[i];d=d+o;e=a[d];l[e[x]]=e[i];d=d+o;e=a[d];n=e[w]l[n]=l[n](_(l,n+o,e[b]))d=d+o;e=a[d];n=e[w]l[n]=l[n](_(l,n+o,e[c]))d=d+o;e=a[d];if not l[e[h]]then d=d+F;else d=e[t];end;break end;break;end break;end break;end while(n)/((6125-0xc1b))==678 do n=(424560)while j<=(313-0xca)do n=-n n=(3848460)while j<=(-100+0xd1)do n=-n local i;local n;n=e[k];i=l[e[t]];l[n+1]=i;l[n]=i[e[y]];d=d+o;e=a[d];l[e[h]]=m[e[s]];d=d+o;e=a[d];l[e[k]]=l[e[u]][e[y]];d=d+o;e=a[d];l[e[x]]=v[e[b]];d=d+o;e=a[d];l[e[x]]=l[e[t]][e[E]];d=d+o;e=a[d];l[e[k]]=e[b];d=d+o;e=a[d];l[e[x]]=v[e[c]];d=d+o;e=a[d];l[e[h]]=l[e[t]][e[V]];d=d+o;e=a[d];l[e[f]]=l[e[u]][e[E]];d=d+o;e=a[d];l[e[w]]=v[e[u]];d=d+o;e=a[d];l[e[k]]=l[e[u]][e[V]];d=d+o;e=a[d];l[e[r]]=l[e[s]][e[y]];d=d+o;e=a[d];n=e[r]l[n]=l[n](_(l,n+o,e[u]))d=d+o;e=a[d];l[e[w]]={};d=d+o;e=a[d];l[e[x]][e[s]]=e[E];d=d+o;e=a[d];l[e[h]][e[s]]=e[y];d=d+o;e=a[d];n=e[h]l[n]=l[n](_(l,n+o,e[t]))d=d+o;e=a[d];n=e[x];i=l[e[t]];l[n+1]=i;l[n]=i[e[y]];d=d+o;e=a[d];n=e[w]l[n](l[n+F])d=d+o;e=a[d];do return end;break;end while(n)/((0x6c6+-19))==2244 do n=(3228885)while j>(246-0x88)do n=-n l[e[r]]={};break end while(n)/((3664-0x739))==1779 do local n;l[e[w]]=e[t];d=d+o;e=a[d];l[e[k]]=e[s];d=d+o;e=a[d];l[e[r]]=e[t];d=d+o;e=a[d];n=e[x]l[n]=l[n](_(l,n+o,e[s]))d=d+o;e=a[d];if l[e[x]]then d=d+o;else d=e[u];end;break end;break;end break;end while(n)/((-26+0x92))==3538 do n=(8813454)while j<=(0x6890/239)do n=-n local d=e[h]l[d]=l[d](_(l,d+o,e[s]))break;end while 4069==(n)/((-0x1f+2197))do n=(3416896)while(0x160-239)<j do n=-n l[e[h]]=l[e[i]][e[N]];d=d+o;e=a[d];l[e[w]][e[s]]=e[V];d=d+o;e=a[d];l[e[x]]=l[e[b]][e[V]];d=d+o;e=a[d];l[e[k]]=l[e[s]][e[E]];d=d+o;e=a[d];l[e[r]][e[t]]=l[e[E]];d=d+o;e=a[d];l[e[k]]=l[e[i]][e[g]];d=d+o;e=a[d];l[e[r]]=v[e[u]];d=d+o;e=a[d];l[e[f]]=l[e[i]][e[E]];d=d+o;e=a[d];l[e[k]]=e[b];d=d+o;e=a[d];l[e[r]]=e[b];break end while(n)/((0x19aa-3322))==1052 do if not l[e[f]]then d=d+F;else d=e[s];end;break end;break;end break;end break;end break;end break;end while(n)/((3749-0x767))==1440 do n=(14968200)while((-0x57+2712)/21)>=j do n=-n n=(447059)while j<=(351-0xe8)do n=-n n=(1080248)while(18792/0xa2)>=j do n=-n n=(885863)while j>(0x3084/108)do n=-n local n;l[e[r]]=l[e[b]][e[y]];d=d+o;e=a[d];l[e[x]]=e[b];d=d+o;e=a[d];l[e[w]]=v[e[b]];d=d+o;e=a[d];l[e[w]]=l[e[t]][e[N]];d=d+o;e=a[d];l[e[r]]=l[e[b]][e[y]];d=d+o;e=a[d];l[e[f]]=v[e[s]];d=d+o;e=a[d];l[e[r]]=l[e[u]][e[y]];d=d+o;e=a[d];l[e[x]]=l[e[b]][e[y]];d=d+o;e=a[d];n=e[r]l[n]=l[n](_(l,n+o,e[u]))d=d+o;e=a[d];l[e[w]]={};break end while(n)/((712-0x189))==2777 do l[e[r]]=l[e[c]][e[p]];d=d+o;e=a[d];l[e[x]]=m[e[b]];d=d+o;e=a[d];l[e[w]]=l[e[u]][e[p]];d=d+o;e=a[d];l[e[x]]=m[e[t]];d=d+o;e=a[d];l[e[x]]=l[e[c]][e[p]];d=d+o;e=a[d];if l[e[k]]then d=d+o;else d=e[t];end;break end;break;end while(n)/((0x536-723))==1768 do n=(4660357)while(0x9f+-42)>=j do n=-n local n;l[e[x]]=l[e[i]];d=d+o;e=a[d];n=e[k]l[n]=l[n](l[n+F])d=d+o;e=a[d];l[e[f]]=v[e[s]];d=d+o;e=a[d];l[e[f]]=e[c];d=d+o;e=a[d];l[e[h]]=e[t];d=d+o;e=a[d];l[e[k]]=e[b];d=d+o;e=a[d];n=e[r]l[n]=l[n](_(l,n+o,e[i]))d=d+o;e=a[d];if(l[e[k]]==l[e[V]])then d=d+F;else d=e[b];end;break;end while(n)/((3435-0x6c8))==2743 do n=(15302410)while(-0x36+172)<j do n=-n local p;local j;local n;l[e[r]]=l[e[t]][e[N]];d=d+o;e=a[d];l[e[h]]=e[c];d=d+o;e=a[d];l[e[h]]=m[e[b]];d=d+o;e=a[d];n=e[r];j=l[e[i]];l[n+1]=j;l[n]=j[e[V]];d=d+o;e=a[d];l[e[h]]=v[e[s]];d=d+o;e=a[d];l[e[x]]=e[t];d=d+o;e=a[d];l[e[f]]=e[t];d=d+o;e=a[d];l[e[r]]=e[b];d=d+o;e=a[d];n=e[f]l[n]=l[n](_(l,n+o,e[u]))d=d+o;e=a[d];l[e[x]]=m[e[s]];d=d+o;e=a[d];n=e[f]l[n]=l[n](_(l,n+o,e[c]))d=d+o;e=a[d];n=e[k];j=l[e[t]];l[n+1]=j;l[n]=j[e[g]];d=d+o;e=a[d];l[e[w]]=v[e[u]];d=d+o;e=a[d];l[e[x]]=e[u];d=d+o;e=a[d];l[e[w]]=e[s];d=d+o;e=a[d];l[e[x]]=e[i];d=d+o;e=a[d];n=e[f]l[n]=l[n](_(l,n+o,e[i]))d=d+o;e=a[d];l[e[f]]=v[e[u]];d=d+o;e=a[d];l[e[w]]=e[c];d=d+o;e=a[d];l[e[w]]=e[i];d=d+o;e=a[d];l[e[h]]=e[t];d=d+o;e=a[d];n=e[h]l[n]=l[n](_(l,n+o,e[t]))d=d+o;e=a[d];n=e[h]l[n]=l[n](_(l,n+o,e[b]))d=d+o;e=a[d];l[e[r]]=e[i];d=d+o;e=a[d];j=e[u];p=l[j]for e=j+1,e[y]do p=p..l[e];end;l[e[h]]=p;d=d+o;e=a[d];l[e[h]][e[t]]=l[e[V]];break end while(n)/((0x2057-4194))==3746 do local j;local n;n=e[x]l[n](_(l,n+F,e[b]))d=d+o;e=a[d];l[e[h]]=v[e[u]];d=d+o;e=a[d];l[e[k]]=l[e[s]][e[p]];d=d+o;e=a[d];l[e[w]]=e[i];d=d+o;e=a[d];l[e[r]]=l[e[u]][e[E]];d=d+o;e=a[d];n=e[k]l[n]=l[n](_(l,n+o,e[i]))d=d+o;e=a[d];l[e[r]][e[u]]=l[e[N]];d=d+o;e=a[d];l[e[f]]=l[e[b]][e[V]];d=d+o;e=a[d];l[e[w]]=v[e[u]];d=d+o;e=a[d];l[e[k]]=e[b];d=d+o;e=a[d];l[e[x]]=e[s];d=d+o;e=a[d];l[e[h]]=e[s];d=d+o;e=a[d];n=e[r]l[n]=l[n](_(l,n+o,e[b]))d=d+o;e=a[d];l[e[w]][e[c]]=l[e[p]];d=d+o;e=a[d];l[e[w]]=l[e[c]][e[V]];d=d+o;e=a[d];l[e[k]][e[i]]=e[p];d=d+o;e=a[d];l[e[x]]=l[e[s]][e[N]];d=d+o;e=a[d];l[e[r]]=v[e[b]];d=d+o;e=a[d];l[e[f]]=l[e[c]][e[E]];d=d+o;e=a[d];l[e[f]]=l[e[s]][e[g]];d=d+o;e=a[d];l[e[k]][e[u]]=l[e[g]];d=d+o;e=a[d];l[e[f]]=l[e[t]][e[y]];d=d+o;e=a[d];l[e[r]]=l[e[s]][e[N]];d=d+o;e=a[d];l[e[f]]=l[e[s]][e[p]];d=d+o;e=a[d];l[e[h]]=v[e[c]];d=d+o;e=a[d];l[e[w]]=l[e[s]][e[N]];d=d+o;e=a[d];l[e[k]]=e[b];d=d+o;e=a[d];l[e[k]]=e[b];d=d+o;e=a[d];n=e[x]l[n]=l[n](_(l,n+o,e[b]))d=d+o;e=a[d];j={l,e};j[F][j[S][r]]=j[o][j[S][g]]+j[F][j[S][b]];d=d+o;e=a[d];l[e[x]][e[s]]=l[e[N]];d=d+o;e=a[d];l[e[r]]=l[e[b]][e[y]];d=d+o;e=a[d];l[e[x]]=v[e[i]];d=d+o;e=a[d];l[e[f]]=l[e[s]][e[V]];d=d+o;e=a[d];l[e[x]]=l[e[c]][e[p]];d=d+o;e=a[d];l[e[k]]=l[e[u]][e[V]];d=d+o;e=a[d];l[e[w]]=l[e[c]][e[g]];d=d+o;e=a[d];l[e[h]]=l[e[b]][e[y]];d=d+o;e=a[d];l[e[h]]=l[e[c]][e[y]];d=d+o;e=a[d];l[e[h]]=l[e[b]][e[g]];d=d+o;e=a[d];l[e[x]]=l[e[b]][e[g]];d=d+o;e=a[d];l[e[x]]=l[e[s]][e[E]];d=d+o;e=a[d];l[e[r]]=l[e[s]][e[y]];d=d+o;e=a[d];l[e[f]]=l[e[b]]-l[e[E]];d=d+o;e=a[d];l[e[f]]=l[e[s]]-e[N];d=d+o;e=a[d];n=e[r]l[n]=l[n](_(l,n+o,e[u]))d=d+o;e=a[d];l[e[x]][e[i]]=l[e[p]];d=d+o;e=a[d];l[e[h]]=l[e[i]][e[N]];d=d+o;e=a[d];l[e[h]]=l[e[t]][e[E]];d=d+o;e=a[d];l[e[f]]=l[e[i]][e[g]];d=d+o;e=a[d];if not l[e[k]]then d=d+F;else d=e[i];end;break end;break;end break;end break;end while 2677==(n)/((5678/0x22))do n=(13759476)while(0x11b-161)>=j do n=-n n=(2536065)while j<=(146+-0x1a)do n=-n local m;local j;local n;l[e[w]]=v[e[t]];d=d+o;e=a[d];l[e[f]]=l[e[b]][e[y]];d=d+o;e=a[d];l[e[f]]=e[t];d=d+o;e=a[d];l[e[f]]=l[e[i]][e[p]];d=d+o;e=a[d];n=e[f]l[n]=l[n](_(l,n+o,e[b]))d=d+o;e=a[d];l[e[w]][e[u]]=l[e[N]];d=d+o;e=a[d];l[e[r]]=l[e[u]][e[y]];d=d+o;e=a[d];l[e[f]]=v[e[s]];d=d+o;e=a[d];l[e[r]]=e[t];d=d+o;e=a[d];l[e[h]]=e[i];d=d+o;e=a[d];l[e[x]]=e[c];d=d+o;e=a[d];n=e[w]l[n]=l[n](_(l,n+o,e[b]))d=d+o;e=a[d];l[e[w]][e[c]]=l[e[N]];d=d+o;e=a[d];l[e[k]]=l[e[c]][e[p]];d=d+o;e=a[d];l[e[r]][e[i]]=e[y];d=d+o;e=a[d];l[e[r]]=l[e[b]][e[p]];d=d+o;e=a[d];l[e[r]]=l[e[u]][e[y]];d=d+o;e=a[d];l[e[h]]=v[e[t]];d=d+o;e=a[d];l[e[k]]=l[e[i]][e[y]];d=d+o;e=a[d];l[e[k]]=e[i];d=d+o;e=a[d];l[e[f]]=e[i];d=d+o;e=a[d];n=e[k]l[n]=l[n](_(l,n+o,e[c]))d=d+o;e=a[d];j={l,e};j[F][j[S][f]]=j[o][j[S][N]]+j[F][j[S][b]];d=d+o;e=a[d];l[e[k]][e[b]]=l[e[N]];d=d+o;e=a[d];l[e[h]]=l[e[b]][e[p]];d=d+o;e=a[d];l[e[r]][e[s]]=e[V];d=d+o;e=a[d];l[e[x]]=l[e[c]][e[E]];d=d+o;e=a[d];l[e[r]]=l[e[c]][e[g]];d=d+o;e=a[d];l[e[w]]=l[e[t]][e[V]];d=d+o;e=a[d];l[e[f]][e[u]]=l[e[y]];d=d+o;e=a[d];l[e[k]]=l[e[i]][e[V]];d=d+o;e=a[d];l[e[f]]=v[e[b]];d=d+o;e=a[d];l[e[x]]=l[e[b]][e[N]];d=d+o;e=a[d];l[e[h]]=e[t];d=d+o;e=a[d];l[e[f]]=e[u];d=d+o;e=a[d];n=e[f]l[n]=l[n](_(l,n+o,e[i]))d=d+o;e=a[d];l[e[k]][e[t]]=l[e[N]];d=d+o;e=a[d];l[e[x]]=l[e[s]][e[V]];d=d+o;e=a[d];n=e[w];m=l[e[s]];l[n+1]=m;l[n]=m[e[p]];break;end while(n)/((0x1044-2127))==1245 do n=(6753870)while j>(0x97+-30)do n=-n l[e[f]][e[b]]=l[e[N]];d=d+o;e=a[d];l[e[f]]=l[e[c]][e[E]];d=d+o;e=a[d];l[e[w]][e[i]]=e[N];d=d+o;e=a[d];l[e[f]]=l[e[s]][e[V]];d=d+o;e=a[d];l[e[h]][e[b]]=e[N];d=d+o;e=a[d];l[e[h]]=l[e[i]][e[N]];d=d+o;e=a[d];l[e[x]]=v[e[u]];d=d+o;e=a[d];l[e[f]]=l[e[u]][e[g]];d=d+o;e=a[d];l[e[f]]=e[c];d=d+o;e=a[d];l[e[x]]=e[t];break end while 3715==(n)/((3707-0x761))do local h;local n;l[e[k]][e[s]]=l[e[p]];d=d+o;e=a[d];l[e[w]]=l[e[s]][e[V]];d=d+o;e=a[d];l[e[x]]=l[e[b]][e[p]];d=d+o;e=a[d];n=e[r];h=l[e[b]];l[n+1]=h;l[n]=h[e[V]];d=d+o;e=a[d];l[e[x]]=l[e[u]];d=d+o;e=a[d];n=e[f]l[n](_(l,n+F,e[b]))d=d+o;e=a[d];l[e[r]]=l[e[b]][e[p]];d=d+o;e=a[d];l[e[k]]=l[e[b]][e[V]];d=d+o;e=a[d];n=e[f];h=l[e[c]];l[n+1]=h;l[n]=h[e[p]];d=d+o;e=a[d];l[e[k]]=l[e[i]];break end;break;end break;end while 3642==(n)/((-0x37+3833))do n=(1031835)while j<=(295-0xac)do n=-n local j;local n;l[e[k]]=m[e[b]];d=d+o;e=a[d];n=e[k];j=l[e[s]];l[n+1]=j;l[n]=j[e[V]];d=d+o;e=a[d];l[e[h]]=m[e[u]];d=d+o;e=a[d];l[e[r]]=l[e[t]][e[V]];d=d+o;e=a[d];l[e[h]]=v[e[t]];d=d+o;e=a[d];l[e[h]]=l[e[t]][e[V]];d=d+o;e=a[d];l[e[f]]=e[i];d=d+o;e=a[d];l[e[r]]=v[e[c]];d=d+o;e=a[d];l[e[x]]=l[e[b]][e[E]];d=d+o;e=a[d];l[e[r]]=l[e[c]][e[N]];d=d+o;e=a[d];l[e[w]]=v[e[s]];d=d+o;e=a[d];l[e[w]]=l[e[t]][e[y]];d=d+o;e=a[d];l[e[h]]=l[e[s]][e[y]];d=d+o;e=a[d];n=e[x]l[n]=l[n](_(l,n+o,e[i]))d=d+o;e=a[d];l[e[f]]={};d=d+o;e=a[d];l[e[k]][e[b]]=e[g];d=d+o;e=a[d];l[e[k]][e[b]]=e[p];d=d+o;e=a[d];n=e[r]l[n]=l[n](_(l,n+o,e[b]))d=d+o;e=a[d];n=e[k];j=l[e[s]];l[n+1]=j;l[n]=j[e[y]];d=d+o;e=a[d];n=e[r]l[n](l[n+F])d=d+o;e=a[d];l[e[f]]=m[e[s]];d=d+o;e=a[d];n=e[h];j=l[e[b]];l[n+1]=j;l[n]=j[e[p]];d=d+o;e=a[d];l[e[h]]=m[e[i]];d=d+o;e=a[d];l[e[w]]=l[e[c]][e[N]];d=d+o;e=a[d];l[e[x]]=v[e[s]];d=d+o;e=a[d];l[e[h]]=l[e[u]][e[p]];d=d+o;e=a[d];l[e[w]]=e[c];d=d+o;e=a[d];l[e[f]]=v[e[s]];d=d+o;e=a[d];l[e[x]]=l[e[u]][e[E]];d=d+o;e=a[d];l[e[x]]=l[e[i]][e[E]];d=d+o;e=a[d];l[e[w]]=v[e[t]];d=d+o;e=a[d];l[e[x]]=l[e[s]][e[y]];d=d+o;e=a[d];l[e[k]]=l[e[u]][e[V]];d=d+o;e=a[d];n=e[w]l[n]=l[n](_(l,n+o,e[t]))d=d+o;e=a[d];l[e[x]]={};d=d+o;e=a[d];l[e[k]][e[u]]=e[E];d=d+o;e=a[d];l[e[f]][e[c]]=e[g];d=d+o;e=a[d];n=e[x]l[n]=l[n](_(l,n+o,e[i]))d=d+o;e=a[d];n=e[f];j=l[e[i]];l[n+1]=j;l[n]=j[e[E]];d=d+o;e=a[d];n=e[k]l[n](l[n+F])d=d+o;e=a[d];l[e[f]]=m[e[t]];d=d+o;e=a[d];n=e[w];j=l[e[t]];l[n+1]=j;l[n]=j[e[E]];d=d+o;e=a[d];l[e[k]]=m[e[b]];d=d+o;e=a[d];l[e[k]]=l[e[c]][e[E]];d=d+o;e=a[d];l[e[w]]=v[e[c]];d=d+o;e=a[d];l[e[h]]=l[e[u]][e[V]];d=d+o;e=a[d];l[e[w]]=e[b];d=d+o;e=a[d];l[e[f]]=v[e[b]];d=d+o;e=a[d];l[e[h]]=l[e[b]][e[V]];d=d+o;e=a[d];l[e[f]]=l[e[t]][e[p]];d=d+o;e=a[d];l[e[x]]=v[e[b]];d=d+o;e=a[d];l[e[r]]=l[e[s]][e[N]];d=d+o;e=a[d];l[e[w]]=l[e[u]][e[p]];d=d+o;e=a[d];n=e[h]l[n]=l[n](_(l,n+o,e[i]))d=d+o;e=a[d];l[e[r]]={};d=d+o;e=a[d];l[e[k]][e[s]]=e[g];d=d+o;e=a[d];l[e[f]][e[i]]=e[p];d=d+o;e=a[d];n=e[x]l[n]=l[n](_(l,n+o,e[t]))d=d+o;e=a[d];n=e[x];j=l[e[b]];l[n+1]=j;l[n]=j[e[V]];d=d+o;e=a[d];n=e[k]l[n](l[n+F])d=d+o;e=a[d];l[e[w]]=m[e[t]];d=d+o;e=a[d];n=e[r];j=l[e[b]];l[n+1]=j;l[n]=j[e[E]];d=d+o;e=a[d];l[e[w]]=m[e[c]];d=d+o;e=a[d];l[e[x]]=l[e[b]][e[p]];d=d+o;e=a[d];l[e[k]]=v[e[i]];d=d+o;e=a[d];l[e[r]]=l[e[s]][e[N]];d=d+o;e=a[d];l[e[r]]=e[i];d=d+o;e=a[d];l[e[f]]=v[e[s]];d=d+o;e=a[d];l[e[w]]=l[e[c]][e[y]];d=d+o;e=a[d];l[e[x]]=l[e[s]][e[E]];d=d+o;e=a[d];l[e[r]]=v[e[u]];d=d+o;e=a[d];l[e[h]]=l[e[b]][e[N]];d=d+o;e=a[d];l[e[w]]=l[e[u]][e[p]];d=d+o;e=a[d];n=e[f]l[n]=l[n](_(l,n+o,e[b]))d=d+o;e=a[d];l[e[w]]={};d=d+o;e=a[d];l[e[r]][e[s]]=e[E];d=d+o;e=a[d];l[e[h]][e[t]]=e[p];d=d+o;e=a[d];n=e[f]l[n]=l[n](_(l,n+o,e[i]))d=d+o;e=a[d];n=e[h];j=l[e[i]];l[n+1]=j;l[n]=j[e[V]];d=d+o;e=a[d];n=e[x]l[n](l[n+F])break;end while 651==(n)/(((3363-0x69d)+-85))do n=(7295120)while j>(15996/0x81)do n=-n local n;l[e[f]]=e[s];d=d+o;e=a[d];l[e[k]]=e[t];d=d+o;e=a[d];l[e[w]]=e[t];d=d+o;e=a[d];n=e[r]l[n]=l[n](_(l,n+o,e[s]))d=d+o;e=a[d];if(l[e[f]]==l[e[y]])then d=d+F;else d=e[u];end;break end while(n)/((0x61238/203))==3722 do local j;local t;local n;l[e[r]]=v[e[u]];d=d+o;e=a[d];l[e[r]]=v[e[s]];d=d+o;e=a[d];l[e[f]]=m[e[i]];d=d+o;e=a[d];l[e[f]]=l[e[u]][e[V]];d=d+o;e=a[d];l[e[r]]=e[i];d=d+o;e=a[d];l[e[k]]=m[e[u]];d=d+o;e=a[d];n=e[w];t=l[e[i]];l[n+1]=t;l[n]=t[e[E]];d=d+o;e=a[d];n=e[x]l[n]=l[n](l[n+F])d=d+o;e=a[d];l[e[x]]=v[e[s]];d=d+o;e=a[d];l[e[w]]=e[s];d=d+o;e=a[d];l[e[r]]=e[c];d=d+o;e=a[d];l[e[f]]=e[c];d=d+o;e=a[d];n=e[k]l[n]=l[n](_(l,n+o,e[i]))d=d+o;e=a[d];t=e[s];j=l[t]for e=t+1,e[N]do j=j..l[e];end;l[e[k]]=j;d=d+o;e=a[d];n=e[h]l[n]=l[n](_(l,n+o,e[b]))d=d+o;e=a[d];if l[e[h]]then d=d+o;else d=e[b];end;break end;break;end break;end break;end break;end while(n)/((-0x73+4015))==3838 do n=(4696254)while j<=(0x5c1c/180)do n=-n n=(2383464)while j<=((350-0xce)+-0x10)do n=-n n=(5017412)while(0x125-167)>=j do n=-n l[e[k]]=(e[c]~=0);break;end while(n)/((7652-0xf30))==1333 do n=(9183372)while(0x122-163)<j do n=-n local e=e[k];local d=l[e];for e=e+1,M do W(d,l[e])end;break end while(n)/((0x1df8-(0x1e3e-3898)))==2399 do l[e[w]]=m[e[i]];d=d+o;e=a[d];l[e[r]]=l[e[s]][e[E]];d=d+o;e=a[d];l[e[h]]=l[e[t]][e[N]];d=d+o;e=a[d];l[e[x]][e[b]]=l[e[p]];d=d+o;e=a[d];do return end;break end;break;end break;end while 2113==(n)/((234624/(-0x14+228)))do n=(3619479)while j<=((301+-0x78)+-0x34)do n=-n local n;l[e[h]]=l[e[c]][e[N]];d=d+o;e=a[d];l[e[r]]=v[e[c]];d=d+o;e=a[d];l[e[r]]=e[t];d=d+o;e=a[d];l[e[w]]=e[u];d=d+o;e=a[d];l[e[w]]=e[t];d=d+o;e=a[d];n=e[r]l[n]=l[n](_(l,n+o,e[u]))d=d+o;e=a[d];if(l[e[w]]~=l[e[y]])then d=d+F;else d=e[c];end;break;end while 3457==(n)/((2172-0x465))do n=(285440)while j>((1498/0x7)+-0x54)do n=-n local x;local n;l[e[h]]=m[e[u]];d=d+o;e=a[d];l[e[r]]=l[e[i]][e[N]];d=d+o;e=a[d];n=e[w];x=l[e[s]];l[n+1]=x;l[n]=x[e[N]];d=d+o;e=a[d];l[e[f]]=l[e[c]];d=d+o;e=a[d];n=e[r]l[n]=l[n](_(l,n+o,e[b]))d=d+o;e=a[d];if not l[e[h]]then d=d+F;else d=e[c];end;break end while 80==(n)/((0x1c59-3689))do l[e[k]]=m[e[c]];d=d+o;e=a[d];l[e[h]]=l[e[b]][e[p]];d=d+o;e=a[d];l[e[r]]=l[e[s]][e[N]];d=d+o;e=a[d];l[e[w]][e[b]]=l[e[N]];d=d+o;e=a[d];do return end;break end;break;end break;end break;end while(n)/(((0x1dd7-3863)+-22))==1251 do n=(3061576)while(0x123-157)>=j do n=-n n=(4419840)while j<=(0x95+-17)do n=-n l[e[h]]=l[e[b]];break;end while 2302==(n)/((322560/0xa8))do n=(415411)while((0x11+-113)+229)<j do n=-n local d=e[h]l[d](_(l,d+F,e[i]))break end while(n)/((0x36c+-23))==487 do l[e[r]][l[e[s]]]=e[V];break end;break;end break;end while(n)/((1407+-0x77))==2377 do n=(5839840)while(15795/0x75)>=j do n=-n local i=J[e[i]];local x;local o={};x=C({},{__index=function(d,e)local e=o[e];return e[1][e[2]];end,__newindex=function(l,e,d)local e=o[e]e[1][e[2]]=d;end;});for n=1,e[p]do d=d+F;local e=a[d];if e[(93-0x5c)]==132 then o[n-1]={l,e[c]};else o[n-1]={m,e[s]};end;B[#B+1]=o;end;l[e[r]]=G(i,x,v);break;end while(n)/((0xe98+-120))==1615 do n=(3766392)while(0x143-187)<j do n=-n v[e[c]]=l[e[f]];d=d+o;e=a[d];l[e[w]]={};d=d+o;e=a[d];l[e[k]]={};d=d+o;e=a[d];v[e[t]]=l[e[w]];d=d+o;e=a[d];l[e[k]]=v[e[u]];d=d+o;e=a[d];if(l[e[w]]==e[y])then d=d+F;else d=e[s];end;break end while 3339==(n)/((2352-0x4c8))do local i;local t,f;local n;l[e[h]]=e[c];d=d+o;e=a[d];l[e[x]]=e[b];d=d+o;e=a[d];n=e[h]l[n]=l[n](_(l,n+o,e[s]))d=d+o;e=a[d];l[e[k]]=v[e[c]];d=d+o;e=a[d];l[e[h]]=l[e[c]][e[E]];d=d+o;e=a[d];l[e[k]]=l[e[b]][e[V]];d=d+o;e=a[d];l[e[r]]=e[s];d=d+o;e=a[d];l[e[h]]=e[s];d=d+o;e=a[d];n=e[w]t,f=Y(l[n](_(l,n+1,e[b])))M=f+n-1 i=0;for e=n,M do i=i+o;l[e]=t[i];end;d=d+o;e=a[d];n=e[x]l[n]=l[n](_(l,n+o,M))break end;break;end break;end break;end break;end break;end break;end while(n)/((-56+0x4d4))==3148 do n=(1241720)while(370-0xd2)>=j do n=-n n=(2152953)while((425+-0x53)-194)>=j do n=-n n=(3410130)while j<=(0x105+-119)do n=-n n=(5860400)while j<=(0x172-231)do n=-n n=(11480700)while(3726/0x1b)<j do n=-n l[e[r]][l[e[t]]]=l[e[E]];break end while(n)/((75900/0x17))==3479 do v[e[i]]=l[e[k]];break end;break;end while(n)/((0x1450-2624))==2275 do n=(4936882)while(266+-0x7e)>=j do n=-n local w;local n;n=e[h]l[n]=l[n]()d=d+o;e=a[d];l[e[r]]=l[e[c]][e[y]];d=d+o;e=a[d];l[e[h]][e[s]]=l[e[g]];d=d+o;e=a[d];for e=e[k],e[b]do l[e]=nil;end;d=d+o;e=a[d];l[e[r]]=m[e[b]];d=d+o;e=a[d];l[e[x]]=l[e[i]][e[p]];d=d+o;e=a[d];n=e[f];w=l[e[c]];l[n+1]=w;l[n]=w[e[y]];break;end while 1277==(n)/((622426/0xa1))do n=(8859548)while j>(0x12a-157)do n=-n l[e[k]]=l[e[u]][e[V]];d=d+o;e=a[d];l[e[k]]=m[e[b]];d=d+o;e=a[d];l[e[h]]=l[e[c]][e[p]];d=d+o;e=a[d];l[e[f]]=m[e[s]];d=d+o;e=a[d];l[e[r]]=l[e[i]][e[N]];d=d+o;e=a[d];l[e[r]][l[e[u]]]=l[e[g]];break end while 2711==(n)/((513076/0x9d))do local d=e[w]l[d]=l[d](_(l,d+o,e[u]))break end;break;end break;end break;end while(n)/((0x6a51/(-0x63+116)))==2130 do n=(4756725)while(31755/0xdb)>=j do n=-n n=(1744704)while(-28+(-125+0x128))>=j do n=-n if(e[x]<=l[e[V]])then d=e[t];else d=d+F;end;break;end while 466==(n)/((0xefe+-94))do n=(3245715)while(0xa2+-18)<j do n=-n local n;l[e[f]]=v[e[b]];d=d+o;e=a[d];l[e[k]]=l[e[u]][e[y]];d=d+o;e=a[d];l[e[x]]=e[i];d=d+o;e=a[d];l[e[x]]=m[e[s]];d=d+o;e=a[d];l[e[r]]=l[e[b]][e[p]];d=d+o;e=a[d];n=e[x]l[n]=l[n](_(l,n+o,e[t]))d=d+o;e=a[d];l[e[r]][e[c]]=l[e[E]];break end while 2607==(n)/(((104616-0xcc66)/0x2a))do local j;local n;l[e[w]]=m[e[s]];d=d+o;e=a[d];l[e[h]]=l[e[u]][e[N]];d=d+o;e=a[d];l[e[h]]=m[e[s]];d=d+o;e=a[d];l[e[k]]=l[e[b]][e[p]];d=d+o;e=a[d];l[e[r]]=l[e[s]][e[E]];d=d+o;e=a[d];l[e[x]]=l[e[i]][e[g]];d=d+o;e=a[d];l[e[w]]=l[e[b]]-l[e[V]];d=d+o;e=a[d];l[e[r]]=m[e[t]];d=d+o;e=a[d];l[e[h]]=l[e[t]][e[N]];d=d+o;e=a[d];l[e[f]]=l[e[u]][e[V]];d=d+o;e=a[d];l[e[f]]=l[e[t]][e[N]];d=d+o;e=a[d];l[e[f]]=l[e[i]]/l[e[g]];d=d+o;e=a[d];l[e[h]]=m[e[t]];d=d+o;e=a[d];l[e[f]]=l[e[s]][e[N]];d=d+o;e=a[d];l[e[h]]=m[e[s]];d=d+o;e=a[d];l[e[w]]=l[e[b]][e[E]];d=d+o;e=a[d];l[e[w]]=l[e[s]][e[y]];d=d+o;e=a[d];l[e[h]]=l[e[i]][e[p]];d=d+o;e=a[d];l[e[f]]=l[e[c]]-l[e[V]];d=d+o;e=a[d];l[e[w]]=m[e[b]];d=d+o;e=a[d];l[e[r]]=l[e[s]][e[N]];d=d+o;e=a[d];l[e[r]]=l[e[i]][e[E]];d=d+o;e=a[d];l[e[f]]=l[e[s]][e[E]];d=d+o;e=a[d];l[e[h]]=l[e[t]]/l[e[y]];d=d+o;e=a[d];l[e[r]]=m[e[u]];d=d+o;e=a[d];l[e[w]]=l[e[b]][e[y]];d=d+o;e=a[d];n=e[k];j=l[e[s]];l[n+1]=j;l[n]=j[e[g]];d=d+o;e=a[d];l[e[w]]=v[e[b]];d=d+o;e=a[d];l[e[f]]=l[e[i]][e[E]];d=d+o;e=a[d];l[e[h]]=v[e[b]];d=d+o;e=a[d];l[e[k]]=l[e[t]][e[y]];d=d+o;e=a[d];l[e[r]]=m[e[i]];d=d+o;e=a[d];l[e[x]]=l[e[i]][e[N]];d=d+o;e=a[d];l[e[k]]=l[e[i]][e[g]];d=d+o;e=a[d];l[e[x]]=l[e[i]][e[y]];d=d+o;e=a[d];l[e[k]]=l[e[u]]*l[e[V]];d=d+o;e=a[d];l[e[w]]=e[s];d=d+o;e=a[d];l[e[x]]=m[e[b]];d=d+o;e=a[d];l[e[k]]=l[e[t]][e[g]];d=d+o;e=a[d];l[e[x]]=l[e[s]][e[N]];d=d+o;e=a[d];l[e[w]]=l[e[u]][e[N]];d=d+o;e=a[d];l[e[h]]=e[c]*l[e[V]];d=d+o;e=a[d];n=e[w]l[n]=l[n](_(l,n+o,e[b]))d=d+o;e=a[d];l[e[r]]=m[e[s]];d=d+o;e=a[d];l[e[h]]=l[e[b]][e[E]];d=d+o;e=a[d];l[e[x]]=l[e[t]][e[V]];d=d+o;e=a[d];l[e[r]]=l[e[t]][e[N]];d=d+o;e=a[d];l[e[r]]=l[e[s]]/l[e[y]];d=d+o;e=a[d];l[e[x]]=e[s];d=d+o;e=a[d];l[e[r]]=v[e[c]];d=d+o;e=a[d];l[e[w]]=l[e[u]][e[p]];d=d+o;e=a[d];l[e[r]]=m[e[u]];d=d+o;e=a[d];l[e[h]]=l[e[s]][e[p]];d=d+o;e=a[d];l[e[f]]=l[e[u]][e[g]];d=d+o;e=a[d];l[e[x]]=l[e[i]][e[y]];d=d+o;e=a[d];l[e[x]]=l[e[t]]*l[e[V]];d=d+o;e=a[d];l[e[k]]=e[b];d=d+o;e=a[d];l[e[f]]=m[e[b]];d=d+o;e=a[d];l[e[f]]=l[e[s]][e[p]];d=d+o;e=a[d];l[e[w]]=l[e[c]][e[E]];d=d+o;e=a[d];l[e[w]]=l[e[u]][e[V]];d=d+o;e=a[d];l[e[w]]=e[t]*l[e[V]];d=d+o;e=a[d];n=e[r]l[n]=l[n](_(l,n+o,e[t]))d=d+o;e=a[d];l[e[x]]=m[e[t]];d=d+o;e=a[d];l[e[x]]=l[e[c]][e[g]];d=d+o;e=a[d];l[e[h]]=l[e[u]][e[N]];d=d+o;e=a[d];l[e[r]]=l[e[s]][e[g]];d=d+o;e=a[d];l[e[k]]=l[e[u]]/l[e[p]];d=d+o;e=a[d];l[e[w]]=e[c];d=d+o;e=a[d];n=e[f]l[n]=l[n](_(l,n+o,e[b]))d=d+o;e=a[d];l[e[f]]=v[e[i]];d=d+o;e=a[d];l[e[r]]=l[e[b]][e[y]];d=d+o;e=a[d];l[e[x]]=l[e[u]][e[E]];d=d+o;e=a[d];l[e[k]]=v[e[c]];d=d+o;e=a[d];l[e[k]]=l[e[s]][e[E]];d=d+o;e=a[d];l[e[f]]=l[e[t]][e[g]];d=d+o;e=a[d];l[e[w]]=e[t];d=d+o;e=a[d];n=e[k]l[n](_(l,n+F,e[c]))d=d+o;e=a[d];l[e[r]]=m[e[t]];d=d+o;e=a[d];n=e[h];j=l[e[u]];l[n+1]=j;l[n]=j[e[p]];break end;break;end break;end while 2025==(n)/((2400+-0x33))do n=(7911494)while(359-0xd5)>=j do n=-n l[e[w]]=(e[t]~=0);break;end while(n)/((5237-0xa6e))==3082 do n=(4606965)while j>(335-0xbc)do n=-n local x;local n;n=e[h];x=l[e[i]];l[n+1]=x;l[n]=x[e[p]];d=d+o;e=a[d];l[e[k]]=m[e[s]];d=d+o;e=a[d];l[e[r]]=l[e[t]][e[g]];d=d+o;e=a[d];n=e[r]l[n](_(l,n+F,e[s]))d=d+o;e=a[d];d=e[b];break end while(n)/((0x7cf8d/205))==1845 do local c;local n;l[e[h]][e[t]]=l[e[g]];d=d+o;e=a[d];n=e[x];c=l[e[u]];l[n+1]=c;l[n]=c[e[E]];d=d+o;e=a[d];l[e[w]]=l[e[i]][e[V]];d=d+o;e=a[d];n=e[x]l[n](_(l,n+F,e[b]))d=d+o;e=a[d];l[e[r]]=(e[u]~=0);d=d+o;e=a[d];l[e[k]]=(e[i]~=0);d=d+o;e=a[d];l[e[f]]=l[e[i]][e[V]];d=d+o;e=a[d];l[e[x]]=l[e[s]][e[N]];d=d+o;e=a[d];n=e[x];c=l[e[i]];l[n+1]=c;l[n]=c[e[p]];break end;break;end break;end break;end break;end while 1977==(n)/((17424/0x10))do n=(396649)while(425-0x10f)>=j do n=-n n=(2550280)while j<=(367-0xd8)do n=-n n=(3870022)while j<=(-0x64+249)do n=-n if l[e[f]]then d=d+o;else d=e[i];end;break;end while 949==(n)/((183510/0x2d))do n=(7938960)while j>(377-0xe3)do n=-n local n;n=e[x]l[n](_(l,n+F,e[c]))d=d+o;e=a[d];l[e[x]]=v[e[c]];d=d+o;e=a[d];l[e[w]]=l[e[s]][e[y]];d=d+o;e=a[d];l[e[x]]=e[t];d=d+o;e=a[d];l[e[r]]=l[e[b]][e[V]];d=d+o;e=a[d];n=e[r]l[n]=l[n](_(l,n+o,e[b]))d=d+o;e=a[d];l[e[x]][e[s]]=l[e[p]];d=d+o;e=a[d];l[e[f]]=l[e[s]][e[g]];d=d+o;e=a[d];l[e[x]][e[t]]=e[p];d=d+o;e=a[d];l[e[k]]=l[e[t]][e[N]];d=d+o;e=a[d];l[e[k]][e[t]]=e[g];d=d+o;e=a[d];l[e[h]]=l[e[u]][e[V]];d=d+o;e=a[d];l[e[h]]=v[e[s]];d=d+o;e=a[d];l[e[k]]=l[e[c]][e[p]];d=d+o;e=a[d];l[e[x]]=e[c];d=d+o;e=a[d];l[e[k]]=l[e[s]][e[E]];d=d+o;e=a[d];l[e[k]]=l[e[c]][e[p]];d=d+o;e=a[d];l[e[r]]=l[e[s]][e[y]];d=d+o;e=a[d];n=e[h]l[n]=l[n](_(l,n+o,e[c]))d=d+o;e=a[d];l[e[x]][e[b]]=l[e[g]];d=d+o;e=a[d];l[e[w]]=l[e[s]][e[g]];d=d+o;e=a[d];l[e[r]][e[i]]=e[V];d=d+o;e=a[d];l[e[h]]=l[e[s]][e[V]];d=d+o;e=a[d];l[e[w]][e[s]]=e[p];d=d+o;e=a[d];l[e[f]]=l[e[u]][e[E]];d=d+o;e=a[d];l[e[k]]=v[e[c]];d=d+o;e=a[d];l[e[k]]=l[e[i]][e[E]];d=d+o;e=a[d];l[e[k]]=e[b];d=d+o;e=a[d];l[e[f]]=e[t];d=d+o;e=a[d];l[e[r]]=e[u];d=d+o;e=a[d];n=e[h]l[n]=l[n](_(l,n+o,e[c]))d=d+o;e=a[d];l[e[f]][e[i]]=l[e[V]];d=d+o;e=a[d];l[e[x]]=l[e[b]][e[y]];d=d+o;e=a[d];l[e[w]]=v[e[t]];d=d+o;e=a[d];l[e[k]]=l[e[i]][e[V]];d=d+o;e=a[d];l[e[w]]=m[e[s]];d=d+o;e=a[d];l[e[r]]=l[e[c]][e[E]];d=d+o;e=a[d];l[e[x]]=l[e[i]][e[p]];d=d+o;e=a[d];l[e[k]]=l[e[s]][e[N]];d=d+o;e=a[d];l[e[k]]=l[e[t]][e[N]];d=d+o;e=a[d];l[e[k]]=l[e[u]]-e[E];d=d+o;e=a[d];l[e[x]]=e[c];d=d+o;e=a[d];n=e[k]l[n]=l[n](_(l,n+o,e[u]))d=d+o;e=a[d];l[e[w]][e[b]]=l[e[p]];d=d+o;e=a[d];l[e[k]]=v[e[u]];d=d+o;e=a[d];l[e[f]]=l[e[b]][e[V]];d=d+o;e=a[d];l[e[h]]=v[e[b]];d=d+o;e=a[d];l[e[x]]=e[u];d=d+o;e=a[d];l[e[h]]=e[t];d=d+o;e=a[d];l[e[x]]=e[u];d=d+o;e=a[d];n=e[x]l[n]=l[n](_(l,n+o,e[t]))d=d+o;e=a[d];l[e[h]]=l[e[t]][e[g]];d=d+o;e=a[d];n=e[k]l[n]=l[n](_(l,n+o,e[c]))d=d+o;e=a[d];l[e[h]][e[b]]=l[e[V]];d=d+o;e=a[d];l[e[r]]=l[e[i]][e[g]];d=d+o;e=a[d];l[e[w]]=v[e[b]];d=d+o;e=a[d];l[e[k]]=l[e[s]][e[y]];d=d+o;e=a[d];l[e[h]]=l[e[b]][e[V]];d=d+o;e=a[d];l[e[r]][e[t]]=l[e[g]];d=d+o;e=a[d];l[e[r]]=l[e[u]][e[E]];d=d+o;e=a[d];l[e[k]]=v[e[u]];d=d+o;e=a[d];l[e[r]]=l[e[b]][e[p]];d=d+o;e=a[d];l[e[x]]=l[e[t]][e[g]];d=d+o;e=a[d];l[e[h]][e[s]]=l[e[V]];d=d+o;e=a[d];l[e[w]]=l[e[u]][e[g]];d=d+o;e=a[d];l[e[k]]=v[e[s]];d=d+o;e=a[d];l[e[k]]=l[e[c]][e[E]];d=d+o;e=a[d];l[e[w]]=l[e[t]][e[N]];d=d+o;e=a[d];l[e[x]][e[i]]=l[e[E]];d=d+o;e=a[d];l[e[f]]=l[e[i]][e[g]];d=d+o;e=a[d];l[e[h]]=v[e[u]];d=d+o;e=a[d];l[e[k]]=l[e[t]][e[g]];d=d+o;e=a[d];l[e[k]]=e[s];d=d+o;e=a[d];l[e[r]]=e[u];d=d+o;e=a[d];n=e[x]l[n]=l[n](_(l,n+o,e[i]))d=d+o;e=a[d];l[e[h]][e[u]]=l[e[E]];d=d+o;e=a[d];l[e[k]]=l[e[u]][e[V]];d=d+o;e=a[d];if not l[e[k]]then d=d+F;else d=e[i];end;break end while(n)/((7074-0xe08))==2280 do local r;local n;l[e[k]][e[c]]=l[e[p]];d=d+o;e=a[d];l[e[x]]=(e[s]~=0);d=d+o;e=a[d];l[e[w]]=(e[u]~=0);d=d+o;e=a[d];l[e[x]]=l[e[s]][e[E]];d=d+o;e=a[d];l[e[h]]=l[e[u]][e[g]];d=d+o;e=a[d];n=e[w];r=l[e[s]];l[n+1]=r;l[n]=r[e[y]];break end;break;end break;end while 2476==(n)/((0x1be9a/111))do n=(3833186)while(17328/0x72)>=j do n=-n local x;local n;n=e[h]l[n]=l[n](_(l,n+o,e[b]))d=d+o;e=a[d];l[e[h]][e[i]]=l[e[p]];d=d+o;e=a[d];l[e[h]]=l[e[c]][e[y]];d=d+o;e=a[d];n=e[w];x=l[e[c]];l[n+1]=x;l[n]=x[e[y]];d=d+o;e=a[d];l[e[w]]=v[e[i]];d=d+o;e=a[d];l[e[r]]=e[b];d=d+o;e=a[d];l[e[k]]=e[c];d=d+o;e=a[d];l[e[k]]=e[c];d=d+o;e=a[d];n=e[h]l[n]=l[n](_(l,n+o,e[b]))break;end while 2423==(n)/((0xc8d-1631))do n=(9122916)while(-32+0xb9)<j do n=-n local n;l[e[h]]=v[e[t]];d=d+o;e=a[d];l[e[k]]=l[e[i]][e[V]];d=d+o;e=a[d];l[e[w]]=e[i];d=d+o;e=a[d];l[e[x]]=e[i];d=d+o;e=a[d];l[e[k]]=e[s];d=d+o;e=a[d];n=e[h]l[n]=l[n](_(l,n+o,e[i]))d=d+o;e=a[d];l[e[r]][e[u]]=l[e[y]];d=d+o;e=a[d];l[e[f]]=m[e[s]];d=d+o;e=a[d];l[e[f]]=v[e[c]];d=d+o;e=a[d];l[e[r]]=l[e[c]][e[g]];d=d+o;e=a[d];l[e[f]]=e[t];d=d+o;e=a[d];l[e[x]]=e[c];d=d+o;e=a[d];l[e[x]]=e[b];d=d+o;e=a[d];n=e[h]l[n]=l[n](_(l,n+o,e[t]))d=d+o;e=a[d];l[e[w]][e[t]]=l[e[V]];d=d+o;e=a[d];l[e[x]]=m[e[t]];d=d+o;e=a[d];l[e[w]]=m[e[b]];d=d+o;e=a[d];l[e[x]][e[b]]=l[e[g]];break end while(n)/((4564-0x8fa))==4026 do local j;local g,E;local n;l[e[w]]=l[e[u]][e[p]];d=d+o;e=a[d];l[e[w]]=l[e[t]][e[y]];d=d+o;e=a[d];l[e[f]]=v[e[b]];d=d+o;e=a[d];l[e[h]]=l[e[t]][e[y]];d=d+o;e=a[d];l[e[h]]=e[s];d=d+o;e=a[d];l[e[w]]=e[i];d=d+o;e=a[d];n=e[r]g,E=Y(l[n](_(l,n+1,e[t])))M=E+n-1 j=0;for e=n,M do j=j+o;l[e]=g[j];end;d=d+o;e=a[d];n=e[x]l[n]=l[n](_(l,n+o,M))d=d+o;e=a[d];l[e[k]]=m[e[i]];d=d+o;e=a[d];l[e[w]]=l[e[c]][e[N]];break end;break;end break;end break;end while 107==(n)/((144573/0x27))do n=(12570636)while j<=(-84+0xf1)do n=-n n=(4650321)while j<=(3100/0x14)do n=-n l[e[r]]=l[e[t]]/l[e[p]];break;end while 2301==(n)/((94987/0x2f))do n=(140012)while(-88+0xf4)<j do n=-n local u;local x;local t,c;local n;n=e[f]l[n]=l[n](_(l,n+o,e[i]))d=d+o;e=a[d];l[e[r]]=v[e[i]];d=d+o;e=a[d];l[e[f]]=l[e[i]][e[E]];d=d+o;e=a[d];l[e[h]]=e[b];d=d+o;e=a[d];l[e[k]]=l[e[i]][e[N]];d=d+o;e=a[d];l[e[r]]=l[e[b]][e[N]];d=d+o;e=a[d];n=e[w]t,c=Y(l[n](_(l,n+1,e[b])))M=c+n-1 x=0;for e=n,M do x=x+o;l[e]=t[x];end;d=d+o;e=a[d];n=e[r];u=l[n];for e=n+1,M do W(u,l[e])end;break end while 493==(n)/((0xdefc/201))do do return l[e[x]]end break end;break;end break;end while(n)/((4058+-0x5f))==3172 do n=(3505232)while(7742/(122-0x49))>=j do n=-n l[e[w]]=m[e[t]];d=d+o;e=a[d];l[e[h]]=l[e[i]][e[g]];d=d+o;e=a[d];l[e[k]]=l[e[s]][e[p]];d=d+o;e=a[d];l[e[k]][e[b]]=l[e[g]];d=d+o;e=a[d];do return end;break;end while(n)/((-0x28+3096))==1147 do n=(2182392)while j>(0xb2+(-0x24+17))do n=-n local o=e[s];local d=l[o]for e=o+1,e[p]do d=d..l[e];end;l[e[w]]=d;break end while 612==(n)/((3683+-0x75))do local e=e[x]l[e](_(l,e+F,M))break end;break;end break;end break;end break;end break;end while 1678==(n)/((0x5f3-783))do n=(688226)while((4+-0x69)+0x111)>=j do n=-n n=(4354064)while j<=(363-0xc5)do n=-n n=(89496)while(0x186-227)>=j do n=-n n=(4500241)while(0xe5+-68)>=j do n=-n local n;l[e[h]]=e[i];d=d+o;e=a[d];n=e[x]l[n]=l[n](_(l,n+o,e[s]))d=d+o;e=a[d];l[e[r]]=v[e[i]];d=d+o;e=a[d];l[e[f]]=v[e[u]];d=d+o;e=a[d];l[e[x]]=l[e[c]][e[E]];d=d+o;e=a[d];n=e[h]l[n]=l[n](l[n+F])d=d+o;e=a[d];l[e[x]]=l[e[c]][e[g]];d=d+o;e=a[d];if not l[e[x]]then d=d+F;else d=e[b];end;break;end while(n)/((0x3ce1c/108))==1949 do n=(860100)while(-58+0xdc)<j do n=-n local n;local j;l[e[f]]=l[e[t]][e[y]];d=d+o;e=a[d];l[e[k]]=m[e[u]];d=d+o;e=a[d];l[e[r]]=l[e[i]][e[V]];d=d+o;e=a[d];l[e[x]]=l[e[i]][e[g]];d=d+o;e=a[d];l[e[f]]=v[e[i]];d=d+o;e=a[d];l[e[h]]=l[e[c]][e[y]];d=d+o;e=a[d];l[e[x]]=e[s];d=d+o;e=a[d];l[e[r]]=e[b];d=d+o;e=a[d];j=e[k]l[j]=l[j](_(l,j+o,e[i]))d=d+o;e=a[d];n={l,e};n[F][n[S][k]]=n[o][n[S][N]]+n[F][n[S][i]];d=d+o;e=a[d];l[e[w]][e[b]]=l[e[E]];break end while(n)/((0x157+-108))==3660 do l[e[k]]=e[u];break end;break;end break;end while(n)/((-69+0xed6))==24 do n=(3236460)while(0x17a-214)>=j do n=-n local n;l[e[f]]=l[e[u]];d=d+o;e=a[d];n=e[k]l[n]=l[n](l[n+F])d=d+o;e=a[d];l[e[h]]=v[e[b]];d=d+o;e=a[d];l[e[h]]=e[b];d=d+o;e=a[d];l[e[k]]=e[c];d=d+o;e=a[d];l[e[r]]=e[c];d=d+o;e=a[d];n=e[k]l[n]=l[n](_(l,n+o,e[u]))d=d+o;e=a[d];if(l[e[w]]~=l[e[N]])then d=d+F;else d=e[u];end;break;end while(n)/((0x6f90/28))==3173 do n=(7955148)while j>(0x18e-233)do n=-n l[e[x]][e[b]]=l[e[N]];d=d+o;e=a[d];l[e[h]]=l[e[i]][e[E]];d=d+o;e=a[d];l[e[r]][e[t]]=e[p];d=d+o;e=a[d];l[e[x]]=l[e[b]][e[p]];d=d+o;e=a[d];l[e[h]]=v[e[u]];d=d+o;e=a[d];l[e[h]]=l[e[b]][e[p]];d=d+o;e=a[d];l[e[k]]=m[e[c]];d=d+o;e=a[d];l[e[h]]=l[e[s]][e[p]];d=d+o;e=a[d];l[e[f]]=l[e[c]][e[N]];d=d+o;e=a[d];l[e[x]]=l[e[t]][e[p]];break end while(n)/(((0x942be-303510)/100))==2622 do local n;local b;l[e[f]]=l[e[u]][e[y]];d=d+o;e=a[d];l[e[r]]=l[e[i]][e[g]];d=d+o;e=a[d];l[e[f]]=e[s];d=d+o;e=a[d];b=e[i];n=l[b]for e=b+1,e[y]do n=n..l[e];end;l[e[w]]=n;d=d+o;e=a[d];l[e[x]][e[u]]=l[e[V]];break end;break;end break;end break;end while(n)/((2410+-0x7a))==1903 do n=(6079200)while j<=(412-(526-0x11b))do n=-n n=(5348960)while(-112+0x117)>=j do n=-n l[e[w]]=l[e[b]][e[g]];d=d+o;e=a[d];l[e[r]]=m[e[b]];d=d+o;e=a[d];l[e[h]]=l[e[t]][e[V]];d=d+o;e=a[d];l[e[r]][e[t]]=l[e[y]];d=d+o;e=a[d];l[e[f]]=l[e[u]][e[E]];d=d+o;e=a[d];l[e[k]][e[s]]=e[V];d=d+o;e=a[d];l[e[r]]=l[e[i]][e[p]];d=d+o;e=a[d];l[e[x]]=v[e[c]];break;end while(n)/((0x23e70/91))==3310 do n=(1552950)while j>(24864/0x94)do n=-n local e={l,e};e[F][e[S][r]]=e[o][e[S][y]]+e[F][e[S][t]];break end while 850==(n)/((1880+(-0x1-52)))do local w;local n;local i;i=e[h]l[i]=l[i](_(l,i+o,e[b]))d=d+o;e=a[d];n={l,e};n[F][n[S][h]]=n[o][n[S][E]]+n[F][n[S][t]];d=d+o;e=a[d];l[e[r]][e[c]]=l[e[y]];d=d+o;e=a[d];l[e[x]]=l[e[s]][e[g]];d=d+o;e=a[d];l[e[r]][e[c]]=e[N];d=d+o;e=a[d];l[e[k]]=m[e[t]];d=d+o;e=a[d];l[e[r]]=l[e[b]][e[V]];d=d+o;e=a[d];i=e[h];w=l[e[s]];l[i+1]=w;l[i]=w[e[g]];break end;break;end break;end while(n)/((5476-0xac4))==2235 do n=(563035)while(39610/0xe9)>=j do n=-n local M;local j;local n;l[e[w]][e[t]]=l[e[V]];d=d+o;e=a[d];l[e[r]]=v[e[c]];d=d+o;e=a[d];l[e[f]]=l[e[u]][e[V]];d=d+o;e=a[d];l[e[w]]=e[t];d=d+o;e=a[d];l[e[f]]=l[e[s]][e[V]];d=d+o;e=a[d];n=e[f]l[n]=l[n](_(l,n+o,e[t]))d=d+o;e=a[d];l[e[k]][e[t]]=l[e[y]];d=d+o;e=a[d];l[e[h]]=l[e[s]][e[g]];d=d+o;e=a[d];l[e[h]]=v[e[t]];d=d+o;e=a[d];l[e[x]]=e[i];d=d+o;e=a[d];l[e[h]]=e[u];d=d+o;e=a[d];l[e[x]]=e[s];d=d+o;e=a[d];n=e[f]l[n]=l[n](_(l,n+o,e[s]))d=d+o;e=a[d];l[e[r]][e[b]]=l[e[p]];d=d+o;e=a[d];l[e[h]]=l[e[b]][e[g]];d=d+o;e=a[d];l[e[h]][e[c]]=e[E];d=d+o;e=a[d];l[e[k]]=l[e[s]][e[E]];d=d+o;e=a[d];l[e[k]]=l[e[b]][e[E]];d=d+o;e=a[d];l[e[h]]=l[e[c]][e[g]];d=d+o;e=a[d];l[e[x]]=v[e[s]];d=d+o;e=a[d];l[e[x]]=l[e[t]][e[N]];d=d+o;e=a[d];l[e[k]]=e[i];d=d+o;e=a[d];l[e[h]]=e[t];d=d+o;e=a[d];n=e[k]l[n]=l[n](_(l,n+o,e[u]))d=d+o;e=a[d];j={l,e};j[F][j[S][w]]=j[o][j[S][p]]+j[F][j[S][s]];d=d+o;e=a[d];l[e[r]][e[u]]=l[e[y]];d=d+o;e=a[d];l[e[f]]=l[e[i]][e[N]];d=d+o;e=a[d];l[e[k]][e[u]]=e[p];d=d+o;e=a[d];l[e[h]]=l[e[u]][e[g]];d=d+o;e=a[d];l[e[h]]=m[e[i]];d=d+o;e=a[d];l[e[h]]=l[e[u]][e[E]];d=d+o;e=a[d];l[e[w]]=l[e[t]][e[E]];d=d+o;e=a[d];l[e[r]][e[t]]=l[e[E]];d=d+o;e=a[d];l[e[r]]=l[e[b]][e[E]];d=d+o;e=a[d];l[e[x]]=v[e[u]];d=d+o;e=a[d];l[e[r]]=l[e[c]][e[N]];d=d+o;e=a[d];l[e[r]]=e[t];d=d+o;e=a[d];l[e[w]]=e[b];d=d+o;e=a[d];n=e[w]l[n]=l[n](_(l,n+o,e[u]))d=d+o;e=a[d];l[e[k]][e[s]]=l[e[p]];d=d+o;e=a[d];l[e[f]]=m[e[u]];d=d+o;e=a[d];l[e[x]]=l[e[u]][e[E]];d=d+o;e=a[d];n=e[x];M=l[e[i]];l[n+1]=M;l[n]=M[e[g]];break;end while 353==(n)/((1641+-0x2e))do n=(249981)while((0x3b0-484)-0x121)<j do n=-n local n;n=e[x]l[n]=l[n](_(l,n+o,M))d=d+o;e=a[d];l[e[f]]=m[e[t]];d=d+o;e=a[d];l[e[w]]=l[e[c]][e[V]];d=d+o;e=a[d];l[e[x]]=m[e[s]];d=d+o;e=a[d];l[e[f]]=l[e[u]][e[g]];d=d+o;e=a[d];l[e[r]]=l[e[i]][e[g]];d=d+o;e=a[d];l[e[x]]=v[e[u]];d=d+o;e=a[d];l[e[k]]=e[c];d=d+o;e=a[d];l[e[h]]=e[s];d=d+o;e=a[d];l[e[w]]=e[c];break end while 309==(n)/((0x6bb-914))do l[e[h]]=v[e[i]];d=d+o;e=a[d];l[e[r]]=l[e[t]][e[V]];d=d+o;e=a[d];l[e[w]]=m[e[i]];d=d+o;e=a[d];l[e[w]]=l[e[u]][e[y]];d=d+o;e=a[d];l[e[f]]=l[e[t]][e[g]];d=d+o;e=a[d];l[e[r]]=l[e[i]][e[g]];d=d+o;e=a[d];l[e[h]]=m[e[c]];d=d+o;e=a[d];l[e[r]]=l[e[c]][e[g]];d=d+o;e=a[d];l[e[f]]=#l[e[t]];d=d+o;e=a[d];l[e[h]]=l[e[s]]-e[N];break end;break;end break;end break;end break;end while 902==(n)/((1566-0x323))do n=(4568740)while(0x80a2/185)>=j do n=-n n=(3000792)while(41475/0xed)>=j do n=-n n=(7621308)while j<=(388-0xd7)do n=-n l[e[k]][l[e[c]]]=l[e[g]];break;end while(n)/((474516/0x93))==2361 do n=(1638490)while j>(-114+0x120)do n=-n l[e[k]]=l[e[s]]*l[e[y]];break end while 3115==(n)/((3682/0x7))do if(e[k]<=l[e[E]])then d=d+F;else d=e[u];end;break end;break;end break;end while 776==(n)/((0x1e9c-3969))do n=(5357778)while j<=(445-0x10d)do n=-n local n;l[e[f]]=m[e[c]];d=d+o;e=a[d];l[e[x]]=l[e[u]][e[y]];d=d+o;e=a[d];l[e[f]]=l[e[i]];d=d+o;e=a[d];n=e[f]l[n](_(l,n+F,e[b]))d=d+o;e=a[d];do return end;break;end while 2031==(n)/((0x9232a/227))do n=(692784)while(0x9ae/14)<j do n=-n local e=e[x]l[e]=l[e](l[e+F])break end while 306==(n)/((0x1cbe0/(0x84-80)))do l[e[x]]=m[e[i]];d=d+o;e=a[d];l[e[f]]=l[e[s]][e[y]];d=d+o;e=a[d];l[e[h]]=l[e[i]][e[g]];d=d+o;e=a[d];l[e[x]][e[u]]=l[e[E]];d=d+o;e=a[d];do return end;break end;break;end break;end break;end while 2186==(n)/((0x87b+-81))do n=(1169287)while(0xcc+(-17+-0x6))>=j do n=-n n=(888675)while(-91+0x10e)>=j do n=-n l[e[r]]=m[e[s]];break;end while(n)/((0x601+-92))==615 do n=(3641224)while j>(437-0x101)do n=-n l[e[h]]=l[e[i]][e[V]];d=d+o;e=a[d];l[e[h]][e[u]]=e[y];d=d+o;e=a[d];l[e[h]]=l[e[i]][e[p]];d=d+o;e=a[d];l[e[k]]=l[e[t]][e[g]];d=d+o;e=a[d];l[e[k]][e[t]]=l[e[g]];d=d+o;e=a[d];l[e[x]]=l[e[c]][e[y]];d=d+o;e=a[d];l[e[w]]=v[e[t]];break end while(n)/(((0x8378-16848)/0xb))==2383 do l[e[h]]=v[e[t]];break end;break;end break;end while 487==(n)/((0x12e6-2437))do n=(5090280)while(43680/0xf0)>=j do n=-n local o=e[w];local n=l[o+2];local a=l[o]+n;l[o]=a;if(n>0)then if(a<=l[o+1])then d=e[b];l[o+3]=a;end elseif(a>=l[o+1])then d=e[b];l[o+3]=a;end break;end while(n)/((5117-0xa2f))==2028 do n=(1691086)while j>(9333/0x33)do n=-n l[e[w]]=m[e[b]];d=d+o;e=a[d];l[e[f]]=l[e[u]][e[V]];d=d+o;e=a[d];l[e[r]]=l[e[c]][e[g]];d=d+o;e=a[d];l[e[w]][e[c]]=l[e[E]];d=d+o;e=a[d];do return end;break end while 503==(n)/((0xc9eac/246))do local n;l[e[w]]=l[e[c]][e[y]];d=d+o;e=a[d];l[e[x]]=e[b];d=d+o;e=a[d];l[e[x]]=l[e[b]][e[E]];d=d+o;e=a[d];n=e[r]l[n]=l[n](_(l,n+o,e[t]))d=d+o;e=a[d];l[e[h]][e[s]]=l[e[E]];d=d+o;e=a[d];l[e[w]]=l[e[b]][e[g]];d=d+o;e=a[d];l[e[k]]=v[e[b]];d=d+o;e=a[d];l[e[x]]=e[t];d=d+o;e=a[d];l[e[f]]=e[s];d=d+o;e=a[d];l[e[f]]=e[s];break end;break;end break;end break;end break;end break;end break;end break;end break;end while 719==(n)/((-0x1b+3330))do n=(54057)while j<=(-0x22+310)do n=-n n=(12978000)while j<=(327+-0x61)do n=-n n=(5098764)while j<=(227+-0x14)do n=-n n=(3305658)while j<=(21060/0x6c)do n=-n n=(115594)while j<=(267+-0x4e)do n=-n n=(1771920)while(0x4b90/104)>=j do n=-n n=(272023)while j>(0x182-201)do n=-n l[e[x]]=v[e[u]];break end while(n)/((0x14e1-2704))==103 do if(l[e[k]]~=e[E])then d=d+F;else d=e[i];end;break end;break;end while 460==(n)/(((0xf95+-87)+-0x32))do n=(3075924)while(0x74e/10)>=j do n=-n local r;local n;l[e[f]]=m[e[i]];d=d+o;e=a[d];l[e[f]]=l[e[u]][e[E]];d=d+o;e=a[d];n=e[x];r=l[e[t]];l[n+1]=r;l[n]=r[e[p]];d=d+o;e=a[d];l[e[f]]=l[e[u]];d=d+o;e=a[d];n=e[f]l[n]=l[n](_(l,n+o,e[c]))d=d+o;e=a[d];if l[e[k]]then d=d+o;else d=e[u];end;break;end while 1871==(n)/((0xd1a-1710))do n=(2355378)while j>(0x19a-222)do n=-n local j;local n;l[e[r]]=l[e[t]][e[y]];d=d+o;e=a[d];l[e[f]][e[i]]=l[e[V]];d=d+o;e=a[d];l[e[w]]=v[e[c]];d=d+o;e=a[d];l[e[f]]=l[e[i]][e[y]];d=d+o;e=a[d];l[e[w]]=e[c];d=d+o;e=a[d];l[e[f]]=m[e[t]];d=d+o;e=a[d];l[e[r]]=l[e[u]][e[p]];d=d+o;e=a[d];n=e[f]l[n]=l[n](_(l,n+o,e[s]))d=d+o;e=a[d];l[e[r]][e[c]]=l[e[p]];d=d+o;e=a[d];l[e[k]]=l[e[t]][e[V]];d=d+o;e=a[d];l[e[x]][e[t]]=e[g];d=d+o;e=a[d];l[e[w]]=l[e[b]][e[y]];d=d+o;e=a[d];l[e[h]]=v[e[i]];d=d+o;e=a[d];l[e[r]]=l[e[t]][e[y]];d=d+o;e=a[d];l[e[f]]=e[b];d=d+o;e=a[d];l[e[w]]=e[u];d=d+o;e=a[d];n=e[r]l[n]=l[n](_(l,n+o,e[s]))d=d+o;e=a[d];l[e[k]][e[c]]=l[e[N]];d=d+o;e=a[d];l[e[x]]=l[e[t]][e[g]];d=d+o;e=a[d];l[e[k]][e[i]]=e[y];d=d+o;e=a[d];l[e[h]]=l[e[b]][e[V]];d=d+o;e=a[d];l[e[f]]=m[e[t]];d=d+o;e=a[d];l[e[h]]=l[e[u]][e[y]];d=d+o;e=a[d];l[e[w]]=l[e[i]][e[y]];d=d+o;e=a[d];l[e[w]][e[u]]=l[e[V]];d=d+o;e=a[d];l[e[r]]=l[e[u]][e[V]];d=d+o;e=a[d];l[e[k]]=l[e[t]][e[y]];d=d+o;e=a[d];l[e[r]][e[t]]=l[e[V]];d=d+o;e=a[d];l[e[h]]=l[e[i]][e[E]];d=d+o;e=a[d];l[e[x]]=m[e[s]];d=d+o;e=a[d];l[e[x]]=l[e[c]][e[V]];d=d+o;e=a[d];l[e[k]]=l[e[s]][e[g]];d=d+o;e=a[d];l[e[x]][e[b]]=l[e[g]];d=d+o;e=a[d];l[e[h]]=l[e[i]][e[y]];d=d+o;e=a[d];l[e[w]][e[c]]=e[g];d=d+o;e=a[d];l[e[h]]=l[e[c]][e[E]];d=d+o;e=a[d];l[e[f]][e[u]]=e[N];d=d+o;e=a[d];l[e[x]]=l[e[s]][e[E]];d=d+o;e=a[d];l[e[f]]=v[e[t]];d=d+o;e=a[d];l[e[x]]=l[e[u]][e[y]];d=d+o;e=a[d];l[e[f]]=l[e[c]][e[N]];d=d+o;e=a[d];l[e[x]][e[i]]=l[e[V]];d=d+o;e=a[d];l[e[x]]=m[e[i]];d=d+o;e=a[d];l[e[r]]=l[e[c]][e[E]];d=d+o;e=a[d];n=e[r];j=l[e[c]];l[n+1]=j;l[n]=j[e[N]];break end while(n)/((929+(-0xa64/38)))==2742 do local M;local j;local m;local n;l[e[f]]=v[e[u]];d=d+o;e=a[d];l[e[r]]=l[e[c]][e[p]];d=d+o;e=a[d];n=e[r];m=l[e[u]];l[n+1]=m;l[n]=m[e[y]];d=d+o;e=a[d];l[e[x]]=l[e[b]];d=d+o;e=a[d];l[e[w]]=l[e[t]];d=d+o;e=a[d];n=e[f]l[n]=l[n](_(l,n+o,e[u]))d=d+o;e=a[d];n=e[k];m=l[e[s]];l[n+1]=m;l[n]=m[e[p]];d=d+o;e=a[d];n=e[r]l[n]=l[n](l[n+F])d=d+o;e=a[d];j={l,e};j[F][j[S][k]]=j[o][j[S][p]]+j[F][j[S][u]];d=d+o;e=a[d];l[e[w]]=l[e[i]]%e[V];d=d+o;e=a[d];n=e[x]l[n]=l[n](l[n+F])d=d+o;e=a[d];m=e[t];M=l[m]for e=m+1,e[N]do M=M..l[e];end;l[e[h]]=M;d=d+o;e=a[d];j={l,e};j[F][j[S][x]]=j[o][j[S][g]]+j[F][j[S][b]];d=d+o;e=a[d];l[e[w]]=l[e[c]]%e[E];break end;break;end break;end break;end while 3986==(n)/((0x92-117))do n=(2290771)while j<=(-0x55+277)do n=-n n=(1468392)while j<=((20696/0x34)-208)do n=-n local e={l,e};e[o][e[S][x]]=e[S][y]+e[S][i];break;end while(n)/((-111+0xe7e))==408 do n=(13739463)while j>(0xb0d3/(495-0x102))do n=-n local h;local b;local n;n=e[k];b=l[e[t]];l[n+1]=b;l[n]=b[e[E]];d=d+o;e=a[d];l[e[k]]=l[e[t]];d=d+o;e=a[d];n=e[r]l[n](_(l,n+F,e[i]))d=d+o;e=a[d];l[e[x]]=m[e[i]];d=d+o;e=a[d];l[e[k]]={};d=d+o;e=a[d];l[e[w]]=l[e[u]];d=d+o;e=a[d];n=e[r];h=l[n];for e=n+1,e[i]do W(h,l[e])end;break end while(n)/((7659-0xf0c))==3609 do local n;l[e[h]]=l[e[u]][e[g]];d=d+o;e=a[d];l[e[k]]=l[e[t]]/e[N];d=d+o;e=a[d];l[e[r]]=e[b];d=d+o;e=a[d];l[e[k]]=e[c];d=d+o;e=a[d];n=e[f]l[n]=l[n](_(l,n+o,e[c]))d=d+o;e=a[d];l[e[h]]=v[e[i]];d=d+o;e=a[d];l[e[k]]=l[e[i]][e[V]];d=d+o;e=a[d];l[e[h]]=l[e[i]][e[p]];d=d+o;e=a[d];l[e[k]]=l[e[b]][e[y]];d=d+o;e=a[d];l[e[f]]=l[e[i]]/e[y];break end;break;end break;end while 3677==(n)/((-31+0x28e))do n=(2681291)while(502-0x135)>=j do n=-n local n;local j;local W,B;local S;local p;local n;l[e[x]]=m[e[t]];d=d+o;e=a[d];l[e[k]]=l[e[t]][e[E]];d=d+o;e=a[d];l[e[w]]=e[u];d=d+o;e=a[d];l[e[k]]=m[e[s]];d=d+o;e=a[d];n=e[r];p=l[e[b]];l[n+1]=p;l[n]=p[e[g]];d=d+o;e=a[d];n=e[x]l[n]=l[n](l[n+F])d=d+o;e=a[d];l[e[r]]=v[e[i]];d=d+o;e=a[d];l[e[k]]=e[i];d=d+o;e=a[d];l[e[h]]=e[s];d=d+o;e=a[d];l[e[w]]=e[b];d=d+o;e=a[d];n=e[w]l[n]=l[n](_(l,n+o,e[u]))d=d+o;e=a[d];p=e[c];S=l[p]for e=p+1,e[N]do S=S..l[e];end;l[e[f]]=S;d=d+o;e=a[d];n=e[f]l[n](l[n+F])d=d+o;e=a[d];l[e[w]]=v[e[i]];d=d+o;e=a[d];l[e[f]]=v[e[b]];d=d+o;e=a[d];l[e[w]]=m[e[b]];d=d+o;e=a[d];l[e[h]]=l[e[c]][e[y]];d=d+o;e=a[d];n=e[k]W,B=Y(l[n](l[n+F]))M=B+n-o j=0;for e=n,M do j=j+o;l[e]=W[j];end;d=d+o;e=a[d];n=e[h]W={l[n](_(l,n+1,M))};j=0;for e=n,e[V]do j=j+o;l[e]=W[j];end d=d+o;e=a[d];d=e[b];break;end while(n)/((-68+0x781))==1447 do n=(1888245)while(238+-0x2c)<j do n=-n if(l[e[k]]==e[E])then d=d+F;else d=e[i];end;break end while 1065==(n)/((-29+0x70a))do local r;local n;l[e[f]][e[u]]=l[e[p]];d=d+o;e=a[d];l[e[w]]=l[e[t]][e[y]];d=d+o;e=a[d];l[e[f]][e[c]]=e[E];d=d+o;e=a[d];l[e[h]]=m[e[u]];d=d+o;e=a[d];l[e[f]]=l[e[i]][e[y]];d=d+o;e=a[d];n=e[k];r=l[e[b]];l[n+1]=r;l[n]=r[e[E]];break end;break;end break;end break;end break;end while(n)/((0x6c7-922))==4066 do n=(3621906)while(0x1f2-297)>=j do n=-n n=(178880)while(0x1f6-304)>=j do n=-n n=(5068440)while(222+-0x1a)>=j do n=-n local d=e[f];local o=l[e[c]];l[d+1]=o;l[d]=o[e[V]];break;end while(n)/((560196/0xfc))==2280 do n=(560924)while(-0x36+251)<j do n=-n local r;local y,V;local j;local n;l[e[x]][e[i]]=l[e[p]];d=d+o;e=a[d];l[e[x]]=m[e[u]];d=d+o;e=a[d];n=e[k];j=l[e[b]];l[n+1]=j;l[n]=j[e[E]];d=d+o;e=a[d];l[e[w]]=v[e[s]];d=d+o;e=a[d];l[e[f]]=l[e[u]][e[E]];d=d+o;e=a[d];l[e[k]]=l[e[s]];d=d+o;e=a[d];l[e[k]]=e[c];d=d+o;e=a[d];n=e[k]y,V=Y(l[n](_(l,n+1,e[b])))M=V+n-1 r=0;for e=n,M do r=r+o;l[e]=y[r];end;d=d+o;e=a[d];n=e[h]l[n](_(l,n+F,M))d=d+o;e=a[d];l[e[w]]=v[e[b]];d=d+o;e=a[d];l[e[k]]=m[e[t]];d=d+o;e=a[d];l[e[x]]=l[e[u]][e[g]];d=d+o;e=a[d];l[e[w]]=l[e[s]];d=d+o;e=a[d];n=e[k]l[n](_(l,n+F,e[t]))d=d+o;e=a[d];d=e[c];break end while 644==(n)/((1855-0x3d8))do local M;local j;local n;n=e[k]l[n](_(l,n+F,e[t]))d=d+o;e=a[d];l[e[r]]=v[e[s]];d=d+o;e=a[d];l[e[w]]=l[e[i]][e[E]];d=d+o;e=a[d];l[e[x]]=e[i];d=d+o;e=a[d];l[e[w]]=l[e[s]][e[V]];d=d+o;e=a[d];n=e[k]l[n]=l[n](_(l,n+o,e[c]))d=d+o;e=a[d];l[e[h]][e[i]]=l[e[E]];d=d+o;e=a[d];l[e[h]]=l[e[c]][e[g]];d=d+o;e=a[d];l[e[k]]=v[e[s]];d=d+o;e=a[d];l[e[k]]=e[u];d=d+o;e=a[d];l[e[f]]=e[i];d=d+o;e=a[d];l[e[f]]=e[b];d=d+o;e=a[d];n=e[w]l[n]=l[n](_(l,n+o,e[t]))d=d+o;e=a[d];l[e[h]][e[u]]=l[e[V]];d=d+o;e=a[d];l[e[r]]=l[e[c]][e[y]];d=d+o;e=a[d];l[e[k]][e[u]]=e[V];d=d+o;e=a[d];l[e[h]]=l[e[t]][e[p]];d=d+o;e=a[d];l[e[w]]=l[e[b]][e[N]];d=d+o;e=a[d];l[e[f]]=l[e[t]][e[N]];d=d+o;e=a[d];l[e[h]]=v[e[i]];d=d+o;e=a[d];l[e[h]]=l[e[s]][e[y]];d=d+o;e=a[d];l[e[x]]=e[c];d=d+o;e=a[d];l[e[x]]=e[i];d=d+o;e=a[d];n=e[r]l[n]=l[n](_(l,n+o,e[i]))d=d+o;e=a[d];j={l,e};j[F][j[S][x]]=j[o][j[S][N]]+j[F][j[S][b]];d=d+o;e=a[d];l[e[x]][e[u]]=l[e[p]];d=d+o;e=a[d];l[e[r]]=l[e[u]][e[E]];d=d+o;e=a[d];l[e[f]][e[t]]=e[g];d=d+o;e=a[d];l[e[k]]=l[e[b]][e[g]];d=d+o;e=a[d];l[e[f]]=m[e[b]];d=d+o;e=a[d];l[e[x]]=l[e[i]][e[y]];d=d+o;e=a[d];l[e[x]]=l[e[i]][e[g]];d=d+o;e=a[d];l[e[k]][e[b]]=l[e[p]];d=d+o;e=a[d];l[e[r]]=l[e[t]][e[p]];d=d+o;e=a[d];l[e[x]]=l[e[u]][e[y]];d=d+o;e=a[d];l[e[h]]=l[e[b]][e[p]];d=d+o;e=a[d];l[e[f]]=v[e[s]];d=d+o;e=a[d];l[e[k]]=l[e[i]][e[V]];d=d+o;e=a[d];l[e[h]]=e[s];d=d+o;e=a[d];l[e[w]]=e[c];d=d+o;e=a[d];n=e[h]l[n]=l[n](_(l,n+o,e[t]))d=d+o;e=a[d];j={l,e};j[F][j[S][x]]=j[o][j[S][E]]+j[F][j[S][i]];d=d+o;e=a[d];l[e[k]][e[c]]=l[e[p]];d=d+o;e=a[d];l[e[f]]=l[e[u]][e[V]];d=d+o;e=a[d];l[e[f]][e[i]]=e[g];d=d+o;e=a[d];l[e[h]]=m[e[s]];d=d+o;e=a[d];l[e[r]]=l[e[c]][e[g]];d=d+o;e=a[d];n=e[h];M=l[e[u]];l[n+1]=M;l[n]=M[e[N]];break end;break;end break;end while 520==(n)/((-26+0x172))do n=(5648076)while(0x1e6-287)>=j do n=-n d=e[u];break;end while(n)/((-109+0x6f7))==3374 do n=(1313200)while j>(-96+0x128)do n=-n local n;l[e[r]]=l[e[i]][e[p]];d=d+o;e=a[d];l[e[r]]=l[e[u]][e[g]];d=d+o;e=a[d];l[e[w]]=l[e[s]][e[V]];d=d+o;e=a[d];l[e[h]]=l[e[i]][e[y]];d=d+o;e=a[d];l[e[w]]=l[e[t]][e[V]];d=d+o;e=a[d];l[e[h]]=l[e[t]][e[g]];d=d+o;e=a[d];n=e[x]l[n]=l[n](_(l,n+o,e[i]))d=d+o;e=a[d];l[e[w]][e[s]]=l[e[p]];d=d+o;e=a[d];l[e[f]]=l[e[i]][e[V]];d=d+o;e=a[d];l[e[f]][e[c]]=e[N];break end while 560==(n)/((4790-0x98d))do l[e[h]]=l[e[s]][e[g]];d=d+o;e=a[d];l[e[h]]=v[e[c]];d=d+o;e=a[d];l[e[r]]=l[e[u]][e[g]];d=d+o;e=a[d];l[e[w]]=l[e[c]][e[E]];d=d+o;e=a[d];if(l[e[x]]~=l[e[p]])then d=d+F;else d=e[s];end;break end;break;end break;end break;end while 1294==(n)/((240714/0x56))do n=(7148414)while j<=(0x9c30/196)do n=-n n=(3573856)while j<=((-97+0x43)+232)do n=-n local e=e[k]l[e]=l[e](_(l,e+o,M))break;end while 3872==(n)/((0x763-968))do n=(2763384)while j>(456-0xfd)do n=-n l[e[x]]=m[e[i]];d=d+o;e=a[d];l[e[r]]=l[e[s]][e[p]];d=d+o;e=a[d];l[e[r]]=l[e[b]][e[g]];d=d+o;e=a[d];l[e[f]][e[t]]=l[e[y]];d=d+o;e=a[d];do return end;break end while 1326==(n)/(((0x10e9+-67)-0x882))do local n;l[e[w]]=m[e[s]];d=d+o;e=a[d];l[e[w]]=l[e[t]][e[V]];d=d+o;e=a[d];l[e[k]]=v[e[i]];d=d+o;e=a[d];l[e[f]]=e[t];d=d+o;e=a[d];l[e[h]]=e[b];d=d+o;e=a[d];l[e[h]]=e[s];d=d+o;e=a[d];n=e[r]l[n]=l[n](_(l,n+o,e[i]))d=d+o;e=a[d];l[e[h]][e[i]]=l[e[E]];d=d+o;e=a[d];l[e[x]]=m[e[i]];d=d+o;e=a[d];l[e[r]]=l[e[i]][e[p]];break end;break;end break;end while(n)/((0x1644-2879))==2534 do n=(521456)while(0x1f9-300)>=j do n=-n local n;l[e[r]]={};d=d+o;e=a[d];l[e[f]]=v[e[u]];d=d+o;e=a[d];l[e[r]]=l[e[s]][e[E]];d=d+o;e=a[d];l[e[r]]=e[c];d=d+o;e=a[d];l[e[w]]=m[e[s]];d=d+o;e=a[d];l[e[w]]=l[e[t]][e[g]];d=d+o;e=a[d];n=e[w]l[n]=l[n](_(l,n+o,e[b]))d=d+o;e=a[d];l[e[k]][e[t]]=l[e[N]];d=d+o;e=a[d];l[e[f]]=l[e[c]][e[N]];d=d+o;e=a[d];l[e[w]]=v[e[t]];break;end while 872==(n)/((9568/0x10))do n=(16629984)while j>(0x2dde/57)do n=-n local g;local j;local n;n=e[w];j=l[e[s]];l[n+1]=j;l[n]=j[e[y]];d=d+o;e=a[d];l[e[k]]=l[e[s]][e[V]];d=d+o;e=a[d];l[e[f]]=e[t];d=d+o;e=a[d];j=e[i];g=l[j]for e=j+1,e[V]do g=g..l[e];end;l[e[w]]=g;d=d+o;e=a[d];l[e[x]]=e[s];d=d+o;e=a[d];n=e[x]l[n]=l[n](_(l,n+o,e[i]))d=d+o;e=a[d];n=e[w];j=l[e[c]];l[n+1]=j;l[n]=j[e[p]];d=d+o;e=a[d];l[e[f]]=v[e[u]];d=d+o;e=a[d];l[e[h]]=e[i];d=d+o;e=a[d];l[e[f]]=e[u];d=d+o;e=a[d];l[e[w]]=e[t];d=d+o;e=a[d];n=e[f]l[n]=l[n](_(l,n+o,e[u]))d=d+o;e=a[d];l[e[w]]=e[s];d=d+o;e=a[d];n=e[r]l[n]=l[n](_(l,n+o,e[c]))d=d+o;e=a[d];l[e[w]]=l[e[s]][e[E]];d=d+o;e=a[d];n=e[h];j=l[e[c]];l[n+1]=j;l[n]=j[e[V]];d=d+o;e=a[d];l[e[x]]=v[e[u]];d=d+o;e=a[d];l[e[k]]=e[b];d=d+o;e=a[d];l[e[k]]=e[c];d=d+o;e=a[d];l[e[r]]=e[c];d=d+o;e=a[d];n=e[f]l[n]=l[n](_(l,n+o,e[u]))d=d+o;e=a[d];l[e[h]]={};d=d+o;e=a[d];l[e[x]]=l[e[t]];d=d+o;e=a[d];l[e[f]]=(e[t]~=0);break end while(n)/((8198-0x1022))==4088 do local n;l[e[h]][e[b]]=l[e[y]];d=d+o;e=a[d];l[e[w]]=v[e[b]];d=d+o;e=a[d];l[e[r]]=l[e[t]][e[V]];d=d+o;e=a[d];l[e[f]]=e[b];d=d+o;e=a[d];l[e[w]]=l[e[t]][e[V]];d=d+o;e=a[d];n=e[r]l[n]=l[n](_(l,n+o,e[s]))d=d+o;e=a[d];l[e[k]][e[s]]=l[e[g]];d=d+o;e=a[d];l[e[r]]=l[e[b]][e[E]];d=d+o;e=a[d];l[e[k]][e[s]]=e[p];d=d+o;e=a[d];l[e[w]]=l[e[b]][e[N]];d=d+o;e=a[d];l[e[k]]=v[e[t]];d=d+o;e=a[d];l[e[k]]=l[e[s]][e[p]];d=d+o;e=a[d];l[e[w]]=e[u];d=d+o;e=a[d];l[e[h]]=e[b];d=d+o;e=a[d];l[e[f]]=e[i];d=d+o;e=a[d];n=e[k]l[n]=l[n](_(l,n+o,e[c]))d=d+o;e=a[d];l[e[k]][e[u]]=l[e[N]];d=d+o;e=a[d];l[e[f]]=l[e[u]][e[p]];d=d+o;e=a[d];l[e[k]]=v[e[u]];d=d+o;e=a[d];l[e[k]]=l[e[s]][e[g]];d=d+o;e=a[d];l[e[x]]=e[t];d=d+o;e=a[d];l[e[r]]=e[s];d=d+o;e=a[d];l[e[w]]=e[t];d=d+o;e=a[d];l[e[r]]=e[u];d=d+o;e=a[d];n=e[w]l[n]=l[n](_(l,n+o,e[s]))d=d+o;e=a[d];l[e[h]][e[t]]=l[e[y]];d=d+o;e=a[d];l[e[f]]=l[e[b]][e[p]];d=d+o;e=a[d];l[e[h]]=v[e[s]];d=d+o;e=a[d];l[e[h]]=l[e[t]][e[E]];d=d+o;e=a[d];l[e[h]]=e[t];d=d+o;e=a[d];l[e[k]]=e[c];d=d+o;e=a[d];l[e[r]]=e[b];d=d+o;e=a[d];l[e[w]]=e[t];d=d+o;e=a[d];n=e[r]l[n]=l[n](_(l,n+o,e[c]))d=d+o;e=a[d];l[e[x]][e[b]]=l[e[g]];d=d+o;e=a[d];l[e[h]]=l[e[u]][e[p]];d=d+o;e=a[d];l[e[f]]=v[e[i]];d=d+o;e=a[d];l[e[w]]=l[e[u]][e[g]];d=d+o;e=a[d];l[e[r]]=e[u];d=d+o;e=a[d];l[e[w]]=e[s];d=d+o;e=a[d];l[e[k]]=e[u];d=d+o;e=a[d];n=e[h]l[n]=l[n](_(l,n+o,e[i]))d=d+o;e=a[d];l[e[h]][e[t]]=l[e[y]];d=d+o;e=a[d];l[e[f]]=l[e[s]][e[p]];d=d+o;e=a[d];if not l[e[h]]then d=d+F;else d=e[c];end;break end;break;end break;end break;end break;end break;end while(n)/((0xb6a-1478))==3531 do n=(575604)while(0x1da-256)>=j do n=-n n=(5786712)while j<=(-79+0x123)do n=-n n=(3095232)while(0xf3+-34)>=j do n=-n n=(299700)while(0x21b-331)<j do n=-n local n;l[e[w]]=e[b];d=d+o;e=a[d];l[e[h]]=e[c];d=d+o;e=a[d];l[e[k]]=e[i];d=d+o;e=a[d];n=e[h]l[n]=l[n](_(l,n+o,e[u]))d=d+o;e=a[d];if(l[e[k]]==l[e[y]])then d=d+F;else d=e[s];end;break end while 1850==(n)/((0x41d0/104))do l[e[f]]=l[e[i]][e[E]];d=d+o;e=a[d];l[e[k]]=m[e[b]];d=d+o;e=a[d];l[e[h]]=l[e[t]][e[y]];d=d+o;e=a[d];l[e[k]]=l[e[b]][e[g]];d=d+o;e=a[d];l[e[k]][e[b]]=l[e[y]];d=d+o;e=a[d];d=e[s];break end;break;end while 3008==(n)/((0x833-1070))do n=(5334956)while j<=(0x102+-48)do n=-n local n;l[e[w]]=l[e[b]][e[V]];d=d+o;e=a[d];l[e[h]][e[s]]=e[p];d=d+o;e=a[d];l[e[w]]=l[e[b]][e[N]];d=d+o;e=a[d];l[e[x]]=v[e[b]];d=d+o;e=a[d];l[e[k]]=l[e[c]][e[p]];d=d+o;e=a[d];l[e[r]]=e[c];d=d+o;e=a[d];l[e[h]]=e[s];d=d+o;e=a[d];l[e[f]]=e[c];d=d+o;e=a[d];l[e[f]]=e[b];d=d+o;e=a[d];n=e[w]l[n]=l[n](_(l,n+o,e[s]))break;end while(n)/((0x81e24/214))==2146 do n=(732480)while j>((0x2d80/26)-0xed)do n=-n local n;l[e[x]]=e[s];d=d+o;e=a[d];n=e[x]l[n]=l[n](_(l,n+o,e[t]))d=d+o;e=a[d];l[e[h]][e[b]]=l[e[p]];d=d+o;e=a[d];l[e[h]]=l[e[c]][e[V]];d=d+o;e=a[d];l[e[x]][e[u]]=e[N];d=d+o;e=a[d];l[e[w]]=l[e[s]][e[V]];d=d+o;e=a[d];l[e[k]]=v[e[s]];d=d+o;e=a[d];l[e[h]]=l[e[c]][e[N]];d=d+o;e=a[d];l[e[k]]=m[e[b]];d=d+o;e=a[d];l[e[k]]=l[e[i]][e[N]];break end while(n)/((-0x12+781))==960 do local n;l[e[w]]=l[e[t]][e[y]];d=d+o;e=a[d];l[e[f]]=e[u];d=d+o;e=a[d];l[e[r]]=e[b];d=d+o;e=a[d];l[e[k]]=e[s];d=d+o;e=a[d];l[e[h]]=e[b];d=d+o;e=a[d];n=e[k]l[n]=l[n](_(l,n+o,e[b]))d=d+o;e=a[d];l[e[x]][e[b]]=l[e[y]];d=d+o;e=a[d];l[e[f]]=l[e[u]][e[N]];d=d+o;e=a[d];l[e[x]]=v[e[c]];d=d+o;e=a[d];l[e[h]]=l[e[b]][e[y]];break end;break;end break;end break;end while(n)/((4351-0x89b))==2694 do n=(3241723)while j<=(542-0x147)do n=-n n=(356814)while j<=(22578/0x6a)do n=-n local n;l[e[r]]=l[e[b]][e[N]];d=d+o;e=a[d];l[e[k]]=e[i];d=d+o;e=a[d];l[e[x]]=e[i];d=d+o;e=a[d];n=e[h]l[n]=l[n](_(l,n+o,e[c]))d=d+o;e=a[d];l[e[h]][e[s]]=l[e[E]];d=d+o;e=a[d];l[e[w]]=l[e[c]][e[y]];d=d+o;e=a[d];l[e[f]]=v[e[c]];d=d+o;e=a[d];l[e[h]]=l[e[t]][e[V]];d=d+o;e=a[d];l[e[w]]=e[t];d=d+o;e=a[d];l[e[k]]=e[t];break;end while 1383==(n)/((38184/0x94))do n=(2770344)while j>(-0x2b+257)do n=-n local n;l[e[k]]=l[e[t]][e[p]];d=d+o;e=a[d];l[e[f]]=e[u];d=d+o;e=a[d];l[e[x]]=e[u];d=d+o;e=a[d];n=e[h]l[n]=l[n](_(l,n+o,e[i]))d=d+o;e=a[d];l[e[r]][e[c]]=l[e[N]];d=d+o;e=a[d];l[e[r]]=l[e[b]][e[p]];d=d+o;e=a[d];l[e[w]]=v[e[i]];d=d+o;e=a[d];l[e[r]]=l[e[i]][e[g]];d=d+o;e=a[d];l[e[x]]=e[c];d=d+o;e=a[d];l[e[h]]=e[s];break end while(n)/((2655+-0x27))==1059 do local e=e[w];local d=l[e];for e=e+1,M do W(d,l[e])end;break end;break;end break;end while(n)/((0x4b1d6/110))==1159 do n=(6553868)while j<=(0x11e+-70)do n=-n local e=e[x]l[e]=l[e](l[e+F])break;end while 1964==(n)/((540594/0xa2))do n=(3717675)while(0x1d7-254)<j do n=-n local n;l[e[f]]=m[e[t]];d=d+o;e=a[d];l[e[h]]=l[e[c]][e[y]];d=d+o;e=a[d];l[e[r]]=v[e[i]];d=d+o;e=a[d];l[e[k]]=l[e[u]][e[g]];d=d+o;e=a[d];l[e[x]]=e[t];d=d+o;e=a[d];l[e[w]]=m[e[i]];d=d+o;e=a[d];l[e[r]]=l[e[c]]-e[g];d=d+o;e=a[d];l[e[f]]=e[s];d=d+o;e=a[d];l[e[h]]=e[s];d=d+o;e=a[d];n=e[r]l[n]=l[n](_(l,n+o,e[b]))break end while(n)/((1049+-0x18))==3627 do local e=e[r]l[e]=l[e](_(l,e+o,M))break end;break;end break;end break;end break;end while(n)/((-0x55+627))==1062 do n=(1830384)while(0xfa+(0x47+-97))>=j do n=-n n=(2619979)while(0xcbbc/236)>=j do n=-n n=(8952984)while(0x1cc-241)>=j do n=-n local r;local n;l[e[x]]=m[e[u]];d=d+o;e=a[d];l[e[k]]=l[e[i]][e[y]];d=d+o;e=a[d];n=e[w];r=l[e[i]];l[n+1]=r;l[n]=r[e[y]];d=d+o;e=a[d];l[e[k]]=l[e[c]];d=d+o;e=a[d];n=e[w]l[n]=l[n](_(l,n+o,e[c]))d=d+o;e=a[d];if not l[e[f]]then d=d+F;else d=e[c];end;break;end while(n)/((0x3e64c/93))==3258 do n=(11074245)while j>(286+-0x42)do n=-n local d=e[w]local a,e=Y(l[d](_(l,d+1,e[c])))M=e+d-1 local e=0;for d=d,M do e=e+o;l[d]=a[e];end;break end while(n)/((7485-0xec4))==2989 do local h;local b;local w,u;local n;l[e[r]]=l[e[i]][e[N]];d=d+o;e=a[d];l[e[k]]=e[t];d=d+o;e=a[d];l[e[x]]=l[e[c]][e[V]];d=d+o;e=a[d];n=e[x]w,u=Y(l[n](_(l,n+1,e[s])))M=u+n-1 b=0;for e=n,M do b=b+o;l[e]=w[b];end;d=d+o;e=a[d];n=e[f];h=l[n];for e=n+1,M do W(h,l[e])end;break end;break;end break;end while 2081==(n)/((49101/(8229/0xd3)))do n=(2670108)while(0x246c/42)>=j do n=-n l[e[r]][e[s]]=l[e[p]];d=d+o;e=a[d];l[e[r]]=l[e[s]][e[E]];d=d+o;e=a[d];l[e[f]][e[t]]=e[p];d=d+o;e=a[d];l[e[x]]=l[e[u]][e[y]];d=d+o;e=a[d];l[e[f]]=v[e[s]];d=d+o;e=a[d];l[e[h]]=l[e[u]][e[N]];d=d+o;e=a[d];l[e[w]]=m[e[i]];d=d+o;e=a[d];l[e[w]]=l[e[c]][e[E]];d=d+o;e=a[d];l[e[x]]=l[e[b]][e[y]];d=d+o;e=a[d];l[e[r]]=l[e[c]][e[p]];break;end while 956==(n)/(((0x5eb90/137)+-0x27))do n=(5252810)while j>(0x102+-35)do n=-n l[e[w]]=l[e[s]]*l[e[E]];break end while 1390==(n)/((0x1de6-3875))do local e=e[f]local a,d=Y(l[e](l[e+F]))M=d+e-o local d=0;for e=e,M do d=d+o;l[e]=a[d];end;break end;break;end break;end break;end while(n)/((0x67e0c/159))==684 do n=(8606235)while((0xe86d-29764)/0x83)>=j do n=-n n=(8131734)while(11475/0x33)>=j do n=-n local d=e[h];local o=l[d];for e=d+1,e[b]do W(o,l[e])end;break;end while 3627==(n)/((-81+0x913))do n=(412618)while j>(-0x42+292)do n=-n l[e[f]]=l[e[i]][e[g]];d=d+o;e=a[d];l[e[r]][e[s]]=e[N];d=d+o;e=a[d];l[e[r]]=l[e[c]][e[g]];d=d+o;e=a[d];l[e[f]]=l[e[c]][e[g]];d=d+o;e=a[d];l[e[w]][e[s]]=l[e[N]];break end while(n)/(((0x1027+-23)-2109))==206 do local o=l[e[g]];if not o then d=d+F;else l[e[r]]=o;d=e[t];end;break end;break;end break;end while 2365==(n)/((-93+0xe94))do n=(7368116)while j<=(0x123+-63)do n=-n l[e[f]]=l[e[u]][e[E]];d=d+o;e=a[d];l[e[k]]=m[e[b]];d=d+o;e=a[d];l[e[w]]=l[e[i]][e[E]];d=d+o;e=a[d];l[e[k]]=m[e[t]];d=d+o;e=a[d];l[e[h]]=l[e[b]][e[p]];d=d+o;e=a[d];l[e[x]][l[e[u]]]=l[e[y]];break;end while(n)/((-0x38+2988))==2513 do n=(7085785)while j>(-37+0x10a)do n=-n local b;local n;l[e[x]]=v[e[s]];d=d+o;e=a[d];l[e[x]]=v[e[s]];d=d+o;e=a[d];l[e[f]]=e[i];d=d+o;e=a[d];l[e[x]]=e[u];d=d+o;e=a[d];l[e[r]]=e[c];d=d+o;e=a[d];n=e[r]l[n]=l[n](_(l,n+o,e[u]))d=d+o;e=a[d];l[e[k]]=l[e[s]][l[e[N]]];d=d+o;e=a[d];n=e[k]l[n]=l[n](l[n+F])d=d+o;e=a[d];b=l[e[V]];if not b then d=d+F;else l[e[f]]=b;d=e[u];end;break end while(n)/((0x121f-2354))==3101 do local n;n=e[f]l[n](_(l,n+F,e[s]))d=d+o;e=a[d];l[e[h]]=v[e[c]];d=d+o;e=a[d];l[e[h]]=l[e[t]][e[E]];d=d+o;e=a[d];l[e[k]]=e[t];d=d+o;e=a[d];l[e[r]]=l[e[i]][e[y]];d=d+o;e=a[d];n=e[w]l[n]=l[n](_(l,n+o,e[i]))d=d+o;e=a[d];l[e[f]][e[s]]=l[e[E]];d=d+o;e=a[d];l[e[w]]=l[e[s]][e[p]];d=d+o;e=a[d];l[e[h]][e[t]]=e[V];d=d+o;e=a[d];l[e[k]]=l[e[i]][e[E]];break end;break;end break;end break;end break;end break;end break;end while(n)/((7120-0xe24))==3708 do n=(3118896)while j<=(-0x53+336)do n=-n n=(1797246)while j<=(0x21d-300)do n=-n n=(11397870)while(0x24b-352)>=j do n=-n n=(2141412)while(0x1e4-252)>=j do n=-n n=(7302400)while j>(0xd977/241)do n=-n local n;l[e[h]]=v[e[s]];d=d+o;e=a[d];l[e[r]]=l[e[c]][e[y]];d=d+o;e=a[d];l[e[k]]=e[c];d=d+o;e=a[d];l[e[f]]=m[e[t]];d=d+o;e=a[d];l[e[f]]=l[e[c]][e[N]];d=d+o;e=a[d];n=e[r]l[n]=l[n](_(l,n+o,e[b]))d=d+o;e=a[d];l[e[k]][e[t]]=l[e[g]];d=d+o;e=a[d];l[e[x]]=l[e[u]][e[V]];d=d+o;e=a[d];l[e[f]]=v[e[u]];d=d+o;e=a[d];l[e[w]]=e[t];break end while(n)/((0x201f-4148))==1792 do l[e[f]]=G(J[e[c]],nil,v);break end;break;end while 2756==(n)/((845+-0x44))do n=(7448808)while j<=(0x3a4/4)do n=-n local j;local n;n=e[r]l[n](_(l,n+F,e[i]))d=d+o;e=a[d];l[e[w]]=v[e[t]];d=d+o;e=a[d];l[e[x]]=l[e[c]][e[N]];d=d+o;e=a[d];l[e[f]]=v[e[u]];d=d+o;e=a[d];l[e[x]]=e[b];d=d+o;e=a[d];l[e[w]]=e[u];d=d+o;e=a[d];l[e[r]]=e[s];d=d+o;e=a[d];n=e[h]l[n]=l[n](_(l,n+o,e[u]))d=d+o;e=a[d];l[e[f]]=l[e[u]][e[y]];d=d+o;e=a[d];n=e[k]l[n]=l[n](_(l,n+o,e[i]))d=d+o;e=a[d];l[e[w]][e[i]]=l[e[E]];d=d+o;e=a[d];l[e[k]]=l[e[t]][e[p]];d=d+o;e=a[d];l[e[w]]=v[e[i]];d=d+o;e=a[d];l[e[r]]=e[t];d=d+o;e=a[d];l[e[f]]=e[b];d=d+o;e=a[d];l[e[k]]=e[c];d=d+o;e=a[d];n=e[k]l[n]=l[n](_(l,n+o,e[b]))d=d+o;e=a[d];l[e[x]][e[s]]=l[e[p]];d=d+o;e=a[d];l[e[f]]=l[e[b]][e[E]];d=d+o;e=a[d];l[e[w]][e[i]]=e[g];d=d+o;e=a[d];l[e[f]]=l[e[i]][e[g]];d=d+o;e=a[d];l[e[f]]=v[e[b]];d=d+o;e=a[d];l[e[w]]=l[e[u]][e[g]];d=d+o;e=a[d];l[e[f]]=e[b];d=d+o;e=a[d];l[e[k]]=e[u];d=d+o;e=a[d];l[e[k]]=e[s];d=d+o;e=a[d];n=e[x]l[n]=l[n](_(l,n+o,e[t]))d=d+o;e=a[d];l[e[w]][e[u]]=l[e[p]];d=d+o;e=a[d];l[e[w]]=l[e[t]][e[y]];d=d+o;e=a[d];l[e[h]]=v[e[c]];d=d+o;e=a[d];l[e[k]]=l[e[u]][e[y]];d=d+o;e=a[d];l[e[k]]=e[t];d=d+o;e=a[d];l[e[r]]=l[e[u]][e[g]];d=d+o;e=a[d];l[e[h]]=l[e[i]][e[N]];d=d+o;e=a[d];l[e[x]]=l[e[i]][e[N]];d=d+o;e=a[d];l[e[r]]=l[e[i]][e[g]];d=d+o;e=a[d];j={e,l};j[S][j[F][r]]=j[S][j[o][t]]+j[F][y];d=d+o;e=a[d];n=e[k]l[n]=l[n](_(l,n+o,e[s]))d=d+o;e=a[d];l[e[w]][e[s]]=l[e[E]];d=d+o;e=a[d];l[e[h]]=l[e[b]][e[y]];d=d+o;e=a[d];l[e[x]][e[i]]=e[g];d=d+o;e=a[d];l[e[f]]=l[e[s]][e[p]];d=d+o;e=a[d];l[e[f]][e[u]]=e[E];d=d+o;e=a[d];l[e[w]]=l[e[s]][e[N]];d=d+o;e=a[d];l[e[k]][e[t]]=e[E];d=d+o;e=a[d];l[e[x]]=l[e[c]][e[y]];d=d+o;e=a[d];l[e[h]][e[s]]=e[p];d=d+o;e=a[d];l[e[r]]=l[e[c]][e[g]];d=d+o;e=a[d];l[e[r]]=v[e[b]];d=d+o;e=a[d];l[e[k]]=l[e[s]][e[N]];d=d+o;e=a[d];l[e[h]]=l[e[b]][e[g]];d=d+o;e=a[d];l[e[r]]=l[e[i]][e[g]];d=d+o;e=a[d];l[e[k]]=l[e[s]][e[p]];d=d+o;e=a[d];l[e[k]]=e[s];d=d+o;e=a[d];n=e[x]l[n]=l[n](_(l,n+o,e[s]))d=d+o;e=a[d];l[e[x]][e[b]]=l[e[y]];d=d+o;e=a[d];l[e[r]]=v[e[t]];d=d+o;e=a[d];l[e[r]]=l[e[u]][e[p]];d=d+o;e=a[d];l[e[h]]=v[e[u]];d=d+o;e=a[d];l[e[x]]=e[t];d=d+o;e=a[d];l[e[w]]=e[c];d=d+o;e=a[d];l[e[k]]=e[u];d=d+o;e=a[d];n=e[r]l[n]=l[n](_(l,n+o,e[t]))d=d+o;e=a[d];l[e[k]]=l[e[c]][e[y]];d=d+o;e=a[d];n=e[x]l[n]=l[n](_(l,n+o,e[c]))d=d+o;e=a[d];l[e[w]][e[i]]=l[e[V]];d=d+o;e=a[d];l[e[x]]=l[e[b]][e[E]];d=d+o;e=a[d];l[e[x]]=v[e[b]];d=d+o;e=a[d];l[e[r]]=l[e[c]][e[p]];d=d+o;e=a[d];l[e[k]]=l[e[t]][e[E]];d=d+o;e=a[d];l[e[w]][e[u]]=l[e[y]];d=d+o;e=a[d];l[e[h]]=l[e[i]][e[y]];d=d+o;e=a[d];l[e[x]]=v[e[i]];d=d+o;e=a[d];l[e[w]]=l[e[u]][e[E]];d=d+o;e=a[d];l[e[r]]=l[e[i]][e[V]];d=d+o;e=a[d];l[e[f]][e[i]]=l[e[N]];d=d+o;e=a[d];l[e[f]]=v[e[t]];d=d+o;e=a[d];l[e[w]]=l[e[u]][e[E]];d=d+o;e=a[d];l[e[w]]=v[e[i]];d=d+o;e=a[d];l[e[f]]=e[t];break;end while(n)/((3652+-0x4c))==2083 do n=(5703544)while(43758/0xbb)<j do n=-n local n;l[e[h]]=l[e[t]][e[p]];d=d+o;e=a[d];l[e[k]]=l[e[t]][e[g]];d=d+o;e=a[d];l[e[f]]=e[s]*l[e[E]];d=d+o;e=a[d];n=e[f]l[n]=l[n](_(l,n+o,e[i]))d=d+o;e=a[d];l[e[k]]=m[e[u]];d=d+o;e=a[d];l[e[h]]=l[e[t]][e[g]];d=d+o;e=a[d];l[e[f]]=l[e[u]][e[p]];d=d+o;e=a[d];l[e[w]]=l[e[i]][e[g]];d=d+o;e=a[d];l[e[r]]=l[e[b]]/l[e[p]];d=d+o;e=a[d];l[e[x]]=e[t]-l[e[E]];break end while(n)/(((11261-0x160e)-0xb29))==2068 do local j;local n;n=e[f];j=l[e[t]];l[n+1]=j;l[n]=j[e[E]];d=d+o;e=a[d];l[e[k]]=m[e[u]];d=d+o;e=a[d];l[e[k]]=l[e[c]][e[V]];d=d+o;e=a[d];l[e[h]]=v[e[t]];d=d+o;e=a[d];l[e[h]]=l[e[t]][e[p]];d=d+o;e=a[d];l[e[x]]=e[i];d=d+o;e=a[d];l[e[w]]=v[e[c]];d=d+o;e=a[d];l[e[h]]=l[e[c]][e[V]];d=d+o;e=a[d];l[e[h]]=l[e[s]][e[N]];d=d+o;e=a[d];l[e[x]]=v[e[u]];d=d+o;e=a[d];l[e[r]]=l[e[t]][e[N]];d=d+o;e=a[d];l[e[x]]=l[e[c]][e[y]];d=d+o;e=a[d];n=e[w]l[n]=l[n](_(l,n+o,e[c]))d=d+o;e=a[d];l[e[w]]={};d=d+o;e=a[d];l[e[w]][e[u]]=e[N];d=d+o;e=a[d];n=e[h]l[n]=l[n](_(l,n+o,e[s]))d=d+o;e=a[d];n=e[k];j=l[e[c]];l[n+1]=j;l[n]=j[e[N]];d=d+o;e=a[d];n=e[f]l[n](l[n+F])d=d+o;e=a[d];l[e[h]]=m[e[t]];d=d+o;e=a[d];l[e[x]]=l[e[s]][e[N]];d=d+o;e=a[d];l[e[h]][e[u]]=e[p];d=d+o;e=a[d];l[e[h]]=m[e[t]];d=d+o;e=a[d];l[e[f]]=l[e[s]][e[N]];d=d+o;e=a[d];l[e[k]]=l[e[u]][e[g]];d=d+o;e=a[d];l[e[w]][e[i]]=e[E];d=d+o;e=a[d];l[e[h]]=m[e[i]];d=d+o;e=a[d];l[e[r]]=l[e[u]][e[p]];d=d+o;e=a[d];l[e[f]][e[s]]=e[g];d=d+o;e=a[d];l[e[r]]=m[e[u]];d=d+o;e=a[d];l[e[f]]=l[e[u]][e[V]];d=d+o;e=a[d];l[e[f]][e[t]]=e[p];d=d+o;e=a[d];l[e[x]]=m[e[u]];d=d+o;e=a[d];l[e[w]]=l[e[i]][e[p]];d=d+o;e=a[d];l[e[x]][e[t]]=e[y];d=d+o;e=a[d];l[e[r]]=m[e[i]];d=d+o;e=a[d];l[e[h]]=l[e[i]][e[y]];d=d+o;e=a[d];l[e[f]][e[i]]=e[p];d=d+o;e=a[d];l[e[x]]=m[e[u]];d=d+o;e=a[d];l[e[x]]=l[e[u]][e[y]];d=d+o;e=a[d];l[e[w]][e[u]]=e[V];d=d+o;e=a[d];l[e[f]]=m[e[u]];d=d+o;e=a[d];l[e[x]]=l[e[s]][e[N]];d=d+o;e=a[d];l[e[w]][e[b]]=e[E];d=d+o;e=a[d];l[e[w]]=m[e[c]];d=d+o;e=a[d];l[e[f]]=l[e[c]][e[N]];d=d+o;e=a[d];l[e[w]][e[s]]=e[N];break end;break;end break;end break;end while(n)/((0x16e0-2985))==3970 do n=(7966030)while j<=(0x3c6e/65)do n=-n n=(49036)while(557-(18618/0x3a))>=j do n=-n local n;l[e[x]][e[t]]=l[e[y]];d=d+o;e=a[d];l[e[x]]=v[e[b]];d=d+o;e=a[d];l[e[w]]=m[e[s]];d=d+o;e=a[d];l[e[x]]=l[e[t]][e[g]];d=d+o;e=a[d];l[e[w]]=l[e[t]];d=d+o;e=a[d];n=e[x]l[n](_(l,n+F,e[s]))d=d+o;e=a[d];do return end;break;end while(n)/((-0x36+652))==82 do n=(180684)while j>(529-0x124)do n=-n local n;local r;l[e[x]]=e[i];d=d+o;e=a[d];r=e[h]l[r]=l[r](_(l,r+o,e[t]))d=d+o;e=a[d];n={l,e};n[F][n[S][w]]=n[o][n[S][p]]+n[F][n[S][t]];d=d+o;e=a[d];l[e[f]][e[i]]=l[e[g]];d=d+o;e=a[d];l[e[h]]=l[e[u]][e[N]];d=d+o;e=a[d];l[e[k]]=l[e[s]][e[E]];d=d+o;e=a[d];l[e[x]]=l[e[t]][e[N]];d=d+o;e=a[d];l[e[x]]=v[e[t]];d=d+o;e=a[d];l[e[f]]=l[e[c]][e[V]];d=d+o;e=a[d];l[e[w]]=e[b];break end while(n)/((-0x77+597))==378 do local a=e[r];local r=e[p];local n=a+2 local a={l[a](l[a+1],l[n])};for e=1,r do l[n+e]=a[e];end;local a=a[1]if a then l[n]=a d=e[s];else d=d+o;end;break end;break;end break;end while 1994==(n)/((0xfb2+-23))do n=(212520)while(328+-0x59)>=j do n=-n local n;l[e[f]]=l[e[s]][e[y]];d=d+o;e=a[d];l[e[r]]=l[e[b]][e[V]];d=d+o;e=a[d];l[e[w]]=l[e[u]]-e[y];d=d+o;e=a[d];l[e[w]]=e[b];d=d+o;e=a[d];n=e[x]l[n]=l[n](_(l,n+o,e[t]))d=d+o;e=a[d];l[e[x]][e[i]]=l[e[y]];d=d+o;e=a[d];l[e[x]]=l[e[b]][e[g]];d=d+o;e=a[d];l[e[w]][e[s]]=e[y];d=d+o;e=a[d];l[e[x]]=l[e[s]][e[g]];d=d+o;e=a[d];l[e[w]][e[u]]=e[N];break;end while(n)/((0x4e4f8/243))==161 do n=(4174536)while j>(-113+0x161)do n=-n local N;local j;local n;n=e[w]l[n](_(l,n+F,e[u]))d=d+o;e=a[d];l[e[r]]=v[e[b]];d=d+o;e=a[d];l[e[f]]=l[e[u]][e[p]];d=d+o;e=a[d];l[e[w]]=e[s];d=d+o;e=a[d];l[e[x]]=l[e[t]][e[V]];d=d+o;e=a[d];n=e[r]l[n]=l[n](_(l,n+o,e[c]))d=d+o;e=a[d];l[e[k]][e[s]]=l[e[E]];d=d+o;e=a[d];l[e[w]]=l[e[u]][e[p]];d=d+o;e=a[d];l[e[k]]=v[e[b]];d=d+o;e=a[d];l[e[x]]=e[b];d=d+o;e=a[d];l[e[h]]=e[u];d=d+o;e=a[d];l[e[k]]=e[i];d=d+o;e=a[d];n=e[k]l[n]=l[n](_(l,n+o,e[s]))d=d+o;e=a[d];l[e[h]][e[i]]=l[e[y]];d=d+o;e=a[d];l[e[h]]=l[e[c]][e[g]];d=d+o;e=a[d];l[e[f]][e[s]]=e[V];d=d+o;e=a[d];l[e[w]]=l[e[t]][e[y]];d=d+o;e=a[d];l[e[k]]=v[e[i]];d=d+o;e=a[d];l[e[h]]=l[e[u]][e[g]];d=d+o;e=a[d];l[e[w]]=l[e[c]][e[g]];d=d+o;e=a[d];l[e[r]]=l[e[c]][e[y]];d=d+o;e=a[d];l[e[x]]=l[e[i]][e[p]];d=d+o;e=a[d];l[e[f]]=l[e[i]][e[V]];d=d+o;e=a[d];j={e,l};j[S][j[F][k]]=j[S][j[o][i]]+j[F][g];d=d+o;e=a[d];l[e[h]]=e[c];d=d+o;e=a[d];n=e[x]l[n]=l[n](_(l,n+o,e[i]))d=d+o;e=a[d];l[e[x]][e[i]]=l[e[p]];d=d+o;e=a[d];l[e[k]]=l[e[t]][e[V]];d=d+o;e=a[d];l[e[x]][e[i]]=e[p];d=d+o;e=a[d];l[e[h]]=l[e[t]][e[g]];d=d+o;e=a[d];l[e[f]]=v[e[t]];d=d+o;e=a[d];l[e[r]]=l[e[i]][e[p]];d=d+o;e=a[d];l[e[k]]=e[i];d=d+o;e=a[d];l[e[r]]=e[b];d=d+o;e=a[d];n=e[k]l[n]=l[n](_(l,n+o,e[s]))d=d+o;e=a[d];l[e[x]][e[c]]=l[e[p]];d=d+o;e=a[d];l[e[k]]=l[e[c]][e[y]];d=d+o;e=a[d];l[e[k]]=m[e[t]];d=d+o;e=a[d];l[e[f]]=l[e[b]][e[g]];d=d+o;e=a[d];l[e[r]]=l[e[c]][e[y]];d=d+o;e=a[d];l[e[h]][e[s]]=l[e[g]];d=d+o;e=a[d];l[e[k]]=m[e[c]];d=d+o;e=a[d];l[e[f]]=l[e[c]][e[g]];d=d+o;e=a[d];n=e[h];N=l[e[u]];l[n+1]=N;l[n]=N[e[g]];break end while 2476==(n)/((-0x7d+1811))do local B;local j;local m,S;local n;n=e[x]l[n](_(l,n+F,e[b]))d=d+o;e=a[d];l[e[k]]=v[e[b]];d=d+o;e=a[d];l[e[h]]=l[e[i]][e[V]];d=d+o;e=a[d];l[e[w]]=v[e[s]];d=d+o;e=a[d];l[e[w]]=e[i];d=d+o;e=a[d];l[e[f]]=e[c];d=d+o;e=a[d];l[e[k]]=e[b];d=d+o;e=a[d];n=e[h]l[n]=l[n](_(l,n+o,e[b]))d=d+o;e=a[d];l[e[h]]=l[e[s]][e[y]];d=d+o;e=a[d];n=e[k]l[n]=l[n](_(l,n+o,e[i]))d=d+o;e=a[d];l[e[x]][e[s]]=l[e[E]];d=d+o;e=a[d];l[e[h]]=l[e[b]][e[N]];d=d+o;e=a[d];l[e[f]][e[b]]=e[g];d=d+o;e=a[d];l[e[f]]=l[e[c]][e[V]];d=d+o;e=a[d];l[e[x]]=v[e[u]];d=d+o;e=a[d];l[e[r]]=l[e[i]][e[p]];d=d+o;e=a[d];l[e[r]]={};d=d+o;e=a[d];l[e[w]]=v[e[u]];d=d+o;e=a[d];l[e[w]]=l[e[s]][e[g]];d=d+o;e=a[d];l[e[k]]=e[c];d=d+o;e=a[d];l[e[x]]=v[e[t]];d=d+o;e=a[d];l[e[w]]=l[e[t]][e[y]];d=d+o;e=a[d];l[e[h]]=e[s];d=d+o;e=a[d];l[e[r]]=e[b];d=d+o;e=a[d];l[e[x]]=e[c];d=d+o;e=a[d];n=e[h]m,S=Y(l[n](_(l,n+1,e[b])))M=S+n-1 j=0;for e=n,M do j=j+o;l[e]=m[j];end;d=d+o;e=a[d];n=e[x]l[n]=l[n](_(l,n+o,M))d=d+o;e=a[d];l[e[k]]=v[e[u]];d=d+o;e=a[d];l[e[r]]=l[e[s]][e[g]];d=d+o;e=a[d];l[e[f]]=e[i];d=d+o;e=a[d];l[e[h]]=v[e[c]];d=d+o;e=a[d];l[e[w]]=l[e[b]][e[y]];d=d+o;e=a[d];l[e[f]]=e[c];d=d+o;e=a[d];l[e[h]]=e[b];d=d+o;e=a[d];l[e[h]]=e[c];d=d+o;e=a[d];n=e[w]m,S=Y(l[n](_(l,n+1,e[c])))M=S+n-1 j=0;for e=n,M do j=j+o;l[e]=m[j];end;d=d+o;e=a[d];n=e[r]m,S=Y(l[n](_(l,n+o,M)))M=S+n-F j=0;for e=n,M do j=j+o;l[e]=m[j];end;d=d+o;e=a[d];n=e[h];B=l[n];for e=n+1,M do W(B,l[e])end;break end;break;end break;end break;end break;end while 1878==(n)/((0x7c8-1035))do n=(10134960)while((0+-0x2a)+289)>=j do n=-n n=(509220)while(509-0x109)>=j do n=-n n=(4072320)while(58806/0xf3)>=j do n=-n l[e[f]]=m[e[c]];d=d+o;e=a[d];l[e[x]]=l[e[b]][e[N]];d=d+o;e=a[d];l[e[w]]=m[e[t]];d=d+o;e=a[d];l[e[k]]=l[e[u]][e[g]];d=d+o;e=a[d];l[e[x]]=l[e[i]][e[V]];d=d+o;e=a[d];l[e[r]][e[s]]=l[e[p]];d=d+o;e=a[d];do return end;break;end while 4032==(n)/((2083-0x431))do n=(3832283)while j>(0x3528/(230-0xae))do n=-n local d=e[w];local o=l[d];for e=d+1,e[b]do W(o,l[e])end;break end while 2093==(n)/((1887+-0x38))do l[e[r]]=(not l[e[c]]);break end;break;end break;end while 460==(n)/((0x114c0/(249-0xb9)))do n=(168896)while j<=(-60+0x131)do n=-n l[e[x]]=e[b]-l[e[y]];break;end while 91==(n)/((384192/0xcf))do n=(640088)while j>(610-0x16c)do n=-n local n;l[e[f]]=l[e[c]][e[y]];d=d+o;e=a[d];l[e[f]]=l[e[u]][e[y]];d=d+o;e=a[d];n=e[w]l[n]=l[n](_(l,n+o,e[t]))d=d+o;e=a[d];l[e[k]][e[u]]=l[e[y]];d=d+o;e=a[d];l[e[f]]=v[e[t]];d=d+o;e=a[d];l[e[r]]=l[e[b]][e[g]];d=d+o;e=a[d];l[e[w]]=v[e[b]];d=d+o;e=a[d];l[e[k]]=e[c];d=d+o;e=a[d];l[e[k]]=e[b];d=d+o;e=a[d];l[e[f]]=e[t];break end while(n)/(((0x336+-84)-0x17e))==1798 do local e=e[r]local a,d=Y(l[e](_(l,e+o,M)))M=d+e-F local d=0;for e=e,M do d=d+o;l[e]=a[d];end;break end;break;end break;end break;end while(n)/(((0x7941ea/15)/138))==2640 do n=(1638560)while(0x265-363)>=j do n=-n n=(208544)while j<=(277+-0x1d)do n=-n l[e[h]][e[b]]=l[e[p]];d=d+o;e=a[d];l[e[w]]=l[e[u]][e[N]];d=d+o;e=a[d];l[e[k]][e[u]]=e[g];d=d+o;e=a[d];l[e[w]]=l[e[c]][e[E]];d=d+o;e=a[d];l[e[x]]=v[e[u]];break;end while 1064==(n)/((4508/(0x137f/217)))do n=(11487786)while(-25+0x112)<j do n=-n local n;l[e[h]]=l[e[t]][e[E]];d=d+o;e=a[d];l[e[w]]=e[i];d=d+o;e=a[d];l[e[x]]=m[e[i]];d=d+o;e=a[d];l[e[w]]=l[e[t]][e[V]];d=d+o;e=a[d];l[e[k]]=l[e[c]][e[V]];d=d+o;e=a[d];n=e[r]l[n]=l[n](_(l,n+o,e[c]))d=d+o;e=a[d];l[e[r]]=v[e[b]];d=d+o;e=a[d];l[e[h]]=l[e[s]][e[N]];d=d+o;e=a[d];l[e[w]]=e[b];d=d+o;e=a[d];l[e[w]]=m[e[u]];break end while 3226==(n)/((7200-0xe37))do local M;local j;local n;n=e[x]l[n](_(l,n+F,e[u]))d=d+o;e=a[d];l[e[r]]=v[e[u]];d=d+o;e=a[d];l[e[h]]=l[e[t]][e[V]];d=d+o;e=a[d];l[e[w]]=e[u];d=d+o;e=a[d];l[e[k]]=l[e[i]][e[p]];d=d+o;e=a[d];n=e[f]l[n]=l[n](_(l,n+o,e[s]))d=d+o;e=a[d];l[e[h]][e[s]]=l[e[y]];d=d+o;e=a[d];l[e[x]]=l[e[c]][e[p]];d=d+o;e=a[d];l[e[f]]=v[e[t]];d=d+o;e=a[d];l[e[w]]=e[c];d=d+o;e=a[d];l[e[w]]=e[t];d=d+o;e=a[d];l[e[r]]=e[i];d=d+o;e=a[d];n=e[x]l[n]=l[n](_(l,n+o,e[b]))d=d+o;e=a[d];l[e[r]][e[b]]=l[e[y]];d=d+o;e=a[d];l[e[r]]=l[e[b]][e[E]];d=d+o;e=a[d];l[e[f]][e[b]]=e[g];d=d+o;e=a[d];l[e[h]]=l[e[u]][e[y]];d=d+o;e=a[d];l[e[h]]=l[e[u]][e[E]];d=d+o;e=a[d];l[e[w]]=l[e[b]][e[p]];d=d+o;e=a[d];l[e[f]]=v[e[s]];d=d+o;e=a[d];l[e[r]]=l[e[t]][e[p]];d=d+o;e=a[d];l[e[k]]=e[b];d=d+o;e=a[d];l[e[k]]=e[t];d=d+o;e=a[d];n=e[k]l[n]=l[n](_(l,n+o,e[t]))d=d+o;e=a[d];j={l,e};j[F][j[S][r]]=j[o][j[S][y]]+j[F][j[S][i]];d=d+o;e=a[d];l[e[f]][e[i]]=l[e[N]];d=d+o;e=a[d];l[e[w]]=l[e[c]][e[y]];d=d+o;e=a[d];l[e[x]][e[u]]=e[V];d=d+o;e=a[d];l[e[h]]=l[e[b]][e[E]];d=d+o;e=a[d];l[e[x]]=m[e[i]];d=d+o;e=a[d];l[e[w]]=l[e[i]][e[p]];d=d+o;e=a[d];l[e[r]]=l[e[b]][e[p]];d=d+o;e=a[d];l[e[h]][e[i]]=l[e[E]];d=d+o;e=a[d];l[e[r]]=l[e[c]][e[N]];d=d+o;e=a[d];l[e[x]]=v[e[b]];d=d+o;e=a[d];l[e[w]]=l[e[i]][e[y]];d=d+o;e=a[d];l[e[k]]=e[i];d=d+o;e=a[d];l[e[k]]=e[c];d=d+o;e=a[d];n=e[h]l[n]=l[n](_(l,n+o,e[c]))d=d+o;e=a[d];l[e[h]][e[t]]=l[e[g]];d=d+o;e=a[d];l[e[r]]=m[e[i]];d=d+o;e=a[d];l[e[x]]=l[e[s]][e[p]];d=d+o;e=a[d];n=e[x];M=l[e[t]];l[n+1]=M;l[n]=M[e[E]];break end;break;end break;end while 1330==(n)/((0x53e+-110))do n=(1255106)while j<=((0x4a4-605)-332)do n=-n local n;l[e[f]]=m[e[s]];d=d+o;e=a[d];l[e[k]]=l[e[t]][e[g]];d=d+o;e=a[d];l[e[w]]=v[e[i]];d=d+o;e=a[d];l[e[w]]=l[e[t]][e[g]];d=d+o;e=a[d];l[e[r]]=m[e[b]];d=d+o;e=a[d];l[e[k]]=l[e[c]][e[p]];d=d+o;e=a[d];l[e[r]]=l[e[c]][e[p]];d=d+o;e=a[d];l[e[w]]=l[e[b]][e[y]];d=d+o;e=a[d];l[e[x]]=l[e[s]][e[y]];d=d+o;e=a[d];n=e[f]l[n]=l[n](_(l,n+o,e[i]))break;end while(n)/(((0x5b518/120)-1603))==829 do n=(4181048)while(-92+0x158)<j do n=-n l[e[k]][e[t]]=e[g];break end while(n)/((76208/0x2c))==2414 do local n;l[e[w]]=v[e[t]];d=d+o;e=a[d];l[e[f]]=l[e[c]][e[V]];d=d+o;e=a[d];l[e[r]]=e[b];d=d+o;e=a[d];l[e[r]]=m[e[s]];d=d+o;e=a[d];l[e[w]]=l[e[u]][e[V]];d=d+o;e=a[d];n=e[x]l[n]=l[n](_(l,n+o,e[c]))d=d+o;e=a[d];l[e[r]][e[u]]=l[e[y]];d=d+o;e=a[d];l[e[h]]=l[e[b]][e[N]];d=d+o;e=a[d];l[e[w]][e[b]]=e[N];d=d+o;e=a[d];l[e[r]]=l[e[i]][e[y]];break end;break;end break;end break;end break;end break;end while 968==(n)/((0xd0a+-116))do n=(2069886)while j<=(62832/(286+-0x30))do n=-n n=(110565)while(-0x53+341)>=j do n=-n n=(3887250)while j<=(364+-0x6d)do n=-n n=(2066820)while j>(0x249-331)do n=-n local c;local n;l[e[r]]=l[e[b]][e[g]];d=d+o;e=a[d];l[e[f]]=v[e[u]];d=d+o;e=a[d];n=e[f];c=l[e[b]];l[n+1]=c;l[n]=c[e[E]];d=d+o;e=a[d];l[e[k]]=m[e[s]];d=d+o;e=a[d];l[e[k]]=l[e[t]][e[N]];d=d+o;e=a[d];l[e[k]]=l[e[u]][e[y]];d=d+o;e=a[d];n=e[r]l[n]=l[n](_(l,n+o,e[t]))d=d+o;e=a[d];l[e[x]][e[i]]=l[e[E]];d=d+o;e=a[d];l[e[h]]=m[e[t]];d=d+o;e=a[d];l[e[w]]=l[e[i]][e[N]];break end while(n)/((1041+-0x6e))==2220 do local n;l[e[r]]=m[e[i]];d=d+o;e=a[d];l[e[k]]=l[e[c]][e[N]];d=d+o;e=a[d];l[e[w]]=v[e[t]];d=d+o;e=a[d];l[e[h]]=e[s];d=d+o;e=a[d];l[e[k]]=e[s];d=d+o;e=a[d];l[e[r]]=e[c];d=d+o;e=a[d];n=e[r]l[n]=l[n](_(l,n+o,e[c]))d=d+o;e=a[d];l[e[x]][e[b]]=l[e[V]];d=d+o;e=a[d];l[e[h]]=m[e[u]];d=d+o;e=a[d];l[e[x]]=l[e[u]][e[N]];d=d+o;e=a[d];l[e[w]]=m[e[b]];d=d+o;e=a[d];l[e[x]]=l[e[i]][e[V]];d=d+o;e=a[d];l[e[r]]=l[e[c]][e[N]];d=d+o;e=a[d];l[e[x]][e[c]]=l[e[V]];d=d+o;e=a[d];do return end;break end;break;end while 1065==(n)/((0x4d86e/87))do n=(3327552)while(29184/(0xcf+-93))>=j do n=-n local e={e,l};e[S][e[F][r]]=e[S][e[o][i]]+e[F][p];break;end while 3392==(n)/((1042+-0x3d))do n=(9931390)while j>(64250/0xfa)do n=-n local x;local n;n=e[f]l[n]=l[n](_(l,n+o,e[c]))d=d+o;e=a[d];n=e[w];x=l[e[t]];l[n+1]=x;l[n]=x[e[V]];d=d+o;e=a[d];n=e[h]l[n](l[n+F])d=d+o;e=a[d];l[e[w]]=m[e[s]];d=d+o;e=a[d];l[e[w]]=l[e[i]][e[g]];d=d+o;e=a[d];l[e[r]][e[s]]=e[p];d=d+o;e=a[d];l[e[w]]=m[e[u]];d=d+o;e=a[d];l[e[r]]=l[e[b]][e[V]];d=d+o;e=a[d];l[e[h]][e[u]]=e[N];d=d+o;e=a[d];l[e[f]]=m[e[c]];break end while 3370==(n)/((5990-(6191-0xc4c)))do l[e[k]]={};break end;break;end break;end break;end while(n)/((6129/0xe3))==4095 do n=(3062419)while(-0x26+299)>=j do n=-n n=(5202552)while j<=(-79+0x152)do n=-n local n;l[e[h]]=l[e[u]][e[V]];d=d+o;e=a[d];l[e[h]]=v[e[i]];d=d+o;e=a[d];l[e[f]]=e[t];d=d+o;e=a[d];l[e[f]]=e[s];d=d+o;e=a[d];l[e[w]]=e[s];d=d+o;e=a[d];n=e[h]l[n]=l[n](_(l,n+o,e[t]))d=d+o;e=a[d];if(l[e[k]]==l[e[y]])then d=d+F;else d=e[s];end;break;end while 2868==(n)/(((0xe96+-59)-0x745))do n=(334229)while((-79+0x1a)+313)<j do n=-n local j;local n;l[e[h]]=l[e[i]][e[g]];d=d+o;e=a[d];l[e[w]]=l[e[b]][e[y]];d=d+o;e=a[d];n=e[w];j=l[e[c]];l[n+1]=j;l[n]=j[e[p]];d=d+o;e=a[d];l[e[k]]=l[e[i]];d=d+o;e=a[d];n=e[r]l[n](_(l,n+F,e[b]))d=d+o;e=a[d];l[e[f]]=l[e[b]][e[y]];d=d+o;e=a[d];l[e[w]]=l[e[s]][e[N]];d=d+o;e=a[d];n=e[k];j=l[e[i]];l[n+1]=j;l[n]=j[e[g]];d=d+o;e=a[d];l[e[r]]=l[e[t]];d=d+o;e=a[d];n=e[k]l[n](_(l,n+F,e[s]))d=d+o;e=a[d];l[e[k]]=l[e[t]][e[N]];d=d+o;e=a[d];l[e[k]]=l[e[i]][e[V]];d=d+o;e=a[d];n=e[w];j=l[e[s]];l[n+1]=j;l[n]=j[e[p]];d=d+o;e=a[d];l[e[k]]=l[e[t]];d=d+o;e=a[d];n=e[f]l[n](_(l,n+F,e[i]))d=d+o;e=a[d];l[e[h]]=m[e[c]];d=d+o;e=a[d];n=e[r];j=l[e[b]];l[n+1]=j;l[n]=j[e[p]];d=d+o;e=a[d];n=e[k]l[n](l[n+F])d=d+o;e=a[d];l[e[x]]=v[e[s]];d=d+o;e=a[d];l[e[k]]=l[e[s]][e[V]];d=d+o;e=a[d];l[e[k]]=m[e[u]];d=d+o;e=a[d];l[e[x]]=l[e[u]][e[N]];d=d+o;e=a[d];l[e[w]]=l[e[t]];d=d+o;e=a[d];n=e[r]l[n](_(l,n+F,e[t]))d=d+o;e=a[d];do return l[e[r]]end d=d+o;e=a[d];do return end;break end while 359==(n)/((-0x41+996))do local j;local n;n=e[r]l[n](_(l,n+F,e[b]))d=d+o;e=a[d];l[e[h]]=v[e[b]];d=d+o;e=a[d];l[e[h]]=l[e[c]][e[y]];d=d+o;e=a[d];l[e[f]]=v[e[b]];d=d+o;e=a[d];l[e[w]]=e[c];d=d+o;e=a[d];l[e[f]]=e[s];d=d+o;e=a[d];l[e[r]]=e[i];d=d+o;e=a[d];n=e[r]l[n]=l[n](_(l,n+o,e[b]))d=d+o;e=a[d];l[e[r]]=m[e[i]];d=d+o;e=a[d];l[e[r]]=l[e[t]][e[g]];d=d+o;e=a[d];n=e[r]l[n]=l[n](_(l,n+o,e[b]))d=d+o;e=a[d];l[e[h]][e[s]]=l[e[y]];d=d+o;e=a[d];l[e[k]]=l[e[b]][e[V]];d=d+o;e=a[d];l[e[w]]=v[e[b]];d=d+o;e=a[d];l[e[w]]=e[u];d=d+o;e=a[d];l[e[k]]=e[u];d=d+o;e=a[d];l[e[f]]=e[s];d=d+o;e=a[d];n=e[r]l[n]=l[n](_(l,n+o,e[c]))d=d+o;e=a[d];l[e[w]][e[u]]=l[e[E]];d=d+o;e=a[d];l[e[f]]=l[e[u]][e[g]];d=d+o;e=a[d];l[e[f]][e[u]]=e[g];d=d+o;e=a[d];l[e[k]]=l[e[c]][e[g]];d=d+o;e=a[d];l[e[k]]=v[e[i]];d=d+o;e=a[d];l[e[h]]=l[e[t]][e[E]];d=d+o;e=a[d];l[e[h]]=m[e[c]];d=d+o;e=a[d];l[e[h]]=l[e[c]][e[y]];d=d+o;e=a[d];l[e[w]]=l[e[c]][e[V]];d=d+o;e=a[d];l[e[h]]=l[e[s]][e[y]];d=d+o;e=a[d];l[e[r]]=l[e[b]]/e[V];d=d+o;e=a[d];l[e[f]]=m[e[s]];d=d+o;e=a[d];l[e[k]]=l[e[c]][e[V]];d=d+o;e=a[d];l[e[r]]=l[e[i]][e[E]];d=d+o;e=a[d];l[e[k]]=l[e[b]][e[y]];d=d+o;e=a[d];l[e[h]]=m[e[b]];d=d+o;e=a[d];l[e[h]]=l[e[u]][e[V]];d=d+o;e=a[d];l[e[k]]=l[e[s]][e[p]];d=d+o;e=a[d];l[e[f]]=l[e[i]][e[p]];d=d+o;e=a[d];j={e,l};j[S][j[F][x]]=j[S][j[o][b]]+j[F][g];d=d+o;e=a[d];l[e[r]]=l[e[i]]-l[e[V]];d=d+o;e=a[d];n=e[w]l[n]=l[n](_(l,n+o,e[s]))d=d+o;e=a[d];l[e[f]][e[i]]=l[e[p]];d=d+o;e=a[d];l[e[w]]=l[e[c]][e[g]];d=d+o;e=a[d];l[e[w]][e[i]]=e[E];d=d+o;e=a[d];l[e[h]]=l[e[t]][e[N]];d=d+o;e=a[d];l[e[x]][e[i]]=e[E];d=d+o;e=a[d];l[e[x]]=l[e[b]][e[y]];d=d+o;e=a[d];l[e[w]][e[i]]=e[V];d=d+o;e=a[d];l[e[x]]=l[e[u]][e[N]];d=d+o;e=a[d];l[e[h]][e[u]]=e[E];d=d+o;e=a[d];l[e[f]]=l[e[c]][e[V]];d=d+o;e=a[d];l[e[x]]=m[e[b]];d=d+o;e=a[d];l[e[w]]=l[e[c]][e[E]];d=d+o;e=a[d];l[e[x]]=l[e[u]][e[g]];d=d+o;e=a[d];l[e[x]]=v[e[b]];d=d+o;e=a[d];l[e[f]]=l[e[i]][e[V]];d=d+o;e=a[d];l[e[f]]=e[t];d=d+o;e=a[d];l[e[f]]=e[u];d=d+o;e=a[d];n=e[h]l[n]=l[n](_(l,n+o,e[b]))d=d+o;e=a[d];j={l,e};j[F][j[S][k]]=j[o][j[S][p]]+j[F][j[S][s]];d=d+o;e=a[d];l[e[k]][e[u]]=l[e[p]];d=d+o;e=a[d];l[e[f]]=v[e[i]];d=d+o;e=a[d];l[e[k]]=l[e[c]][e[g]];d=d+o;e=a[d];l[e[f]]=v[e[b]];d=d+o;e=a[d];l[e[r]]=e[i];d=d+o;e=a[d];l[e[r]]=e[i];d=d+o;e=a[d];l[e[k]]=e[s];d=d+o;e=a[d];n=e[h]l[n]=l[n](_(l,n+o,e[b]))d=d+o;e=a[d];l[e[h]]=l[e[i]][e[g]];d=d+o;e=a[d];n=e[x]l[n]=l[n](_(l,n+o,e[i]))d=d+o;e=a[d];l[e[x]][e[c]]=l[e[N]];d=d+o;e=a[d];l[e[w]]=l[e[i]][e[N]];d=d+o;e=a[d];l[e[f]]=v[e[u]];d=d+o;e=a[d];l[e[x]]=l[e[u]][e[g]];d=d+o;e=a[d];l[e[x]]=l[e[u]][e[y]];d=d+o;e=a[d];l[e[h]][e[c]]=l[e[y]];d=d+o;e=a[d];l[e[k]]=l[e[s]][e[g]];d=d+o;e=a[d];l[e[k]]=v[e[s]];d=d+o;e=a[d];l[e[f]]=l[e[b]][e[N]];d=d+o;e=a[d];l[e[f]]=l[e[t]][e[g]];d=d+o;e=a[d];l[e[f]][e[i]]=l[e[y]];break end;break;end break;end while 1741==(n)/((3610-0x73b))do n=(6087564)while j<=(0x27c-374)do n=-n l[e[x]]=(e[s]~=0);d=d+F;break;end while 1764==(n)/((721259/0xd1))do n=(2702408)while j>(10520/0x28)do n=-n l[e[f]][e[t]]=l[e[p]];d=d+o;e=a[d];l[e[h]]=l[e[b]][e[E]];d=d+o;e=a[d];l[e[x]][e[s]]=e[N];d=d+o;e=a[d];l[e[k]]=l[e[i]][e[g]];d=d+o;e=a[d];l[e[x]]=v[e[s]];d=d+o;e=a[d];l[e[r]]=l[e[t]][e[y]];d=d+o;e=a[d];l[e[r]]=l[e[c]][e[g]];d=d+o;e=a[d];l[e[r]][e[b]]=l[e[g]];d=d+o;e=a[d];l[e[h]]=l[e[i]][e[N]];d=d+o;e=a[d];l[e[x]]=l[e[u]][e[g]];break end while(n)/(((-0x6a+8)+0x736))==1546 do l[e[x]]=e[c]*l[e[V]];break end;break;end break;end break;end break;end while(n)/((0x67a+(-4+-0x6b)))==1338 do n=(2667612)while j<=(-28+0x12a)do n=-n n=(10963914)while(0x294-393)>=j do n=-n n=(7682767)while(638-0x175)>=j do n=-n if(l[e[f]]==l[e[V]])then d=d+F;else d=e[s];end;break;end while(n)/((5340-(0xb1a+-125)))==2929 do n=(15696819)while j>(-0x5b+357)do n=-n local n;l[e[w]]=v[e[s]];d=d+o;e=a[d];l[e[x]]=e[t];d=d+o;e=a[d];l[e[w]]=e[u];d=d+o;e=a[d];l[e[k]]=e[s];d=d+o;e=a[d];n=e[x]l[n]=l[n](_(l,n+o,e[i]))d=d+o;e=a[d];if(l[e[r]]==l[e[E]])then d=d+F;else d=e[i];end;break end while 3987==(n)/((7988-0xfd3))do local n;l[e[k]][e[b]]=l[e[y]];d=d+o;e=a[d];l[e[w]]=v[e[s]];d=d+o;e=a[d];l[e[x]]=l[e[s]][e[p]];d=d+o;e=a[d];l[e[k]]=e[t];d=d+o;e=a[d];l[e[h]]=l[e[u]][e[g]];d=d+o;e=a[d];n=e[w]l[n]=l[n](_(l,n+o,e[s]))d=d+o;e=a[d];l[e[r]][e[i]]=l[e[y]];d=d+o;e=a[d];l[e[w]]=l[e[c]][e[V]];d=d+o;e=a[d];l[e[h]]=v[e[t]];break end;break;end break;end while 3219==(n)/((0xd9b+-77))do n=(834882)while(0x23e-306)>=j do n=-n l[e[h]]=m[e[b]];d=d+o;e=a[d];l[e[k]]=l[e[u]][e[V]];d=d+o;e=a[d];l[e[h]]=l[e[s]][e[E]];d=d+o;e=a[d];l[e[f]][e[t]]=l[e[p]];d=d+o;e=a[d];do return end;break;end while(n)/((34085/0x55))==2082 do n=(7473830)while(618-0x15d)<j do n=-n l[e[r]]=l[e[i]][e[y]];d=d+o;e=a[d];l[e[r]][e[c]]=e[y];d=d+o;e=a[d];l[e[f]]=l[e[c]][e[E]];d=d+o;e=a[d];l[e[k]]=v[e[s]];d=d+o;e=a[d];l[e[k]]=l[e[i]][e[p]];d=d+o;e=a[d];l[e[k]]={};d=d+o;e=a[d];l[e[x]]=v[e[c]];d=d+o;e=a[d];l[e[f]]=l[e[t]][e[p]];d=d+o;e=a[d];l[e[h]]=e[t];d=d+o;e=a[d];l[e[r]]=m[e[i]];break end while 3010==(n)/((0x56afd/143))do local j;local n;n=e[f]l[n](_(l,n+F,e[i]))d=d+o;e=a[d];l[e[w]]=v[e[b]];d=d+o;e=a[d];l[e[r]]=l[e[t]][e[g]];d=d+o;e=a[d];l[e[w]]=e[i];d=d+o;e=a[d];l[e[w]]=l[e[t]][e[y]];d=d+o;e=a[d];n=e[h]l[n]=l[n](_(l,n+o,e[c]))d=d+o;e=a[d];l[e[x]][e[t]]=l[e[N]];d=d+o;e=a[d];l[e[r]]=l[e[s]][e[y]];d=d+o;e=a[d];l[e[f]]=v[e[b]];d=d+o;e=a[d];l[e[f]]=e[u];d=d+o;e=a[d];l[e[f]]=e[u];d=d+o;e=a[d];l[e[r]]=e[c];d=d+o;e=a[d];n=e[h]l[n]=l[n](_(l,n+o,e[i]))d=d+o;e=a[d];l[e[f]][e[s]]=l[e[y]];d=d+o;e=a[d];l[e[w]]=l[e[t]][e[N]];d=d+o;e=a[d];l[e[x]]=v[e[t]];d=d+o;e=a[d];l[e[k]]=l[e[t]][e[p]];d=d+o;e=a[d];l[e[k]]=e[t];d=d+o;e=a[d];l[e[x]]=e[i];d=d+o;e=a[d];n=e[k]l[n]=l[n](_(l,n+o,e[u]))d=d+o;e=a[d];l[e[w]][e[c]]=l[e[N]];d=d+o;e=a[d];l[e[h]]=l[e[c]][e[V]];d=d+o;e=a[d];l[e[r]]=v[e[i]];d=d+o;e=a[d];l[e[x]]=l[e[t]][e[V]];d=d+o;e=a[d];l[e[r]]=e[i];d=d+o;e=a[d];l[e[w]]=e[u];d=d+o;e=a[d];n=e[k]l[n]=l[n](_(l,n+o,e[u]))d=d+o;e=a[d];l[e[r]][e[b]]=l[e[g]];d=d+o;e=a[d];l[e[x]]=l[e[t]][e[N]];d=d+o;e=a[d];l[e[k]][e[b]]=e[y];d=d+o;e=a[d];l[e[h]]=l[e[c]][e[E]];d=d+o;e=a[d];l[e[x]]=l[e[t]][e[g]];d=d+o;e=a[d];l[e[h]]=l[e[s]][e[g]];d=d+o;e=a[d];l[e[f]][e[t]]=l[e[p]];d=d+o;e=a[d];l[e[r]]=l[e[i]][e[y]];d=d+o;e=a[d];n=e[k];j=l[e[b]];l[n+1]=j;l[n]=j[e[N]];break end;break;end break;end break;end while 2201==(n)/((2513-0x515))do n=(6417920)while(0xd76a/202)>=j do n=-n n=(8933808)while(667-0x18c)>=j do n=-n local n;l[e[h]]=l[e[s]]/l[e[y]];d=d+o;e=a[d];l[e[x]]=m[e[u]];d=d+o;e=a[d];l[e[h]]=l[e[b]][e[V]];d=d+o;e=a[d];l[e[w]]=m[e[s]];d=d+o;e=a[d];l[e[k]]=l[e[s]][e[g]];d=d+o;e=a[d];n=e[f]l[n]=l[n](_(l,n+o,e[i]))d=d+o;e=a[d];l[e[w]][e[c]]=l[e[V]];d=d+o;e=a[d];l[e[x]]=m[e[s]];d=d+o;e=a[d];l[e[h]]=l[e[i]][e[g]];d=d+o;e=a[d];l[e[k]]=m[e[i]];break;end while(n)/((6764-0xd64))==2678 do n=(6769950)while(0x28e-382)<j do n=-n local n;l[e[f]][e[b]]=l[e[g]];d=d+o;e=a[d];l[e[r]]=v[e[b]];d=d+o;e=a[d];l[e[r]]=l[e[b]][e[y]];d=d+o;e=a[d];l[e[r]]=v[e[i]];d=d+o;e=a[d];l[e[h]]=e[b];d=d+o;e=a[d];l[e[h]]=e[t];d=d+o;e=a[d];l[e[h]]=e[s];d=d+o;e=a[d];n=e[r]l[n]=l[n](_(l,n+o,e[u]))d=d+o;e=a[d];n=e[h]l[n]=l[n](l[n+F])d=d+o;e=a[d];l[e[w]][e[t]]=l[e[p]];break end while(n)/((0xec4-1915))==3630 do do return end;break end;break;end break;end while 2944==(n)/((-0x19+(0x908+-107)))do n=(4947052)while j<=(0x27d-363)do n=-n local c;local n;n=e[w];c=l[e[i]];l[n+1]=c;l[n]=c[e[y]];d=d+o;e=a[d];l[e[f]]=v[e[t]];d=d+o;e=a[d];l[e[x]]=e[s];d=d+o;e=a[d];l[e[h]]=e[s];d=d+o;e=a[d];l[e[w]]=e[b];d=d+o;e=a[d];n=e[h]l[n]=l[n](_(l,n+o,e[i]))d=d+o;e=a[d];l[e[h]]=l[e[s]];d=d+o;e=a[d];l[e[r]]=v[e[u]];d=d+o;e=a[d];l[e[r]]=e[s];d=d+o;e=a[d];l[e[r]]=e[u];break;end while(n)/((2606-0x532))==3877 do n=(3234552)while(11000/0x28)<j do n=-n local n;local i;l[e[x]]=e[u];d=d+o;e=a[d];l[e[h]]=e[c];d=d+o;e=a[d];i=e[h]l[i]=l[i](_(l,i+o,e[u]))d=d+o;e=a[d];l[e[k]]=l[e[s]]-l[e[y]];d=d+o;e=a[d];n={l,e};n[F][n[S][k]]=n[o][n[S][V]]+n[F][n[S][c]];d=d+o;e=a[d];l[e[h]]=v[e[s]];d=d+o;e=a[d];l[e[r]]=l[e[c]][e[g]];d=d+o;e=a[d];l[e[w]]=l[e[c]][e[g]];d=d+o;e=a[d];l[e[r]]=v[e[b]];d=d+o;e=a[d];l[e[f]]=l[e[t]][e[p]];break end while 1842==(n)/((1825+-0x45))do local n;n=e[k]l[n](_(l,n+F,e[u]))d=d+o;e=a[d];l[e[h]]=v[e[s]];d=d+o;e=a[d];l[e[k]]=l[e[b]][e[p]];d=d+o;e=a[d];l[e[k]]=e[c];d=d+o;e=a[d];l[e[x]]=l[e[b]][e[E]];d=d+o;e=a[d];n=e[w]l[n]=l[n](_(l,n+o,e[i]))d=d+o;e=a[d];l[e[k]][e[b]]=l[e[E]];d=d+o;e=a[d];l[e[h]]=l[e[s]][e[g]];d=d+o;e=a[d];l[e[h]][e[u]]=e[E];d=d+o;e=a[d];l[e[f]]=l[e[i]][e[N]];break end;break;end break;end break;end break;end break;end break;end break;end while 111==(n)/((-74+0x231))do n=(2075667)while(442+-0x78)>=j do n=-n n=(32178)while j<=(717-0x1a2)do n=-n n=(172746)while(0x11965/251)>=j do n=-n n=(163508)while(48613/0xad)>=j do n=-n n=(11466000)while j<=(0x5f90/88)do n=-n n=(5626860)while j>(359+-0x52)do n=-n l[e[h]]=#l[e[s]];break end while(n)/((0x1731-2991))==1910 do l[e[w]]();break end;break;end while(n)/((0xc90+-31))==3600 do n=(5145396)while j<=(389+-0x6e)do n=-n l[e[f]]=e[s]*l[e[E]];break;end while 2469==(n)/((0x889+-101))do n=(3218670)while j>(378+-0x62)do n=-n local n;local i;local x;m[e[t]]=l[e[r]];d=d+o;e=a[d];l[e[w]]=v[e[c]];d=d+o;e=a[d];l[e[w]]=m[e[s]];d=d+o;e=a[d];l[e[f]]=l[e[b]][e[N]];d=d+o;e=a[d];x=e[w]i={l[x](l[x+1])};n=0;for e=x,e[V]do n=n+o;l[e]=i[n];end d=d+o;e=a[d];d=e[t];break end while(n)/((-0x6a+1996))==1703 do local n;l[e[r]]=l[e[s]][e[g]];d=d+o;e=a[d];l[e[w]]=e[b];d=d+o;e=a[d];l[e[r]]=v[e[s]];d=d+o;e=a[d];l[e[x]]=l[e[s]][e[y]];d=d+o;e=a[d];l[e[k]]=l[e[c]][e[V]];d=d+o;e=a[d];l[e[w]]=v[e[b]];d=d+o;e=a[d];l[e[r]]=l[e[u]][e[V]];d=d+o;e=a[d];l[e[f]]=l[e[b]][e[V]];d=d+o;e=a[d];n=e[f]l[n]=l[n](_(l,n+o,e[c]))d=d+o;e=a[d];l[e[x]]={};break end;break;end break;end break;end while 41==(n)/((0x1f81-4077))do n=(2982323)while j<=(-0x61+381)do n=-n n=(1731450)while j<=((-13536/0x8d)+0x17a)do n=-n l[e[x]]=l[e[s]]-l[e[V]];break;end while 485==(n)/((7201-0xe2f))do n=(9975288)while(-126+0x199)<j do n=-n local o=e[w];local a=l[o]local n=l[o+2];if(n>0)then if(a>l[o+1])then d=e[c];else l[o+3]=a;end elseif(a<l[o+1])then d=e[b];else l[o+3]=a;end break end while(n)/((0xad2+(43+-0x59)))==3662 do m[e[u]]=l[e[w]];break end;break;end break;end while 1429==(n)/((0x10a6-2175))do n=(132612)while j<=(20520/0x48)do n=-n l[e[x]]=l[e[u]][e[y]];d=d+o;e=a[d];l[e[k]]=l[e[c]][e[g]];d=d+o;e=a[d];l[e[x]][e[c]]=l[e[E]];d=d+o;e=a[d];l[e[f]]=m[e[c]];d=d+o;e=a[d];l[e[h]]=l[e[s]][e[E]];d=d+o;e=a[d];l[e[h]]=l[e[s]][e[g]];d=d+o;e=a[d];l[e[k]][e[c]]=l[e[y]];d=d+o;e=a[d];l[e[f]]=m[e[t]];d=d+o;e=a[d];l[e[x]]=l[e[b]][e[V]];d=d+o;e=a[d];l[e[f]]=l[e[t]][e[E]];d=d+o;e=a[d];l[e[k]][e[t]]=l[e[y]];d=d+o;e=a[d];l[e[x]]=m[e[u]];d=d+o;e=a[d];l[e[k]]=l[e[t]][e[N]];d=d+o;e=a[d];l[e[x]]=l[e[b]][e[E]];d=d+o;e=a[d];l[e[k]][e[s]]=l[e[g]];d=d+o;e=a[d];do return end;break;end while 516==(n)/((0x22d-300))do n=(2443210)while j>(52052/0xb6)do n=-n local i;local n;n=e[r];i=l[e[t]];l[n+1]=i;l[n]=i[e[g]];d=d+o;e=a[d];l[e[r]]=m[e[c]];d=d+o;e=a[d];l[e[r]]=l[e[c]][e[g]];d=d+o;e=a[d];l[e[r]]=l[e[c]][e[E]];d=d+o;e=a[d];l[e[r]]=(not l[e[b]]);d=d+o;e=a[d];n=e[x]l[n](_(l,n+F,e[s]))break end while 2926==(n)/((0x6ee6/34))do l[e[x]]=l[e[b]][l[e[p]]];break end;break;end break;end break;end break;end while(n)/((51786/0x89))==457 do n=(11450268)while j<=(693-0x190)do n=-n n=(2948310)while j<=(613-0x143)do n=-n n=(5340060)while(0x5220/73)>=j do n=-n if(e[h]<=l[e[N]])then d=d+F;else d=e[c];end;break;end while 1798==(n)/((0xbe9+-79))do n=(1086487)while j>((144720/0xf0)-0x13a)do n=-n l[e[r]]=l[e[b]]/l[e[E]];break end while 1343==(n)/((935+-0x7e))do if(l[e[x]]~=l[e[E]])then d=d+F;else d=e[i];end;break end;break;end break;end while 2115==(n)/((338742/0xf3))do n=(4435389)while j<=(-58+(0x32b-462))do n=-n local j;local n;l[e[f]]=v[e[c]];d=d+o;e=a[d];l[e[f]]=l[e[s]][e[V]];d=d+o;e=a[d];l[e[r]]=m[e[b]];d=d+o;e=a[d];l[e[f]]=l[e[b]][e[N]];d=d+o;e=a[d];l[e[r]]=m[e[t]];d=d+o;e=a[d];l[e[h]]=l[e[b]][e[E]];d=d+o;e=a[d];l[e[w]]=l[e[t]][e[p]];d=d+o;e=a[d];l[e[h]]=l[e[t]][e[V]];d=d+o;e=a[d];l[e[f]]=l[e[t]]-l[e[N]];d=d+o;e=a[d];l[e[k]]=m[e[b]];d=d+o;e=a[d];l[e[r]]=l[e[t]][e[E]];d=d+o;e=a[d];l[e[w]]=l[e[i]][e[V]];d=d+o;e=a[d];l[e[k]]=l[e[b]][e[y]];d=d+o;e=a[d];l[e[f]]=l[e[i]]/l[e[N]];d=d+o;e=a[d];l[e[h]]=e[u];d=d+o;e=a[d];l[e[r]]=e[c];d=d+o;e=a[d];n=e[w]l[n]=l[n](_(l,n+o,e[i]))d=d+o;e=a[d];l[e[f]]=m[e[c]];d=d+o;e=a[d];l[e[h]]=e[u]-l[e[N]];d=d+o;e=a[d];l[e[k]][e[u]]=l[e[g]];d=d+o;e=a[d];l[e[x]]=m[e[c]];d=d+o;e=a[d];l[e[x]]=l[e[i]][e[p]];d=d+o;e=a[d];n=e[h];j=l[e[t]];l[n+1]=j;l[n]=j[e[y]];d=d+o;e=a[d];l[e[x]]=v[e[c]];d=d+o;e=a[d];l[e[x]]=l[e[u]][e[E]];d=d+o;e=a[d];l[e[r]]=l[e[u]];d=d+o;e=a[d];l[e[x]]=e[c];d=d+o;e=a[d];l[e[x]]=e[u];d=d+o;e=a[d];l[e[w]]=e[s];d=d+o;e=a[d];n=e[f]l[n]=l[n](_(l,n+o,e[i]))d=d+o;e=a[d];l[e[f]]=v[e[b]];d=d+o;e=a[d];l[e[f]]=l[e[t]][e[p]];d=d+o;e=a[d];l[e[x]]=l[e[i]][e[g]];d=d+o;e=a[d];l[e[r]]=v[e[s]];d=d+o;e=a[d];l[e[h]]=l[e[t]][e[E]];d=d+o;e=a[d];l[e[h]]=l[e[c]][e[E]];d=d+o;e=a[d];l[e[r]]=e[u];d=d+o;e=a[d];n=e[x]l[n](_(l,n+F,e[b]))d=d+o;e=a[d];l[e[x]]=m[e[u]];d=d+o;e=a[d];l[e[r]]=l[e[c]][e[y]];d=d+o;e=a[d];l[e[k]]=v[e[b]];d=d+o;e=a[d];l[e[x]]=l[e[t]][e[p]];d=d+o;e=a[d];l[e[x]]=e[t]-l[e[y]];d=d+o;e=a[d];l[e[r]]=e[i];d=d+o;e=a[d];l[e[w]]=e[s];d=d+o;e=a[d];n=e[x]l[n]=l[n](_(l,n+o,e[t]))d=d+o;e=a[d];l[e[f]][e[c]]=l[e[N]];d=d+o;e=a[d];l[e[w]]=m[e[i]];d=d+o;e=a[d];l[e[x]]=l[e[u]][e[p]];d=d+o;e=a[d];l[e[h]]=l[e[u]][e[y]];d=d+o;e=a[d];l[e[x]]=l[e[t]][e[g]];d=d+o;e=a[d];l[e[r]]=m[e[t]];d=d+o;e=a[d];l[e[w]]=l[e[s]][e[p]];d=d+o;e=a[d];l[e[k]]=l[e[i]][e[g]];d=d+o;e=a[d];l[e[f]]=l[e[s]][e[y]];d=d+o;e=a[d];l[e[r]]=l[e[u]]-l[e[p]];d=d+o;e=a[d];l[e[x]]=m[e[c]];d=d+o;e=a[d];l[e[w]]=l[e[t]][e[V]];d=d+o;e=a[d];l[e[k]]=l[e[b]][e[V]];d=d+o;e=a[d];l[e[k]]=l[e[i]][e[E]];d=d+o;e=a[d];l[e[k]]=l[e[b]]/l[e[V]];d=d+o;e=a[d];l[e[w]]=m[e[t]];d=d+o;e=a[d];l[e[w]]=l[e[t]][e[E]];d=d+o;e=a[d];l[e[k]]=l[e[i]][e[y]];d=d+o;e=a[d];l[e[k]]=l[e[s]][e[p]];d=d+o;e=a[d];l[e[k]]=m[e[i]];d=d+o;e=a[d];l[e[w]]=l[e[t]][e[g]];d=d+o;e=a[d];l[e[w]]=l[e[b]][e[y]];d=d+o;e=a[d];l[e[x]]=l[e[s]][e[g]];d=d+o;e=a[d];l[e[r]]=l[e[u]]-l[e[y]];d=d+o;e=a[d];l[e[f]]=m[e[t]];d=d+o;e=a[d];l[e[w]]=l[e[c]][e[g]];d=d+o;e=a[d];l[e[k]]=l[e[i]][e[g]];d=d+o;e=a[d];l[e[h]]=l[e[b]][e[V]];d=d+o;e=a[d];l[e[r]]=l[e[c]]/l[e[g]];d=d+o;e=a[d];l[e[k]]=m[e[c]];d=d+o;e=a[d];n=e[w];j=l[e[i]];l[n+1]=j;l[n]=j[e[N]];d=d+o;e=a[d];l[e[w]]=v[e[i]];d=d+o;e=a[d];l[e[h]]=l[e[s]][e[y]];d=d+o;e=a[d];l[e[h]]=m[e[i]];break;end while 1449==(n)/((-109+0xc62))do n=(1953747)while(0x295-369)<j do n=-n local M;local j;local n;l[e[w]][e[c]]=l[e[y]];d=d+o;e=a[d];l[e[r]]=v[e[u]];d=d+o;e=a[d];l[e[h]]=l[e[u]][e[N]];d=d+o;e=a[d];l[e[r]]=e[t];d=d+o;e=a[d];l[e[k]]=l[e[b]][e[N]];d=d+o;e=a[d];n=e[h]l[n]=l[n](_(l,n+o,e[s]))d=d+o;e=a[d];l[e[f]][e[t]]=l[e[p]];d=d+o;e=a[d];l[e[r]]=l[e[c]][e[E]];d=d+o;e=a[d];l[e[k]]=v[e[i]];d=d+o;e=a[d];l[e[r]]=e[s];d=d+o;e=a[d];l[e[k]]=e[i];d=d+o;e=a[d];l[e[h]]=e[t];d=d+o;e=a[d];n=e[f]l[n]=l[n](_(l,n+o,e[b]))d=d+o;e=a[d];l[e[f]][e[i]]=l[e[y]];d=d+o;e=a[d];l[e[k]]=l[e[c]][e[E]];d=d+o;e=a[d];l[e[x]][e[s]]=e[p];d=d+o;e=a[d];l[e[r]]=l[e[t]][e[V]];d=d+o;e=a[d];l[e[f]]=v[e[c]];d=d+o;e=a[d];l[e[f]]=l[e[c]][e[E]];d=d+o;e=a[d];l[e[k]]=e[c];d=d+o;e=a[d];l[e[h]]=e[i];d=d+o;e=a[d];l[e[h]]=e[c];d=d+o;e=a[d];n=e[r]l[n]=l[n](_(l,n+o,e[c]))d=d+o;e=a[d];l[e[f]][e[s]]=l[e[E]];d=d+o;e=a[d];l[e[h]]=l[e[b]][e[V]];d=d+o;e=a[d];l[e[h]][e[i]]=e[E];d=d+o;e=a[d];l[e[k]]=l[e[b]][e[p]];d=d+o;e=a[d];l[e[k]]=v[e[b]];d=d+o;e=a[d];l[e[f]]=l[e[i]][e[p]];d=d+o;e=a[d];l[e[h]]=l[e[b]][e[V]];d=d+o;e=a[d];l[e[w]]=l[e[s]][e[p]];d=d+o;e=a[d];l[e[w]]=l[e[i]][e[y]];d=d+o;e=a[d];j={e,l};j[S][j[F][f]]=j[S][j[o][c]]+j[F][p];d=d+o;e=a[d];l[e[f]]=e[b];d=d+o;e=a[d];n=e[r]l[n]=l[n](_(l,n+o,e[t]))d=d+o;e=a[d];l[e[x]][e[i]]=l[e[V]];d=d+o;e=a[d];l[e[f]]=l[e[u]][e[N]];d=d+o;e=a[d];l[e[k]]=v[e[u]];d=d+o;e=a[d];l[e[x]]=l[e[c]][e[N]];d=d+o;e=a[d];l[e[k]]=m[e[s]];d=d+o;e=a[d];l[e[h]]=l[e[s]][e[N]];d=d+o;e=a[d];l[e[r]]=l[e[b]][e[E]];d=d+o;e=a[d];l[e[r]]=l[e[t]][e[N]];d=d+o;e=a[d];l[e[x]]=l[e[b]][e[V]];d=d+o;e=a[d];l[e[w]]=l[e[c]]-e[g];d=d+o;e=a[d];l[e[x]]=l[e[t]][e[y]];d=d+o;e=a[d];l[e[r]]=l[e[t]][e[E]];d=d+o;e=a[d];l[e[x]]=l[e[s]][e[p]];d=d+o;e=a[d];l[e[f]]=l[e[s]][e[N]];d=d+o;e=a[d];n=e[w]l[n]=l[n](_(l,n+o,e[t]))d=d+o;e=a[d];l[e[w]][e[t]]=l[e[p]];d=d+o;e=a[d];l[e[f]]=l[e[u]][e[V]];d=d+o;e=a[d];l[e[f]]=m[e[u]];d=d+o;e=a[d];l[e[f]]=l[e[b]][e[y]];d=d+o;e=a[d];l[e[f]]=l[e[t]][e[E]];d=d+o;e=a[d];l[e[r]][e[u]]=l[e[N]];d=d+o;e=a[d];l[e[h]]=l[e[c]][e[y]];d=d+o;e=a[d];l[e[k]][e[b]]=e[g];d=d+o;e=a[d];l[e[w]]=l[e[t]][e[y]];d=d+o;e=a[d];l[e[x]]=l[e[c]][e[y]];d=d+o;e=a[d];l[e[x]][e[u]]=l[e[g]];d=d+o;e=a[d];l[e[f]]=l[e[t]][e[p]];d=d+o;e=a[d];l[e[x]]=m[e[c]];d=d+o;e=a[d];l[e[r]]=l[e[b]][e[g]];d=d+o;e=a[d];l[e[w]]=l[e[c]][e[E]];d=d+o;e=a[d];l[e[r]][e[u]]=l[e[p]];d=d+o;e=a[d];l[e[x]]=l[e[i]][e[N]];d=d+o;e=a[d];l[e[w]][e[t]]=e[V];d=d+o;e=a[d];l[e[r]]=l[e[s]][e[V]];d=d+o;e=a[d];l[e[f]][e[s]]=e[g];d=d+o;e=a[d];l[e[k]]=l[e[c]][e[E]];d=d+o;e=a[d];l[e[k]]=v[e[s]];d=d+o;e=a[d];l[e[r]]=l[e[s]][e[g]];d=d+o;e=a[d];l[e[k]]=l[e[c]][e[p]];d=d+o;e=a[d];l[e[h]][e[b]]=l[e[g]];d=d+o;e=a[d];l[e[w]]=m[e[b]];d=d+o;e=a[d];l[e[r]]=l[e[c]][e[E]];d=d+o;e=a[d];n=e[f];M=l[e[b]];l[n+1]=M;l[n]=M[e[p]];break end while(n)/((0x1362-2541))==807 do l[e[w]]=m[e[u]];d=d+o;e=a[d];l[e[x]]=v[e[b]];d=d+o;e=a[d];l[e[h]]=l[e[c]][e[E]];d=d+o;e=a[d];l[e[k]]=l[e[b]][e[y]];d=d+o;e=a[d];l[e[x]][e[s]]=l[e[N]];d=d+o;e=a[d];l[e[w]]=m[e[i]];d=d+o;e=a[d];l[e[h]]=l[e[c]][e[N]];d=d+o;e=a[d];l[e[w]]=m[e[i]];d=d+o;e=a[d];l[e[k]]=l[e[c]][e[V]];d=d+o;e=a[d];if l[e[h]]then d=d+o;else d=e[s];end;break end;break;end break;end break;end while 3492==(n)/((6646-0xd27))do n=(3187676)while(-112+0x198)>=j do n=-n n=(12333090)while(46746/0x9f)>=j do n=-n local n;l[e[h]]=v[e[b]];d=d+o;e=a[d];l[e[f]]=e[i];d=d+o;e=a[d];l[e[h]]=e[u];d=d+o;e=a[d];l[e[f]]=e[c];d=d+o;e=a[d];n=e[w]l[n]=l[n](_(l,n+o,e[t]))d=d+o;e=a[d];n=e[w]l[n]=l[n](_(l,n+o,e[i]))d=d+o;e=a[d];if not l[e[k]]then d=d+F;else d=e[b];end;break;end while(n)/((-40+0xf86))==3135 do n=(5272626)while(0x29a-371)<j do n=-n for e=e[h],e[c]do l[e]=nil;end;break end while(n)/((0x608+-21))==3462 do local u;local r;local k,i;local n;l[e[x]]=l[e[t]][e[V]];d=d+o;e=a[d];l[e[w]]=e[t];d=d+o;e=a[d];l[e[w]]=l[e[c]][e[y]];d=d+o;e=a[d];n=e[f]k,i=Y(l[n](_(l,n+1,e[b])))M=i+n-1 r=0;for e=n,M do r=r+o;l[e]=k[r];end;d=d+o;e=a[d];n=e[h];u=l[n];for e=n+1,M do W(u,l[e])end;break end;break;end break;end while(n)/((0x71a-956))==3698 do n=(7820400)while j<=(0x139+-16)do n=-n local d=e[k]local n={l[d](l[d+1])};local a=0;for e=d,e[g]do a=a+o;l[e]=n[a];end break;end while 2660==(n)/((8820/0x3))do n=(6888200)while(0x2b4-394)<j do n=-n local j;local n;l[e[f]]=v[e[c]];d=d+o;e=a[d];l[e[f]]=l[e[t]][e[p]];d=d+o;e=a[d];l[e[h]]=e[u];d=d+o;e=a[d];l[e[k]]=e[b];d=d+o;e=a[d];n=e[k]l[n]=l[n](_(l,n+o,e[c]))d=d+o;e=a[d];l[e[r]][e[c]]=l[e[E]];d=d+o;e=a[d];l[e[x]]=v[e[c]];d=d+o;e=a[d];l[e[h]]=l[e[i]][e[g]];d=d+o;e=a[d];l[e[f]]=v[e[c]];d=d+o;e=a[d];l[e[w]]=e[c];d=d+o;e=a[d];l[e[x]]=e[t];d=d+o;e=a[d];l[e[x]]=e[c];d=d+o;e=a[d];n=e[r]l[n]=l[n](_(l,n+o,e[c]))d=d+o;e=a[d];l[e[w]]=l[e[c]][e[y]];d=d+o;e=a[d];n=e[f]l[n]=l[n](_(l,n+o,e[i]))d=d+o;e=a[d];l[e[f]][e[c]]=l[e[N]];d=d+o;e=a[d];l[e[f]]=l[e[c]][e[p]];d=d+o;e=a[d];l[e[f]]=v[e[t]];d=d+o;e=a[d];l[e[f]]=l[e[i]][e[y]];d=d+o;e=a[d];l[e[h]]=e[b];d=d+o;e=a[d];l[e[f]]=e[s];d=d+o;e=a[d];n=e[r]l[n]=l[n](_(l,n+o,e[b]))d=d+o;e=a[d];l[e[h]][e[b]]=l[e[N]];d=d+o;e=a[d];l[e[x]]=l[e[u]][e[p]];d=d+o;e=a[d];l[e[r]]=v[e[i]];d=d+o;e=a[d];l[e[w]]=l[e[b]][e[y]];d=d+o;e=a[d];l[e[f]]=e[u];d=d+o;e=a[d];l[e[w]]=e[u];d=d+o;e=a[d];n=e[w]l[n]=l[n](_(l,n+o,e[t]))d=d+o;e=a[d];l[e[h]][e[c]]=l[e[E]];d=d+o;e=a[d];l[e[f]]=l[e[s]][e[p]];d=d+o;e=a[d];l[e[r]]=v[e[i]];d=d+o;e=a[d];l[e[h]]=l[e[i]][e[g]];d=d+o;e=a[d];l[e[r]]=e[i];d=d+o;e=a[d];l[e[x]]=e[c];d=d+o;e=a[d];n=e[r]l[n]=l[n](_(l,n+o,e[i]))d=d+o;e=a[d];l[e[k]][e[b]]=l[e[N]];d=d+o;e=a[d];l[e[r]]=v[e[b]];d=d+o;e=a[d];l[e[x]]=l[e[b]][e[E]];d=d+o;e=a[d];l[e[f]]=v[e[c]];d=d+o;e=a[d];l[e[r]]=e[b];d=d+o;e=a[d];l[e[h]]=e[s];d=d+o;e=a[d];l[e[h]]=e[c];d=d+o;e=a[d];n=e[r]l[n]=l[n](_(l,n+o,e[u]))d=d+o;e=a[d];l[e[k]]=m[e[i]];d=d+o;e=a[d];l[e[x]]=l[e[t]][e[y]];d=d+o;e=a[d];n=e[h]l[n]=l[n](_(l,n+o,e[i]))d=d+o;e=a[d];l[e[f]][e[c]]=l[e[y]];d=d+o;e=a[d];l[e[h]]=l[e[t]][e[p]];d=d+o;e=a[d];l[e[h]]=v[e[t]];d=d+o;e=a[d];l[e[x]]=e[t];d=d+o;e=a[d];l[e[h]]=e[c];d=d+o;e=a[d];l[e[w]]=e[c];d=d+o;e=a[d];n=e[w]l[n]=l[n](_(l,n+o,e[t]))d=d+o;e=a[d];l[e[k]][e[c]]=l[e[y]];d=d+o;e=a[d];l[e[k]]=l[e[s]][e[y]];d=d+o;e=a[d];l[e[f]][e[u]]=e[E];d=d+o;e=a[d];l[e[w]]=l[e[c]][e[N]];d=d+o;e=a[d];l[e[w]][e[c]]=e[V];d=d+o;e=a[d];l[e[w]]=l[e[b]][e[V]];d=d+o;e=a[d];l[e[k]][e[u]]=e[p];d=d+o;e=a[d];l[e[r]]=l[e[s]][e[V]];d=d+o;e=a[d];l[e[f]][e[s]]=e[V];d=d+o;e=a[d];l[e[w]]=l[e[t]][e[V]];d=d+o;e=a[d];l[e[x]]=v[e[s]];d=d+o;e=a[d];l[e[x]]=l[e[u]][e[V]];d=d+o;e=a[d];l[e[x]]=m[e[b]];d=d+o;e=a[d];l[e[k]]=l[e[b]][e[y]];d=d+o;e=a[d];l[e[x]]=l[e[u]][e[g]];d=d+o;e=a[d];l[e[f]]=l[e[i]][e[E]];d=d+o;e=a[d];l[e[r]]=l[e[s]]/e[N];d=d+o;e=a[d];l[e[k]]=m[e[t]];d=d+o;e=a[d];l[e[x]]=l[e[c]][e[g]];d=d+o;e=a[d];l[e[f]]=l[e[c]][e[N]];d=d+o;e=a[d];l[e[r]]=l[e[i]][e[N]];d=d+o;e=a[d];l[e[r]]=m[e[i]];d=d+o;e=a[d];l[e[h]]=l[e[t]][e[y]];d=d+o;e=a[d];l[e[h]]=l[e[u]][e[V]];d=d+o;e=a[d];l[e[k]]=l[e[b]][e[g]];d=d+o;e=a[d];j={e,l};j[S][j[F][h]]=j[S][j[o][i]]+j[F][y];break end while(n)/((8142-0x1006))==1705 do l[e[h]]=l[e[b]][e[p]];d=d+o;e=a[d];l[e[w]][e[u]]=e[E];d=d+o;e=a[d];l[e[h]]=l[e[s]][e[g]];d=d+o;e=a[d];l[e[x]]=v[e[u]];d=d+o;e=a[d];l[e[h]]=l[e[i]][e[E]];d=d+o;e=a[d];l[e[r]]={};d=d+o;e=a[d];l[e[r]]=v[e[u]];d=d+o;e=a[d];l[e[r]]=l[e[u]][e[V]];d=d+o;e=a[d];l[e[x]]=e[t];d=d+o;e=a[d];l[e[w]]=l[e[b]][e[V]];break end;break;end break;end break;end break;end break;end while 519==(n)/((240-0xb2))do n=(6250688)while(0x287-337)>=j do n=-n n=(6353865)while(0x11aa0/238)>=j do n=-n n=(4268023)while(-100+0x191)>=j do n=-n n=(8055390)while(0x2b4-392)<j do n=-n do return end;break end while 3738==(n)/((4362-0x89f))do local n;l[e[k]]=e[t];d=d+o;e=a[d];n=e[f]l[n]=l[n](_(l,n+o,e[c]))d=d+o;e=a[d];l[e[h]]=l[e[b]][e[E]];d=d+o;e=a[d];n=e[r]l[n]=l[n](_(l,n+o,e[u]))d=d+o;e=a[d];l[e[x]][e[t]]=l[e[N]];d=d+o;e=a[d];l[e[x]]=l[e[s]][e[V]];d=d+o;e=a[d];l[e[r]]=v[e[u]];d=d+o;e=a[d];l[e[k]]=l[e[u]][e[p]];d=d+o;e=a[d];l[e[r]]=l[e[t]][e[E]];d=d+o;e=a[d];l[e[r]][e[c]]=l[e[y]];break end;break;end while 3337==(n)/(((5723525/0xb3)/0x19))do n=(5298272)while((0x1c1a/11)-352)>=j do n=-n local n;l[e[r]]=v[e[u]];d=d+o;e=a[d];l[e[w]]=l[e[i]][e[E]];d=d+o;e=a[d];l[e[x]]=e[u];d=d+o;e=a[d];l[e[k]]=m[e[s]];d=d+o;e=a[d];l[e[h]]=l[e[t]][e[y]];d=d+o;e=a[d];n=e[x]l[n]=l[n](_(l,n+o,e[s]))d=d+o;e=a[d];l[e[h]][e[b]]=l[e[y]];d=d+o;e=a[d];l[e[x]]=l[e[s]][e[p]];d=d+o;e=a[d];l[e[w]]=v[e[i]];d=d+o;e=a[d];l[e[k]]=e[b];d=d+o;e=a[d];l[e[x]]=e[s];d=d+o;e=a[d];l[e[r]]=e[b];d=d+o;e=a[d];n=e[h]l[n]=l[n](_(l,n+o,e[i]))d=d+o;e=a[d];l[e[x]][e[i]]=l[e[g]];d=d+o;e=a[d];l[e[w]]=l[e[s]][e[N]];d=d+o;e=a[d];l[e[h]][e[b]]=e[V];d=d+o;e=a[d];l[e[h]]=l[e[s]][e[y]];d=d+o;e=a[d];l[e[h]]=v[e[c]];d=d+o;e=a[d];l[e[x]]=l[e[u]][e[p]];d=d+o;e=a[d];l[e[r]]=m[e[u]];d=d+o;e=a[d];l[e[k]]=l[e[i]][e[E]];d=d+o;e=a[d];l[e[r]]=l[e[b]][e[g]];d=d+o;e=a[d];l[e[h]]=l[e[i]][e[g]];d=d+o;e=a[d];l[e[w]]=l[e[s]][e[g]];d=d+o;e=a[d];l[e[f]]=l[e[c]]-e[g];d=d+o;e=a[d];l[e[r]]=e[i];d=d+o;e=a[d];n=e[h]l[n]=l[n](_(l,n+o,e[i]))d=d+o;e=a[d];l[e[k]][e[c]]=l[e[E]];d=d+o;e=a[d];l[e[k]]=l[e[t]][e[V]];d=d+o;e=a[d];l[e[x]][e[u]]=e[g];d=d+o;e=a[d];l[e[x]]=l[e[u]][e[y]];d=d+o;e=a[d];l[e[r]][e[u]]=e[N];d=d+o;e=a[d];l[e[x]]=v[e[t]];d=d+o;e=a[d];l[e[w]]=l[e[u]][e[p]];d=d+o;e=a[d];l[e[x]]=e[t];d=d+o;e=a[d];l[e[k]]=l[e[s]][e[y]];d=d+o;e=a[d];n=e[f]l[n]=l[n](_(l,n+o,e[b]))d=d+o;e=a[d];l[e[r]][e[b]]=l[e[V]];d=d+o;e=a[d];l[e[f]]=l[e[u]][e[E]];d=d+o;e=a[d];l[e[k]]=v[e[c]];d=d+o;e=a[d];l[e[h]]=l[e[i]][e[N]];d=d+o;e=a[d];l[e[k]]=e[t];d=d+o;e=a[d];l[e[x]]=e[c];d=d+o;e=a[d];l[e[h]]=e[u];d=d+o;e=a[d];n=e[x]l[n]=l[n](_(l,n+o,e[t]))d=d+o;e=a[d];l[e[h]][e[b]]=l[e[g]];d=d+o;e=a[d];l[e[k]]=l[e[u]][e[V]];d=d+o;e=a[d];l[e[r]][e[t]]=e[y];d=d+o;e=a[d];l[e[f]]=l[e[b]][e[p]];d=d+o;e=a[d];l[e[h]]=v[e[s]];d=d+o;e=a[d];l[e[k]]=l[e[i]][e[y]];d=d+o;e=a[d];l[e[x]]=m[e[i]];d=d+o;e=a[d];l[e[h]]=l[e[c]][e[E]];d=d+o;e=a[d];l[e[w]]=l[e[t]][e[y]];d=d+o;e=a[d];l[e[x]]=l[e[u]][e[p]];d=d+o;e=a[d];l[e[h]]=l[e[b]][e[E]];d=d+o;e=a[d];l[e[r]]=l[e[t]]-e[E];d=d+o;e=a[d];l[e[x]]=e[b];d=d+o;e=a[d];n=e[x]l[n]=l[n](_(l,n+o,e[i]))d=d+o;e=a[d];l[e[x]][e[t]]=l[e[p]];d=d+o;e=a[d];l[e[x]]=l[e[u]][e[V]];d=d+o;e=a[d];l[e[w]]=v[e[b]];d=d+o;e=a[d];l[e[x]]=l[e[c]][e[V]];d=d+o;e=a[d];l[e[x]]=e[s];d=d+o;e=a[d];l[e[w]]=e[i];d=d+o;e=a[d];n=e[h]l[n]=l[n](_(l,n+o,e[i]))d=d+o;e=a[d];l[e[h]][e[s]]=l[e[E]];d=d+o;e=a[d];l[e[r]]=l[e[c]][e[E]];d=d+o;e=a[d];l[e[f]]=m[e[t]];d=d+o;e=a[d];l[e[h]]=l[e[i]][e[y]];d=d+o;e=a[d];l[e[r]]=l[e[b]][e[p]];d=d+o;e=a[d];l[e[f]][e[s]]=l[e[g]];d=d+o;e=a[d];l[e[h]]=l[e[u]][e[N]];d=d+o;e=a[d];l[e[r]]=l[e[s]][e[E]];d=d+o;e=a[d];l[e[x]][e[i]]=l[e[y]];d=d+o;e=a[d];l[e[h]]=l[e[s]][e[V]];d=d+o;e=a[d];l[e[w]][e[u]]=e[V];d=d+o;e=a[d];l[e[r]]=l[e[b]][e[p]];d=d+o;e=a[d];l[e[x]]=m[e[i]];d=d+o;e=a[d];l[e[w]]=l[e[i]][e[y]];break;end while 1526==(n)/((319424/0x5c))do n=(3145374)while j>(23028/0x4c)do n=-n local e=e[k]l[e]=l[e]()break end while 2907==(n)/((2251-0x491))do l[e[x]]=m[e[c]];d=d+o;e=a[d];l[e[r]]=l[e[i]][e[y]];d=d+o;e=a[d];l[e[r]]=l[e[c]][e[V]];d=d+o;e=a[d];l[e[f]][e[b]]=l[e[E]];d=d+o;e=a[d];l[e[h]]=m[e[i]];d=d+o;e=a[d];l[e[k]]=l[e[c]][e[y]];d=d+o;e=a[d];l[e[r]]=l[e[u]][e[g]];d=d+o;e=a[d];l[e[x]][e[i]]=l[e[E]];d=d+o;e=a[d];do return end;break end;break;end break;end break;end while 2415==(n)/((0x1c434/44))do n=(6455333)while(-55+0x16a)>=j do n=-n n=(6467670)while j<=(681-0x178)do n=-n l[e[k]]=l[e[i]]%e[V];break;end while 3058==(n)/((0x87b+-56))do n=(355311)while j>((0x3a1-501)+-122)do n=-n l[e[r]][e[b]]=e[E];break end while 1067==(n)/((751-(0x378-470)))do local x;local n;l[e[r]]=v[e[u]];d=d+o;e=a[d];l[e[k]]=l[e[s]][e[y]];d=d+o;e=a[d];l[e[f]]=e[b];d=d+o;e=a[d];l[e[k]]=e[i];d=d+o;e=a[d];n=e[w]l[n]=l[n](_(l,n+o,e[i]))d=d+o;e=a[d];l[e[f]][e[i]]=l[e[g]];d=d+o;e=a[d];x=l[e[p]];if not x then d=d+F;else l[e[k]]=x;d=e[b];end;break end;break;end break;end while 3343==(n)/((0xf55-1994))do n=(11508483)while j<=(0x1bac/23)do n=-n local n;local c;l[e[h]]=m[e[s]];d=d+o;e=a[d];l[e[w]]=l[e[s]][e[p]];d=d+o;e=a[d];l[e[k]]=m[e[t]];d=d+o;e=a[d];l[e[w]]=l[e[u]][e[E]];d=d+o;e=a[d];l[e[w]]=l[e[i]][e[g]];d=d+o;e=a[d];l[e[r]]=v[e[u]];d=d+o;e=a[d];l[e[f]]=l[e[s]][e[y]];d=d+o;e=a[d];l[e[h]]=e[s];d=d+o;e=a[d];l[e[f]]=e[s];d=d+o;e=a[d];c=e[x]l[c]=l[c](_(l,c+o,e[i]))d=d+o;e=a[d];n={l,e};n[F][n[S][w]]=n[o][n[S][E]]+n[F][n[S][b]];d=d+o;e=a[d];l[e[x]][e[t]]=l[e[g]];d=d+o;e=a[d];do return end;break;end while(n)/((0x28a35/43))==2973 do n=(1600720)while j>(0x164+-47)do n=-n l[e[x]]=-l[e[i]];break end while 1870==(n)/((149800/0xaf))do local w;local r;local n;l[e[k]]=v[e[i]];d=d+o;e=a[d];l[e[x]]=l[e[c]];d=d+o;e=a[d];n=e[k]l[n]=l[n](l[n+F])d=d+o;e=a[d];n=e[k];r=l[e[s]];l[n+1]=r;l[n]=r[e[y]];d=d+o;e=a[d];l[e[h]]=l[e[c]][e[y]];d=d+o;e=a[d];l[e[k]]=e[b];d=d+o;e=a[d];r=e[i];w=l[r]for e=r+1,e[V]do w=w..l[e];end;l[e[k]]=w;d=d+o;e=a[d];l[e[f]]=e[i];d=d+o;e=a[d];n=e[f]l[n]=l[n](_(l,n+o,e[c]))d=d+o;e=a[d];n=e[k];r=l[e[b]];l[n+1]=r;l[n]=r[e[g]];break end;break;end break;end break;end break;end while(n)/((3278+-0x2e))==1934 do n=(9728256)while(0x58e0/72)>=j do n=-n n=(10523500)while(939/0x3)>=j do n=-n n=(8270871)while j<=(0xf69d/203)do n=-n l[e[h]]=l[e[c]][e[p]];d=d+o;e=a[d];l[e[w]]=l[e[u]][e[g]];d=d+o;e=a[d];l[e[k]][e[b]]=l[e[V]];d=d+o;e=a[d];l[e[r]]=l[e[i]][e[g]];d=d+o;e=a[d];l[e[k]][e[s]]=e[g];break;end while 3273==(n)/((5115-0xa1c))do n=(3612906)while j>((0xb38a/67)-0x176)do n=-n local n;l[e[w]][e[i]]=l[e[g]];d=d+o;e=a[d];l[e[h]]=l[e[i]][e[V]];d=d+o;e=a[d];l[e[f]]=v[e[c]];d=d+o;e=a[d];l[e[r]]=l[e[i]][e[E]];d=d+o;e=a[d];l[e[x]]=e[c];d=d+o;e=a[d];l[e[r]]=e[t];d=d+o;e=a[d];n=e[x]l[n]=l[n](_(l,n+o,e[b]))d=d+o;e=a[d];l[e[r]][e[t]]=l[e[N]];d=d+o;e=a[d];l[e[h]]=v[e[u]];d=d+o;e=a[d];l[e[x]]=l[e[c]][e[g]];break end while 2827==(n)/((-0x67+1381))do local j;local n;n=e[k];j=l[e[b]];l[n+1]=j;l[n]=j[e[V]];d=d+o;e=a[d];l[e[x]]=e[b];d=d+o;e=a[d];n=e[x]l[n]=l[n](_(l,n+o,e[b]))d=d+o;e=a[d];l[e[r]]=v[e[b]];d=d+o;e=a[d];n=e[x];j=l[e[u]];l[n+1]=j;l[n]=j[e[N]];d=d+o;e=a[d];l[e[f]]=v[e[b]];d=d+o;e=a[d];l[e[r]]=e[i];d=d+o;e=a[d];l[e[k]]=e[c];d=d+o;e=a[d];l[e[x]]=e[b];d=d+o;e=a[d];n=e[r]l[n]=l[n](_(l,n+o,e[s]))d=d+o;e=a[d];n=e[h]l[n]=l[n](_(l,n+o,e[c]))d=d+o;e=a[d];l[e[f]]=v[e[t]];d=d+o;e=a[d];n=e[w];j=l[e[i]];l[n+1]=j;l[n]=j[e[N]];d=d+o;e=a[d];l[e[k]]=v[e[s]];d=d+o;e=a[d];l[e[k]]=e[c];d=d+o;e=a[d];l[e[h]]=e[c];d=d+o;e=a[d];l[e[x]]=e[s];d=d+o;e=a[d];n=e[h]l[n]=l[n](_(l,n+o,e[t]))d=d+o;e=a[d];n=e[x]l[n]=l[n](_(l,n+o,e[b]))d=d+o;e=a[d];l[e[h]]=v[e[b]];d=d+o;e=a[d];n=e[x];j=l[e[b]];l[n+1]=j;l[n]=j[e[V]];d=d+o;e=a[d];l[e[x]]=v[e[s]];d=d+o;e=a[d];l[e[w]]=e[c];d=d+o;e=a[d];l[e[h]]=e[t];d=d+o;e=a[d];l[e[f]]=e[s];d=d+o;e=a[d];n=e[h]l[n]=l[n](_(l,n+o,e[i]))d=d+o;e=a[d];n=e[r]l[n]=l[n](_(l,n+o,e[b]))d=d+o;e=a[d];l[e[k]]=v[e[u]];d=d+o;e=a[d];n=e[f];j=l[e[t]];l[n+1]=j;l[n]=j[e[E]];d=d+o;e=a[d];l[e[r]]=v[e[t]];d=d+o;e=a[d];l[e[k]]=e[b];d=d+o;e=a[d];l[e[f]]=e[b];d=d+o;e=a[d];l[e[f]]=e[s];d=d+o;e=a[d];n=e[h]l[n]=l[n](_(l,n+o,e[t]))d=d+o;e=a[d];n=e[w]l[n]=l[n](_(l,n+o,e[c]))d=d+o;e=a[d];l[e[x]]=v[e[c]];d=d+o;e=a[d];n=e[w];j=l[e[b]];l[n+1]=j;l[n]=j[e[p]];d=d+o;e=a[d];l[e[x]]=v[e[s]];d=d+o;e=a[d];l[e[h]]=e[u];d=d+o;e=a[d];l[e[f]]=e[b];d=d+o;e=a[d];l[e[w]]=e[t];d=d+o;e=a[d];n=e[k]l[n]=l[n](_(l,n+o,e[t]))d=d+o;e=a[d];n=e[k]l[n]=l[n](_(l,n+o,e[i]))d=d+o;e=a[d];l[e[w]]=v[e[i]];d=d+o;e=a[d];n=e[w];j=l[e[c]];l[n+1]=j;l[n]=j[e[y]];d=d+o;e=a[d];l[e[f]]=e[c];d=d+o;e=a[d];n=e[h]l[n]=l[n](_(l,n+o,e[t]))d=d+o;e=a[d];l[e[f]]=v[e[i]];d=d+o;e=a[d];n=e[h];j=l[e[b]];l[n+1]=j;l[n]=j[e[N]];d=d+o;e=a[d];l[e[f]]=e[i];d=d+o;e=a[d];n=e[w]l[n]=l[n](_(l,n+o,e[u]))d=d+o;e=a[d];l[e[h]]=l[e[c]][e[p]];d=d+o;e=a[d];n=e[h];j=l[e[u]];l[n+1]=j;l[n]=j[e[p]];d=d+o;e=a[d];n=e[r]l[n]=l[n](l[n+F])d=d+o;e=a[d];l[e[f]]=v[e[t]];d=d+o;e=a[d];l[e[r]]=l[e[c]][e[p]];d=d+o;e=a[d];l[e[w]]=l[e[s]][e[y]];d=d+o;e=a[d];l[e[f]]={};d=d+o;e=a[d];l[e[w]][e[t]]=e[g];d=d+o;e=a[d];l[e[w]][e[c]]=e[N];d=d+o;e=a[d];l[e[f]]=v[e[u]];d=d+o;e=a[d];l[e[f]]=l[e[c]][e[g]];d=d+o;e=a[d];l[e[h]]=l[e[i]][e[g]];d=d+o;e=a[d];l[e[f]][e[c]]=l[e[N]];d=d+o;e=a[d];l[e[k]]=v[e[s]];d=d+o;e=a[d];l[e[k]]=e[i];d=d+o;e=a[d];l[e[x]]=e[b];d=d+o;e=a[d];l[e[k]]=e[s];d=d+o;e=a[d];n=e[k]l[n]=l[n](_(l,n+o,e[c]))d=d+o;e=a[d];l[e[w]][e[b]]=l[e[y]];d=d+o;e=a[d];l[e[w]][e[t]]=e[N];d=d+o;e=a[d];l[e[h]][e[u]]=e[p];d=d+o;e=a[d];l[e[k]]=v[e[c]];d=d+o;e=a[d];l[e[r]]=e[c];d=d+o;e=a[d];l[e[w]]=e[u];d=d+o;e=a[d];l[e[x]]=e[u];d=d+o;e=a[d];n=e[k]l[n]=l[n](_(l,n+o,e[i]))d=d+o;e=a[d];l[e[r]][e[t]]=l[e[y]];d=d+o;e=a[d];l[e[r]]=v[e[c]];d=d+o;e=a[d];l[e[x]]=l[e[t]][e[g]];break end;break;end break;end while 3238==(n)/((0x19b1-3327))do n=(8968634)while j<=(707-0x189)do n=-n local n;n=e[r]l[n](_(l,n+F,e[i]))d=d+o;e=a[d];l[e[x]]=v[e[s]];d=d+o;e=a[d];l[e[h]]=l[e[s]][e[E]];d=d+o;e=a[d];l[e[k]]=e[c];d=d+o;e=a[d];l[e[f]]=l[e[s]][e[E]];d=d+o;e=a[d];n=e[f]l[n]=l[n](_(l,n+o,e[t]))d=d+o;e=a[d];l[e[f]][e[u]]=l[e[V]];d=d+o;e=a[d];l[e[r]]=l[e[t]][e[g]];d=d+o;e=a[d];l[e[k]][e[t]]=e[p];d=d+o;e=a[d];l[e[x]]=l[e[s]][e[V]];break;end while(n)/((6965-0xdce))==2614 do n=(2096930)while j>(-0x16+337)do n=-n l[e[r]][e[c]]=l[e[g]];d=d+o;e=a[d];l[e[w]]=l[e[t]][e[p]];d=d+o;e=a[d];l[e[f]][e[b]]=e[g];d=d+o;e=a[d];l[e[r]]=l[e[u]][e[y]];d=d+o;e=a[d];l[e[f]]=v[e[t]];break end while(n)/((-64+0x29d))==3466 do local y;local S,V;local g;local j;local n;l[e[w]]=m[e[i]];d=d+o;e=a[d];l[e[k]]=l[e[u]][e[p]];d=d+o;e=a[d];l[e[x]]=e[t];d=d+o;e=a[d];l[e[k]]=m[e[t]];d=d+o;e=a[d];n=e[w];j=l[e[c]];l[n+1]=j;l[n]=j[e[E]];d=d+o;e=a[d];n=e[f]l[n]=l[n](l[n+F])d=d+o;e=a[d];l[e[f]]=v[e[i]];d=d+o;e=a[d];l[e[h]]=e[c];d=d+o;e=a[d];l[e[h]]=e[i];d=d+o;e=a[d];l[e[h]]=e[u];d=d+o;e=a[d];n=e[w]l[n]=l[n](_(l,n+o,e[t]))d=d+o;e=a[d];j=e[u];g=l[j]for e=j+1,e[p]do g=g..l[e];end;l[e[x]]=g;d=d+o;e=a[d];l[e[x]]=m[e[c]];d=d+o;e=a[d];n=e[h];j=l[e[b]];l[n+1]=j;l[n]=j[e[N]];d=d+o;e=a[d];l[e[k]]=l[e[s]];d=d+o;e=a[d];n=e[r]S,V=Y(l[n](_(l,n+1,e[b])))M=V+n-1 y=0;for e=n,M do y=y+o;l[e]=S[y];end;d=d+o;e=a[d];n=e[x]l[n](_(l,n+F,M))break end;break;end break;end break;end while 3824==(n)/((5125-0xa15))do n=(4190005)while j<=(0x2a6-359)do n=-n n=(7508844)while j<=(0x298-347)do n=-n local o=e[f];local n=l[o+2];local a=l[o]+n;l[o]=a;if(n>0)then if(a<=l[o+1])then d=e[c];l[o+3]=a;end elseif(a>=l[o+1])then d=e[u];l[o+3]=a;end break;end while 2154==(n)/((7006-0xdc0))do n=(3887330)while j>(0x2a4-358)do n=-n local n;l[e[r]][e[c]]=l[e[p]];d=d+o;e=a[d];l[e[k]]=v[e[i]];d=d+o;e=a[d];l[e[k]]=l[e[t]][e[p]];d=d+o;e=a[d];l[e[r]]=e[i];d=d+o;e=a[d];l[e[r]]=l[e[t]][e[g]];d=d+o;e=a[d];n=e[w]l[n]=l[n](_(l,n+o,e[s]))d=d+o;e=a[d];l[e[h]][e[b]]=l[e[y]];d=d+o;e=a[d];l[e[f]]=l[e[u]][e[g]];d=d+o;e=a[d];l[e[r]]=v[e[s]];break end while(n)/((583906/0xb5))==1205 do local n;l[e[r]][e[i]]=l[e[N]];d=d+o;e=a[d];l[e[k]]=v[e[i]];d=d+o;e=a[d];l[e[x]]=l[e[c]][e[N]];d=d+o;e=a[d];l[e[h]]=e[c];d=d+o;e=a[d];l[e[f]]=m[e[c]];d=d+o;e=a[d];n=e[h]l[n]=l[n](_(l,n+o,e[u]))d=d+o;e=a[d];l[e[r]][e[b]]=l[e[V]];d=d+o;e=a[d];l[e[k]]=l[e[i]][e[V]];d=d+o;e=a[d];l[e[x]][e[b]]=l[e[p]];d=d+o;e=a[d];l[e[k]]=l[e[b]][e[g]];d=d+o;e=a[d];l[e[f]][e[c]]=e[V];d=d+o;e=a[d];l[e[f]]=v[e[t]];d=d+o;e=a[d];if l[e[w]]then d=d+o;else d=e[i];end;break end;break;end break;end while 1399==(n)/((302495/0x65))do n=(1180880)while(0x2ee-430)>=j do n=-n l[e[f]]=l[e[b]][e[y]];d=d+o;e=a[d];l[e[k]]=l[e[i]][e[p]];d=d+o;e=a[d];l[e[k]]=l[e[t]][e[g]];d=d+o;e=a[d];l[e[w]]=l[e[i]]-e[p];d=d+o;e=a[d];l[e[h]]=m[e[t]];d=d+o;e=a[d];l[e[x]]=l[e[s]][e[V]];d=d+o;e=a[d];l[e[w]]=l[e[i]][e[E]];d=d+o;e=a[d];l[e[f]]=l[e[i]][e[y]];d=d+o;e=a[d];l[e[k]]=l[e[s]]-l[e[N]];d=d+o;e=a[d];l[e[k]]=e[s];break;end while 464==(n)/((0x7a675/197))do n=(1973105)while j>(0x9a3b/123)do n=-n local n;l[e[w]]=l[e[i]];d=d+o;e=a[d];n=e[k]l[n]=l[n](l[n+F])d=d+o;e=a[d];l[e[h]]=v[e[i]];d=d+o;e=a[d];l[e[h]]=e[t];d=d+o;e=a[d];l[e[w]]=e[c];d=d+o;e=a[d];l[e[x]]=e[u];d=d+o;e=a[d];n=e[f]l[n]=l[n](_(l,n+o,e[c]))d=d+o;e=a[d];if(l[e[r]]==l[e[g]])then d=d+F;else d=e[s];end;break end while 2363==(n)/((55945/0x43))do local m;local j;local V,N;local n;n=e[w]l[n](_(l,n+F,e[t]))d=d+o;e=a[d];l[e[x]]=v[e[t]];d=d+o;e=a[d];l[e[f]]=l[e[u]][e[p]];d=d+o;e=a[d];l[e[r]]=v[e[i]];d=d+o;e=a[d];l[e[r]]=e[t];d=d+o;e=a[d];l[e[f]]=e[b];d=d+o;e=a[d];l[e[x]]=e[t];d=d+o;e=a[d];n=e[x]l[n]=l[n](_(l,n+o,e[t]))d=d+o;e=a[d];l[e[x]]=l[e[i]][e[g]];d=d+o;e=a[d];n=e[w]l[n]=l[n](_(l,n+o,e[s]))d=d+o;e=a[d];l[e[h]][e[c]]=l[e[E]];d=d+o;e=a[d];l[e[k]]=l[e[c]][e[p]];d=d+o;e=a[d];l[e[k]][e[u]]=e[y];d=d+o;e=a[d];l[e[k]]=l[e[b]][e[E]];d=d+o;e=a[d];l[e[k]]=v[e[b]];d=d+o;e=a[d];l[e[r]]=l[e[u]][e[p]];d=d+o;e=a[d];l[e[h]]={};d=d+o;e=a[d];l[e[r]]=v[e[u]];d=d+o;e=a[d];l[e[x]]=l[e[c]][e[E]];d=d+o;e=a[d];l[e[f]]=e[i];d=d+o;e=a[d];l[e[f]]=v[e[u]];d=d+o;e=a[d];l[e[k]]=l[e[s]][e[y]];d=d+o;e=a[d];l[e[f]]=e[s];d=d+o;e=a[d];l[e[x]]=e[b];d=d+o;e=a[d];l[e[r]]=e[b];d=d+o;e=a[d];n=e[w]V,N=Y(l[n](_(l,n+1,e[i])))M=N+n-1 j=0;for e=n,M do j=j+o;l[e]=V[j];end;d=d+o;e=a[d];n=e[h]l[n]=l[n](_(l,n+o,M))d=d+o;e=a[d];l[e[f]]=v[e[i]];d=d+o;e=a[d];l[e[x]]=l[e[b]][e[y]];d=d+o;e=a[d];l[e[x]]=e[u];d=d+o;e=a[d];l[e[w]]=v[e[u]];d=d+o;e=a[d];l[e[k]]=l[e[s]][e[p]];d=d+o;e=a[d];l[e[f]]=e[s];d=d+o;e=a[d];l[e[k]]=e[s];d=d+o;e=a[d];l[e[w]]=e[u];d=d+o;e=a[d];n=e[w]V,N=Y(l[n](_(l,n+1,e[s])))M=N+n-1 j=0;for e=n,M do j=j+o;l[e]=V[j];end;d=d+o;e=a[d];n=e[k]V,N=Y(l[n](_(l,n+o,M)))M=N+n-F j=0;for e=n,M do j=j+o;l[e]=V[j];end;d=d+o;e=a[d];n=e[h];m=l[n];for e=n+1,M do W(m,l[e])end;break end;break;end break;end break;end break;end break;end break;end while 1023==(n)/((0xddec/(3192/0x72)))do n=(14080096)while j<=(73140/0xd4)do n=-n n=(5628870)while(790-0x1c9)>=j do n=-n n=(5571168)while(0x13002/238)>=j do n=-n n=(379660)while j<=(9072/0x1c)do n=-n n=(3734090)while j>(75259/(0xd23f/231))do n=-n l[e[w]]=m[e[b]];d=d+o;e=a[d];l[e[w]]=l[e[b]][e[g]];d=d+o;e=a[d];l[e[w]]=l[e[s]][e[E]];d=d+o;e=a[d];l[e[k]][e[c]]=l[e[y]];d=d+o;e=a[d];do return end;break end while 2386==(n)/((0xc8c-1647))do local e={l,e};e[F][e[S][w]]=e[o][e[S][y]]+e[F][e[S][c]];break end;break;end while 926==(n)/((0x36b-(0x3fb-554)))do n=(3096687)while(0xa13b/127)>=j do n=-n l[e[x]]=G(J[e[i]],nil,v);break;end while 1177==(n)/((2742+-0x6f))do n=(7101340)while(730-0x194)<j do n=-n l[e[w]][l[e[b]]]=e[p];break end while 2383==(n)/((0x2a328/58))do l[e[h]]=m[e[s]];d=d+o;e=a[d];l[e[w]]=l[e[i]][e[E]];d=d+o;e=a[d];l[e[x]]=m[e[b]];d=d+o;e=a[d];l[e[h]]=l[e[b]][e[g]];d=d+o;e=a[d];l[e[k]]=l[e[i]][l[e[N]]];d=d+o;e=a[d];if not l[e[f]]then d=d+F;else d=e[b];end;break end;break;end break;end break;end while(n)/((0x1078-2120))==2658 do n=(44772)while j<=(-25+0x163)do n=-n n=(3609030)while j<=(739-0x19b)do n=-n local e=e[r]l[e](_(l,e+F,M))break;end while(n)/((0x1060-(0x10e8-2175)))==1770 do n=(733590)while(0x2bf-374)<j do n=-n local f;local n;n=e[r]l[n](_(l,n+F,e[i]))d=d+o;e=a[d];l[e[w]]=m[e[u]];d=d+o;e=a[d];n=e[k];f=l[e[s]];l[n+1]=f;l[n]=f[e[E]];d=d+o;e=a[d];n=e[w]l[n](l[n+F])d=d+o;e=a[d];l[e[k]]=v[e[c]];d=d+o;e=a[d];l[e[k]]=l[e[t]][e[V]];d=d+o;e=a[d];l[e[h]]=m[e[c]];d=d+o;e=a[d];l[e[h]]=l[e[c]][e[N]];d=d+o;e=a[d];l[e[r]]=l[e[u]];d=d+o;e=a[d];n=e[x]l[n](_(l,n+F,e[b]))d=d+o;e=a[d];do return l[e[x]]end d=d+o;e=a[d];do return end;break end while(n)/(((-0x59-1)+0x46f))==702 do l[e[f]]=l[e[i]]-e[p];break end;break;end break;end while(n)/((0xb46/111))==1722 do n=(12838504)while j<=((520+-0x4f)+-110)do n=-n local n;local j;j=e[f]l[j](_(l,j+F,e[s]))d=d+o;e=a[d];l[e[w]]=v[e[b]];d=d+o;e=a[d];l[e[f]]=l[e[b]][e[p]];d=d+o;e=a[d];l[e[w]]=m[e[u]];d=d+o;e=a[d];l[e[w]]=l[e[s]][e[N]];d=d+o;e=a[d];l[e[x]]=l[e[u]];d=d+o;e=a[d];j=e[x]l[j](_(l,j+F,e[b]))d=d+o;e=a[d];l[e[w]]=m[e[i]];d=d+o;e=a[d];l[e[r]]=l[e[b]][e[g]];d=d+o;e=a[d];l[e[r]]=v[e[s]];d=d+o;e=a[d];l[e[h]]=l[e[t]][e[g]];d=d+o;e=a[d];l[e[k]]=m[e[i]];d=d+o;e=a[d];l[e[k]]=l[e[c]][e[N]];d=d+o;e=a[d];l[e[h]]=l[e[c]][e[p]];d=d+o;e=a[d];l[e[k]]=l[e[i]][e[N]];d=d+o;e=a[d];l[e[f]]=l[e[s]][e[N]];d=d+o;e=a[d];l[e[h]]=v[e[c]];d=d+o;e=a[d];l[e[f]]=l[e[c]][e[V]];d=d+o;e=a[d];l[e[k]]=m[e[s]];d=d+o;e=a[d];l[e[h]]=l[e[c]][e[V]];d=d+o;e=a[d];l[e[h]]=#l[e[i]];d=d+o;e=a[d];l[e[f]]=l[e[c]][e[g]];d=d+o;e=a[d];l[e[k]]=l[e[b]][e[E]];d=d+o;e=a[d];l[e[h]]=l[e[u]]*l[e[E]];d=d+o;e=a[d];l[e[x]]=e[t];d=d+o;e=a[d];l[e[w]]=e[b];d=d+o;e=a[d];j=e[r]l[j]=l[j](_(l,j+o,e[s]))d=d+o;e=a[d];n={e,l};n[S][n[F][x]]=n[S][n[o][b]]+n[F][N];d=d+o;e=a[d];j=e[h]l[j]=l[j](_(l,j+o,e[s]))d=d+o;e=a[d];l[e[k]][e[b]]=l[e[V]];d=d+o;e=a[d];l[e[x]]=m[e[c]];d=d+o;e=a[d];l[e[f]]=l[e[u]][e[g]];d=d+o;e=a[d];l[e[k]]=v[e[c]];d=d+o;e=a[d];l[e[h]]=l[e[s]][e[N]];d=d+o;e=a[d];l[e[x]]=m[e[b]];d=d+o;e=a[d];l[e[f]]=l[e[c]][e[N]];d=d+o;e=a[d];l[e[w]]=l[e[u]][e[g]];d=d+o;e=a[d];l[e[h]]=l[e[i]][e[V]];d=d+o;e=a[d];l[e[f]]=m[e[i]];d=d+o;e=a[d];l[e[w]]=l[e[i]][e[y]];d=d+o;e=a[d];l[e[x]]=#l[e[b]];d=d+o;e=a[d];l[e[k]]=l[e[c]][e[N]];d=d+o;e=a[d];l[e[f]]=l[e[c]][e[N]];d=d+o;e=a[d];l[e[r]]=l[e[i]]*l[e[g]];d=d+o;e=a[d];n={e,l};n[S][n[F][f]]=n[S][n[o][c]]+n[F][N];d=d+o;e=a[d];j=e[x]l[j]=l[j](_(l,j+o,e[b]))d=d+o;e=a[d];l[e[w]][e[c]]=l[e[V]];d=d+o;e=a[d];l[e[k]]=m[e[u]];d=d+o;e=a[d];l[e[w]]=l[e[s]][e[y]];d=d+o;e=a[d];l[e[x]]=m[e[c]];d=d+o;e=a[d];l[e[x]]=l[e[b]][e[y]];d=d+o;e=a[d];l[e[h]]=l[e[t]][e[y]];d=d+o;e=a[d];l[e[x]]=v[e[u]];d=d+o;e=a[d];l[e[k]]=l[e[b]][e[N]];d=d+o;e=a[d];l[e[f]]=e[i];d=d+o;e=a[d];l[e[k]]=e[u];d=d+o;e=a[d];j=e[x]l[j]=l[j](_(l,j+o,e[s]))d=d+o;e=a[d];n={l,e};n[F][n[S][w]]=n[o][n[S][V]]+n[F][n[S][i]];d=d+o;e=a[d];l[e[r]][e[s]]=l[e[p]];d=d+o;e=a[d];l[e[k]]=m[e[u]];d=d+o;e=a[d];l[e[r]]=l[e[t]][e[E]];d=d+o;e=a[d];l[e[x]]=m[e[c]];d=d+o;e=a[d];l[e[r]]=l[e[c]][e[V]];d=d+o;e=a[d];l[e[f]]=l[e[c]][e[N]];d=d+o;e=a[d];l[e[x]]=v[e[c]];d=d+o;e=a[d];l[e[w]]=l[e[c]][e[E]];d=d+o;e=a[d];l[e[x]]=e[b];d=d+o;e=a[d];l[e[h]]=e[u];d=d+o;e=a[d];j=e[h]l[j]=l[j](_(l,j+o,e[s]))d=d+o;e=a[d];n={l,e};n[F][n[S][r]]=n[o][n[S][V]]+n[F][n[S][t]];d=d+o;e=a[d];l[e[x]][e[t]]=l[e[E]];d=d+o;e=a[d];l[e[h]]=m[e[t]];d=d+o;e=a[d];l[e[x]]=l[e[u]][e[N]];d=d+o;e=a[d];l[e[h]]=m[e[i]];d=d+o;e=a[d];l[e[r]]=l[e[b]][e[g]];d=d+o;e=a[d];l[e[h]]=l[e[i]][e[V]];d=d+o;e=a[d];l[e[f]]=v[e[i]];d=d+o;e=a[d];l[e[k]]=l[e[s]][e[E]];d=d+o;e=a[d];l[e[h]]=e[u];d=d+o;e=a[d];l[e[x]]=e[b];break;end while(n)/((-0x38+3285))==3976 do n=(7373132)while j>(38180/0x73)do n=-n local d=e[w]local n={l[d](_(l,d+1,M))};local a=0;for e=d,e[g]do a=a+o;l[e]=n[a];end break end while 2197==(n)/((6815-0xd83))do local b;local n;l[e[f]]=v[e[i]];d=d+o;e=a[d];l[e[f]]=l[e[t]][e[y]];d=d+o;e=a[d];l[e[r]]=e[s];d=d+o;e=a[d];l[e[f]]=l[e[u]][e[V]];d=d+o;e=a[d];l[e[w]]=l[e[c]][e[E]];d=d+o;e=a[d];l[e[h]]=l[e[t]][e[E]];d=d+o;e=a[d];n={e,l};n[S][n[F][x]]=n[S][n[o][t]]+n[F][N];d=d+o;e=a[d];l[e[w]]=e[i];d=d+o;e=a[d];l[e[r]]=e[t];d=d+o;e=a[d];b=e[x]l[b]=l[b](_(l,b+o,e[u]))break end;break;end break;end break;end break;end while(n)/((76410/0x36))==3978 do n=(4269546)while j<=(42036/0x7c)do n=-n n=(4280974)while(78960/0xeb)>=j do n=-n n=(834407)while j<=((745+-0x39)-0x162)do n=-n local n;n=e[h]l[n](_(l,n+F,e[t]))d=d+o;e=a[d];l[e[r]]=v[e[c]];d=d+o;e=a[d];l[e[h]]=l[e[s]][e[g]];d=d+o;e=a[d];l[e[f]]=v[e[t]];d=d+o;e=a[d];l[e[h]]=e[c];d=d+o;e=a[d];l[e[f]]=e[u];d=d+o;e=a[d];l[e[k]]=e[b];d=d+o;e=a[d];n=e[r]l[n]=l[n](_(l,n+o,e[s]))d=d+o;e=a[d];l[e[x]]=l[e[c]][e[E]];d=d+o;e=a[d];n=e[k]l[n]=l[n](_(l,n+o,e[c]))break;end while 599==(n)/((0x32554/148))do n=(602860)while(0x2e1-402)<j do n=-n local n;l[e[x]]=e[u];d=d+o;e=a[d];n=e[x]l[n]=l[n](_(l,n+o,e[s]))d=d+o;e=a[d];l[e[h]][e[u]]=l[e[p]];d=d+o;e=a[d];l[e[r]]=l[e[i]][e[g]];d=d+o;e=a[d];l[e[h]][e[b]]=e[V];d=d+o;e=a[d];l[e[x]]=l[e[b]][e[V]];d=d+o;e=a[d];l[e[k]]=l[e[b]][e[N]];d=d+o;e=a[d];l[e[f]]=l[e[c]][e[N]];d=d+o;e=a[d];l[e[x]][e[b]]=l[e[p]];break end while 1402==(n)/((949-0x207))do local t;local b;local k,f;local n;l[e[r]]=e[u];d=d+o;e=a[d];l[e[w]]=e[i];d=d+o;e=a[d];n=e[h]k,f=Y(l[n](_(l,n+1,e[c])))M=f+n-1 b=0;for e=n,M do b=b+o;l[e]=k[b];end;d=d+o;e=a[d];n=e[r]k,f=Y(l[n](_(l,n+o,M)))M=f+n-F b=0;for e=n,M do b=b+o;l[e]=k[b];end;d=d+o;e=a[d];n=e[x];t=l[n];for e=n+1,M do W(t,l[e])end;break end;break;end break;end while 1517==(n)/((0xb5d+-87))do n=(4944600)while j<=(727-0x186)do n=-n local n;local r;l[e[x]]=l[e[b]][e[p]];d=d+o;e=a[d];l[e[h]]=l[e[i]][e[E]];d=d+o;e=a[d];l[e[f]]=e[s];d=d+o;e=a[d];r=e[f]l[r]=l[r](_(l,r+o,e[s]))d=d+o;e=a[d];n={l,e};n[F][n[S][k]]=n[o][n[S][g]]+n[F][n[S][t]];d=d+o;e=a[d];l[e[f]][e[b]]=l[e[N]];d=d+o;e=a[d];l[e[h]]=v[e[u]];d=d+o;e=a[d];l[e[f]]=l[e[c]][e[g]];d=d+o;e=a[d];l[e[w]]=v[e[b]];d=d+o;e=a[d];l[e[w]]=e[u];break;end while(n)/((0xac7-1419))==3690 do n=(4732760)while j>(0x2e2-400)do n=-n if(l[e[f]]~=l[e[N]])then d=d+F;else d=e[i];end;break end while(n)/((-0x79+3426))==1432 do m[e[b]]=l[e[f]];break end;break;end break;end break;end while(n)/((-0x40+1222))==3687 do n=(8911602)while j<=(755-0x19d)do n=-n n=(9138236)while(39780/0x75)>=j do n=-n local r;local n;l[e[x]]=l[e[i]][e[y]];d=d+o;e=a[d];l[e[w]]=l[e[c]][e[y]];d=d+o;e=a[d];n={e,l};n[S][n[F][k]]=n[S][n[o][b]]+n[F][N];d=d+o;e=a[d];l[e[x]]=e[i];d=d+o;e=a[d];r=e[w]l[r]=l[r](_(l,r+o,e[t]))d=d+o;e=a[d];l[e[k]][e[i]]=l[e[E]];d=d+o;e=a[d];l[e[w]]=m[e[t]];d=d+o;e=a[d];l[e[w]]=l[e[u]][e[g]];d=d+o;e=a[d];l[e[h]][e[b]]=e[p];d=d+o;e=a[d];l[e[w]]=m[e[c]];break;end while 3259==(n)/((0xb64+-112))do n=(440344)while(0x2c4-367)<j do n=-n local t;local x;local n;n=e[u];x=l[n]for e=n+1,e[p]do x=x..l[e];end;l[e[w]]=x;d=d+o;e=a[d];l[e[f]][e[i]]=l[e[V]];d=d+o;e=a[d];l[e[h]]=m[e[b]];d=d+o;e=a[d];t=e[h];n=l[e[u]];l[t+1]=n;l[t]=n[e[y]];d=d+o;e=a[d];l[e[h]]=m[e[s]];d=d+o;e=a[d];l[e[w]]=l[e[c]][e[p]];d=d+o;e=a[d];l[e[r]]=l[e[s]][e[N]];d=d+o;e=a[d];l[e[h]]=m[e[i]];d=d+o;e=a[d];l[e[k]]=l[e[u]][e[g]];d=d+o;e=a[d];l[e[h]]=l[e[c]][e[y]];break end while(n)/(((0x307e4/68)+-24))==152 do local b;local n;local f;f=e[s];n=l[f]for e=f+1,e[p]do n=n..l[e];end;l[e[x]]=n;d=d+o;e=a[d];l[e[x]][e[i]]=l[e[E]];d=d+o;e=a[d];l[e[h]]=v[e[c]];d=d+o;e=a[d];l[e[r]]=l[e[c]][e[p]];d=d+o;e=a[d];b=e[w]l[b]=l[b](l[b+F])d=d+o;e=a[d];if l[e[k]]then d=d+o;else d=e[i];end;break end;break;end break;end while 2247==(n)/((-0x4e+4044))do n=(12526416)while j<=(448+-0x69)do n=-n local r;local n;l[e[k]]=m[e[b]];d=d+o;e=a[d];n=e[w];r=l[e[t]];l[n+1]=r;l[n]=r[e[p]];d=d+o;e=a[d];l[e[x]]=m[e[b]];d=d+o;e=a[d];n=e[h]l[n](_(l,n+F,e[u]))d=d+o;e=a[d];do return end;break;end while 3096==(n)/((0x2d704/46))do n=(7179627)while(77400/0xe1)<j do n=-n local o=e[k];local d=l[e[u]];l[o+1]=d;l[o]=d[e[g]];break end while(n)/((3936-0x7e9))==3757 do local j;local g;local n;l[e[k]]=v[e[c]];d=d+o;e=a[d];l[e[f]]=l[e[c]][e[y]];d=d+o;e=a[d];l[e[f]]=e[u];d=d+o;e=a[d];l[e[w]]=e[b];d=d+o;e=a[d];l[e[k]]=e[i];d=d+o;e=a[d];n=e[w]l[n]=l[n](_(l,n+o,e[i]))d=d+o;e=a[d];l[e[k]][e[c]]=l[e[E]];d=d+o;e=a[d];l[e[h]]=m[e[u]];d=d+o;e=a[d];l[e[h]]=m[e[t]];d=d+o;e=a[d];l[e[w]]=l[e[s]][e[p]];d=d+o;e=a[d];l[e[w]]=l[e[c]][e[V]];d=d+o;e=a[d];l[e[k]][e[s]]=l[e[V]];d=d+o;e=a[d];l[e[h]]=m[e[b]];d=d+o;e=a[d];l[e[f]]=e[i];d=d+o;e=a[d];l[e[r]]=m[e[c]];d=d+o;e=a[d];g=e[t];j=l[g]for e=g+1,e[N]do j=j..l[e];end;l[e[x]]=j;d=d+o;e=a[d];l[e[h]][e[u]]=l[e[p]];d=d+o;e=a[d];d=e[i];break end;break;end break;end break;end break;end break;end while(n)/((3544+(-0x9-29)))==4016 do n=(1344768)while(51408/0x90)>=j do n=-n n=(5409774)while(-81+0x1b0)>=j do n=-n n=(278928)while j<=(0x1b5+-89)do n=-n n=(1829338)while j<=(0x29e6/31)do n=-n local o=e[x];local a=l[o]local n=l[o+2];if(n>0)then if(a>l[o+1])then d=e[t];else l[o+3]=a;end elseif(a<l[o+1])then d=e[i];else l[o+3]=a;end break;end while 3187==(n)/((-45+0x26b))do n=(442728)while j>(762-0x19f)do n=-n l[e[x]]=m[e[c]];d=d+o;e=a[d];l[e[k]]=l[e[s]][e[V]];d=d+o;e=a[d];l[e[k]]=m[e[c]];d=d+o;e=a[d];l[e[r]]=l[e[u]][e[p]];d=d+o;e=a[d];l[e[k]]=l[e[t]][e[V]];d=d+o;e=a[d];l[e[f]][e[t]]=l[e[E]];d=d+o;e=a[d];do return end;break end while 774==(n)/((0x4ea-686))do local k;local v,t;local n;n=e[w]l[n]=l[n](_(l,n+o,e[i]))d=d+o;e=a[d];l[e[r]]=m[e[b]];d=d+o;e=a[d];l[e[h]]=l[e[u]][e[p]];d=d+o;e=a[d];l[e[x]]=l[e[c]][e[y]];d=d+o;e=a[d];l[e[f]]=l[e[s]][e[y]];d=d+o;e=a[d];l[e[w]]=l[e[i]]/l[e[p]];d=d+o;e=a[d];l[e[w]]=e[i]-l[e[V]];d=d+o;e=a[d];n=e[f]v,t=Y(l[n](_(l,n+1,e[s])))M=t+n-1 k=0;for e=n,M do k=k+o;l[e]=v[k];end;d=d+o;e=a[d];n=e[f]l[n](_(l,n+F,M))d=d+o;e=a[d];do return end;break end;break;end break;end while(n)/((-0x1d+173))==1937 do n=(371893)while j<=(15007/0x2b)do n=-n local n;l[e[f]]=l[e[c]][e[V]];d=d+o;e=a[d];l[e[f]]=l[e[b]][e[E]];d=d+o;e=a[d];l[e[k]]=l[e[u]]/l[e[g]];d=d+o;e=a[d];l[e[r]]=e[u];d=d+o;e=a[d];l[e[k]]=e[t];d=d+o;e=a[d];n=e[x]l[n]=l[n](_(l,n+o,e[s]))d=d+o;e=a[d];l[e[x]]=m[e[s]];d=d+o;e=a[d];l[e[x]]=e[c]-l[e[V]];d=d+o;e=a[d];l[e[x]][e[i]]=l[e[E]];d=d+o;e=a[d];l[e[k]]=m[e[i]];break;end while(n)/((6511/0x11))==971 do n=(1563789)while(-0x71+463)<j do n=-n do return l[e[h]]end break end while(n)/((8207-0x101c))==383 do l[e[f]]=m[e[i]];d=d+o;e=a[d];l[e[k]]=l[e[t]][e[g]];d=d+o;e=a[d];l[e[k]]=l[e[u]][e[y]];d=d+o;e=a[d];l[e[r]][e[t]]=l[e[p]];d=d+o;e=a[d];do return end;break end;break;end break;end break;end while 2241==(n)/((0x1315-2471))do n=(12516181)while(739-0x181)>=j do n=-n n=(3958080)while(0x1d6+-118)>=j do n=-n local r=J[e[s]];local n;local o={};n=C({},{__index=function(d,e)local e=o[e];return e[1][e[2]];end,__newindex=function(l,e,d)local e=o[e]e[1][e[2]]=d;end;});for n=1,e[V]do d=d+F;local e=a[d];if e[(-23+0x18)]==132 then o[n-1]={l,e[i]};else o[n-1]={m,e[b]};end;B[#B+1]=o;end;l[e[w]]=G(r,n,v);break;end while 3534==(n)/((2310-0x4a6))do n=(1005251)while(815-0x1ce)<j do n=-n l[e[f]]=l[e[i]][e[y]];d=d+o;e=a[d];l[e[w]]=m[e[i]];d=d+o;e=a[d];l[e[x]]=l[e[u]][e[N]];d=d+o;e=a[d];l[e[r]]=l[e[c]][e[V]];d=d+o;e=a[d];l[e[f]][e[c]]=l[e[V]];break end while 689==(n)/((218850/0x96))do l[e[h]]=l[e[s]][e[g]];d=d+o;e=a[d];l[e[w]][e[b]]=e[N];d=d+o;e=a[d];l[e[h]]=l[e[i]][e[V]];d=d+o;e=a[d];l[e[x]][e[s]]=e[y];d=d+o;e=a[d];l[e[x]]=l[e[u]][e[N]];d=d+o;e=a[d];l[e[f]][e[t]]=e[p];d=d+o;e=a[d];l[e[k]]=v[e[i]];d=d+o;e=a[d];l[e[x]]=l[e[b]][e[E]];d=d+o;e=a[d];l[e[h]]=e[i];d=d+o;e=a[d];l[e[k]]=l[e[u]][e[E]];break end;break;end break;end while 3691==(n)/((-55+0xd76))do n=(539511)while(816-0x1cd)>=j do n=-n local x;local n;n=e[w];x=l[e[s]];l[n+1]=x;l[n]=x[e[p]];d=d+o;e=a[d];l[e[f]]=v[e[u]];d=d+o;e=a[d];l[e[h]]=e[i];d=d+o;e=a[d];l[e[w]]=e[s];d=d+o;e=a[d];l[e[r]]=e[s];d=d+o;e=a[d];n=e[r]l[n]=l[n](_(l,n+o,e[c]))d=d+o;e=a[d];n=e[r]l[n](_(l,n+F,e[b]))d=d+o;e=a[d];d=e[s];break;end while(n)/((0xd52+-59))==161 do n=(11046676)while j>(13884/0x27)do n=-n local n;l[e[r]][e[s]]=l[e[p]];d=d+o;e=a[d];l[e[k]]=l[e[i]][e[N]];d=d+o;e=a[d];l[e[h]][e[i]]=e[p];d=d+o;e=a[d];l[e[w]]=l[e[i]][e[y]];d=d+o;e=a[d];l[e[f]]=v[e[i]];d=d+o;e=a[d];l[e[w]]=l[e[u]][e[p]];d=d+o;e=a[d];l[e[w]]=e[i];d=d+o;e=a[d];l[e[r]]=e[c];d=d+o;e=a[d];n=e[r]l[n]=l[n](_(l,n+o,e[c]))d=d+o;e=a[d];l[e[w]][e[i]]=l[e[V]];break end while 3629==(n)/((6128-0xc0c))do l[e[k]][e[c]]=l[e[g]];d=d+o;e=a[d];l[e[f]]=m[e[i]];d=d+o;e=a[d];l[e[h]]=l[e[u]][e[E]];d=d+o;e=a[d];l[e[k]]=#l[e[c]];d=d+o;e=a[d];if(l[e[h]]~=e[p])then d=d+F;else d=e[t];end;break end;break;end break;end break;end break;end while 824==(n)/((3295-0x67f))do n=(3728808)while(0xa1a6/114)>=j do n=-n n=(3225565)while(822-0x1ce)>=j do n=-n n=(2468880)while(14320/0x28)>=j do n=-n local n;l[e[r]]=l[e[t]][e[E]];d=d+o;e=a[d];n=e[x]l[n]=l[n](_(l,n+o,e[s]))d=d+o;e=a[d];l[e[k]][e[t]]=l[e[y]];d=d+o;e=a[d];l[e[h]]=l[e[c]][e[g]];d=d+o;e=a[d];l[e[h]]=v[e[b]];d=d+o;e=a[d];l[e[r]]=e[s];d=d+o;e=a[d];l[e[w]]=e[t];d=d+o;e=a[d];l[e[f]]=e[i];d=d+o;e=a[d];n=e[x]l[n]=l[n](_(l,n+o,e[i]))d=d+o;e=a[d];l[e[r]][e[i]]=l[e[g]];break;end while 762==(n)/((3306+-0x42))do n=(273944)while(64620/0xb4)<j do n=-n local o=l[e[p]];if not o then d=d+F;else l[e[x]]=o;d=e[s];end;break end while 283==(n)/((2046-0x436))do local n;l[e[w]][e[t]]=l[e[y]];d=d+o;e=a[d];l[e[h]]=l[e[t]][e[V]];d=d+o;e=a[d];l[e[f]][e[c]]=e[p];d=d+o;e=a[d];l[e[x]]=l[e[b]][e[y]];d=d+o;e=a[d];l[e[r]]=v[e[i]];d=d+o;e=a[d];l[e[r]]=l[e[i]][e[y]];d=d+o;e=a[d];l[e[h]]=e[t];d=d+o;e=a[d];l[e[f]]=e[s];d=d+o;e=a[d];n=e[x]l[n]=l[n](_(l,n+o,e[t]))d=d+o;e=a[d];l[e[w]][e[c]]=l[e[E]];break end;break;end break;end while(n)/((5971-0xbdc))==1099 do n=(3518658)while j<=(0x4abd/53)do n=-n local n=e[f];local a={};for e=1,#B do local e=B[e];for d=0,#e do local d=e[d];local o=d[1];local e=d[2];if o==l and e>=n then a[e]=o[e];d[1]=a;end;end;end;break;end while(n)/((1402+-0x73))==2734 do n=(1257750)while j>(821-0x1cb)do n=-n l[e[r]]=l[e[s]][e[E]];d=d+o;e=a[d];l[e[k]]=m[e[t]];d=d+o;e=a[d];l[e[x]]=l[e[i]][e[y]];d=d+o;e=a[d];l[e[f]]=l[e[u]][e[E]];d=d+o;e=a[d];l[e[k]]=(not l[e[c]]);d=d+o;e=a[d];l[e[f]][e[c]]=l[e[V]];d=d+o;e=a[d];l[e[h]]=m[e[c]];d=d+o;e=a[d];l[e[w]]=l[e[t]][e[N]];d=d+o;e=a[d];l[e[f]]=m[e[b]];d=d+o;e=a[d];l[e[k]]=l[e[u]][e[V]];d=d+o;e=a[d];l[e[r]]=m[e[c]];d=d+o;e=a[d];l[e[k]]=l[e[i]][e[V]];d=d+o;e=a[d];l[e[f]]=l[e[i]][e[y]];d=d+o;e=a[d];l[e[k]][l[e[t]]]=l[e[g]];d=d+o;e=a[d];l[e[k]]=m[e[t]];d=d+o;e=a[d];l[e[r]]=l[e[i]][e[E]];d=d+o;e=a[d];l[e[h]]=m[e[b]];d=d+o;e=a[d];l[e[r]]=l[e[c]][e[g]];d=d+o;e=a[d];l[e[f]]=l[e[u]][l[e[y]]];d=d+o;e=a[d];if l[e[k]]then d=d+o;else d=e[b];end;break end while 390==(n)/(((177755550/0xd9)/254))do if(l[e[r]]==e[E])then d=d+F;else d=e[s];end;break end;break;end break;end break;end while(n)/((6879-0xd9b))==1098 do n=(1312605)while j<=(751-0x181)do n=-n n=(3230990)while j<=(62972/0xad)do n=-n l[e[w]]=l[e[c]]-l[e[N]];break;end while 3199==(n)/(((-0x3203/217)+1069))do n=(675492)while(59860/0xa4)<j do n=-n l[e[h]][e[i]]=l[e[g]];break end while 543==(n)/((0xa06-1322))do local d=e[x]local a,e=Y(l[d](_(l,d+1,e[t])))M=e+d-1 local e=0;for d=d,M do e=e+o;l[d]=a[e];end;break end;break;end break;end while 567==(n)/((307895/0x85))do n=(2687550)while(-0x5c+459)>=j do n=-n l[e[x]]=m[e[t]];d=d+o;e=a[d];l[e[k]][e[c]]=l[e[y]];d=d+o;e=a[d];l[e[x]]=m[e[u]];d=d+o;e=a[d];l[e[f]]=l[e[t]][e[V]];d=d+o;e=a[d];l[e[h]][e[c]]=l[e[V]];d=d+o;e=a[d];l[e[r]]=m[e[t]];d=d+o;e=a[d];l[e[h]]=l[e[i]][e[y]];d=d+o;e=a[d];if l[e[r]]then d=d+o;else d=e[b];end;break;end while 3895==(n)/((0x57f-717))do n=(11277317)while j>(452+-0x54)do n=-n l[e[h]]=e[t];break end while 4009==(n)/((0xb6f+(-0x94+34)))do if not l[e[r]]then d=d+F;else d=e[t];end;break end;break;end break;end break;end break;end break;end break;end break;end break;end d=d+o;end;end);end;return G(P(),{},T())()end)_msec({[(170+-0x1d)]='\115\116'..(function(e)return(e and'د؃دكؠحججسزكؠټسدؠئح')or'\114\105'or'\120\58'end)((85-(-33+0x71))==(522/(17487/0xc9)))..'\110g',["نسجئضؠزڝ؃نقڝآ؃"]='\108\100'..(function(e)return(e and'حڝدزقجسټ؃')or'\101\120'or'\119\111'end)((890/0xb2)==(29-0x17))..'\112',["ټكئكڝضئجقزقححڝئجحق"]=(function(e)return(e and'قڪ؃زدنز؃سضئقڝجح')and'\98\121'or'\100\120'end)((0x5f-90)==(0x82-125))..'\116\101',["س؃كسدئكڪد"]='\99'..(function(e)return(e and'ئجدآآئنن')and'\90\19\157'or'\104\97'end)((0x83+-126)==(366/0x7a))..'\114',[(1305-0x2cc)]='\116\97'..(function(e)return(e and'ئكضحټټڪحټضكقئضق')and'\64\113'or'\98\108'end)((98-0x5c)==(112+-0x6b))..'\101',["ئڪدئحڪجججؠ"]=(function(e)return(e and'زكدسدنض؃آڪحكنآ')or'\115\117'or'\78\107'end)((-0x22+37)==(87+-0x38))..'\98',["زد؃ؠزق؃؃؃ئڝئزح"]='\99\111'..(function(e)return(e and'ئقنضنكنجججس')and'\110\99'or'\110\105\103\97'end)((3875/0x7d)==(109-0x4e))..'\97\116',[(1330-0x2ba)]=(function(e,d)return(e and'آحندزآججآڝ؃ح')and'\48\159\158\188\10'or'\109\97'end)((-121+0x7e)==(0x7e-120))..'\116\104',[(0x5c5+-111)]=(function(d,e)return((580/0x74)==(42/0xe)and'\48'..'\195'or d..((not'\20\95\69'and'\90'..'\180'or e)))or'\199\203\95'end),["ضئڝؠدققحجآجنكضكجقضح"]='\105\110'..(function(e,d)return(e and'زحؠڝؠڪضؠڝجڪټزنآ؃ق')and'\90\115\138\115\15'or'\115\101'end)((-0x19+30)==(0x18d3/205))..'\114\116',["؃ټدڪقآنؠكضڝئدئئن"]='\117\110'..(function(e,d)return(e and'سججدقحؠجحئض')or'\112\97'or'\20\38\154'end)((-0x60+101)==(0x65-70))..'\99\107',["ؠؠآڪئزئټ"]='\115\101'..(function(e)return(e and'ټكڝآسټدؠق')and'\110\112\99\104'or'\108\101'end)((0x375/(0xe0+-47))==(85-0x36))..'\99\116',["ئزټڪنسټؠ"]='\116\111\110'..(function(e,d)return(e and'ڪنزآڪكجڪ')and'\117\109\98'or'\100\97\120\122'end)((1075/0xd7)==(1130/0xe2))..'\101\114'},{["كقكئڪزجټزج؃جڝز؃ئ"]=((getfenv)or(function()return(_ENV)end))},((getfenv)or(function()return(_ENV)end))()) end)()
-
-
+return library
